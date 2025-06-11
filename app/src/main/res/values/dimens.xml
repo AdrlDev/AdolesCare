@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Stepper dot sizes -->
+    <dimen name="stepper_dot_active_size">16dp</dimen>
+    <dimen name="stepper_dot_inactive_size">8dp</dimen>
+
+    <!-- Margins and padding -->
+    <dimen name="margin_small">8dp</dimen>
+    <dimen name="margin_medium">18dp</dimen>
+    <dimen name="margin_large">24dp</dimen>
+</resources>

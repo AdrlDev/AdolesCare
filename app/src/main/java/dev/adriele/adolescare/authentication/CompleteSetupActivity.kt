@@ -1,0 +1,141 @@
+package dev.adriele.adolescare.authentication
+
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.LinearLayout
+import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.snackbar.Snackbar
+import dev.adriele.adolescare.Utility
+import dev.adriele.adolescare.authentication.adapter.PagerAdapter
+import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
+import dev.adriele.adolescare.authentication.fragments.SelectBarangayFragment
+import dev.adriele.adolescare.authentication.fragments.SelectSexFragment
+import dev.adriele.adolescare.database.AppDatabaseProvider
+import dev.adriele.adolescare.database.repositories.implementation.UserRepositoryImpl
+import dev.adriele.adolescare.databinding.ActivityCompleteSetupBinding
+import dev.adriele.adolescare.dialogs.MyLoadingDialog
+import dev.adriele.adolescare.viewmodel.UserViewModel
+import dev.adriele.adolescare.viewmodel.factory.UserViewModelFactory
+
+class CompleteSetupActivity : AppCompatActivity(), FragmentDataListener {
+    private lateinit var binding: ActivityCompleteSetupBinding
+
+    private lateinit var vp: ViewPager2
+    private lateinit var stepper: LinearLayout
+    private lateinit var btnNext: Button
+
+    private lateinit var pagerAdapter: PagerAdapter
+    private lateinit var fragments: List<Fragment>
+
+    private val collectedData = mutableMapOf<String, Any>()
+
+    private lateinit var userRepositoryImpl: UserRepositoryImpl
+    private lateinit var userViewModel: UserViewModel
+
+    private lateinit var loadingDialog: MyLoadingDialog
+
+    private var userId: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        binding = ActivityCompleteSetupBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        initViews()
+        init()
+        afterInit()
+    }
+
+    private fun initViews() {
+        vp = binding.viewpager
+        stepper = binding.stepperContainer
+        btnNext = binding.btnNext
+    }
+
+    private fun init() {
+        intent.getStringExtra("userId")?.let {
+            userId = it
+        }
+
+        loadingDialog = MyLoadingDialog(this)
+
+        //default fragment
+        fragments = listOf(
+            SelectBarangayFragment(),
+            SelectSexFragment()
+        )
+
+        pagerAdapter = PagerAdapter(this, fragments)
+        vp.adapter = pagerAdapter
+
+        // Initialize stepper indicators
+        Utility.setupStepper(pagerAdapter.itemCount, resources, this, stepper)
+
+        // Change button text on the last page
+        vp.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                Utility.updateStepper(position, pagerAdapter.itemCount, stepper, binding.tvStep, resources)
+                btnNext.text = if (position == pagerAdapter.itemCount - 1) "Finish" else "Next"
+            }
+        })
+
+        val db = AppDatabaseProvider.getDatabase(this).userDao()
+        userRepositoryImpl = UserRepositoryImpl(db)
+        // Create the ViewModel using the factory
+        val factory = UserViewModelFactory(userRepositoryImpl)
+        userViewModel = ViewModelProvider(this, factory)[UserViewModel::class.java]
+    }
+
+    private fun afterInit() {
+        userViewModel.updateSexBarangay.observe(this) { (success, selectedSex) ->
+            if(success) {
+                loadingDialog.dismiss()
+                startActivity(
+                    Intent(this, MenstrualHistoryQuestionActivity::class.java)
+                        .putExtra("userSex", selectedSex)
+                        .putExtra("userId", userId)
+                )
+                finish()
+            } else {
+                loadingDialog.dismiss()
+                Snackbar.make(binding.root, "Failed to update user", Snackbar.LENGTH_SHORT).show()
+            }
+        }
+
+        btnNext.setOnClickListener {
+            val currentItem = vp.currentItem
+            if (currentItem < pagerAdapter.itemCount - 1) {
+                // Move to the next page
+                vp.currentItem = currentItem + 1
+            } else {
+                val selectedBarangay = collectedData["barangay"] as? String
+                val selectedSex = collectedData["sex"] as? String
+
+                if (!selectedBarangay.isNullOrEmpty() && !selectedSex.isNullOrEmpty()) {
+                    loadingDialog.show("Saving, please wait...")
+                    userViewModel.updateSexAndBarangay(selectedSex, selectedBarangay, userId!!)
+                } else {
+                    loadingDialog.dismiss()
+                    Snackbar.make(binding.root, "Please select barangay and sex", Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    override fun onDataCollected(data: Map<String, Any>) {
+        collectedData.putAll(data)
+    }
+}

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AdolesCare</string>
+
+    <string name="select_language">Pumili ng Wika</string>
+    <string name="tagalog">Tagalog</string>
+    <string name="english">Ingles</string>
+    <string name="cancel">Kanselahin</string>
+    <string name="welcome_message">Maligayang pagdating sa AdolesCare!</string>
+
+    <string name="login_text">Mag log in</string>
+    <string name="signup_text">Gumawa ng Account</string>
+
+    <string name="register">Magrehistro</string>
+    <string name="login_text_sign_up">Mag-login sa iyong account</string>
+    <string name="signup_text_sign_up">Gumawa ng iyong account</string>
+
+    //user information
+    <string name="first_name">Pangalan</string>
+    <string name="last_name">Apelyido</string>
+    <string name="mi">MI</string>
+    <string name="birthday">Kaarawan</string>
+    <string name="age">Edad</string>
+    <string name="username">Username</string> <!-- You can keep this in English if commonly used -->
+    <string name="password">Password</string> <!-- Same here -->
+    <string name="new_password">New Password</string>
+    <string name="confirm_password">Kumpirmahin ang Password</string>
+
+    <string name="term_of_use_text">Sa pagrehistro, sumasang-ayon ka sa Mga Tuntunin ng Paggamit at Patakaran sa Privacy.</string>
+    <string name="already_have_an_account">Mayroon ka nang account? Mag-log in dito.</string>
+    <string name="dont_have_an_account">Walang account? Mag-sign up dito.</string>
+
+    <string name="remember_me">Remember me</string>
+    <string name="forget">Forget password?</string>
+    <string name="forget_info">Upang baguhin ang password, ilagay muna ang iyong username.</string>
+
+    <string name="helper_required">Required*</string>
+
+    <string name="finish_set_up">Finish Set-Up</string>
+    <string name="step">Step</string>
+    <string name="next">Next</string>
+
+    <string name="what_sex">Ano ang kasarian mo?</string>
+    <string name="male">Lalake</string>
+    <string name="female">Babae</string>
+
+    <string name="menstrual_history_title">Kasaysayan ng Menstrual</string>
+    <string name="warning_message">Walang ibang makakaalam sa impormasyong ito kung di tayo lang.</string>
+    <string name="first_period_q">Nagkaroon kana ba ng regla?</string>
+
+    <string name="yes">Oo</string>
+    <string name="no">Hindi</string>
+
+    //chatbot
+    <string name="ask">Magtanong…</string>
+
+    <string name="splash_message">Sa tamang kaalaman, may ligtas na kinabukasan</string>
+</resources>

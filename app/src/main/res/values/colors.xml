@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#F5F5F5</color>
+    <color name="textColor">#1E1E1E</color>
+
+    <color name="buttonColor">#DB8C22</color>
+    <color name="buttonColor1">#37B23B</color>
+    <color name="buttonTextColor">#F5F5F5</color>
+
+    <color name="textColorLink">#153CCE</color>
+
+    <color name="requiredColorHelper">#DB2D39</color>
+
+    <color name="gray">#989898</color>
+</resources>

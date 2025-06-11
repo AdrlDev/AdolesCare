@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="10dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:id="@+id/chat_body"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="@string/welcome_message"
+            android:id="@+id/tv_chat"
+            android:background="@drawable/chat_bg_right"
+            android:textColor="@color/buttonTextColor"
+            android:padding="12dp"
+            android:fontFamily="@font/roboto"
+            android:layout_marginStart="10dp"/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tv_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="date"
+        app:layout_constraintTop_toBottomOf="@id/chat_body"
+        app:layout_constraintEnd_toEndOf="@id/chat_body"
+        android:layout_marginTop="5dp"
+        android:textColor="@color/textColor"
+        android:fontFamily="@font/roboto"
+        android:textSize="12sp"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

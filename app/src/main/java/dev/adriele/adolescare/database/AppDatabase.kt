@@ -1,0 +1,46 @@
+package dev.adriele.adolescare.database
+
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import dev.adriele.adolescare.database.dao.ConversationDao
+import dev.adriele.adolescare.database.dao.CycleDao
+import dev.adriele.adolescare.database.dao.CycleLogDao
+import dev.adriele.adolescare.database.dao.DailyLogDao
+import dev.adriele.adolescare.database.dao.MenstrualHistoryDao
+import dev.adriele.adolescare.database.dao.ModuleDao
+import dev.adriele.adolescare.database.dao.ReminderDao
+import dev.adriele.adolescare.database.dao.UserDao
+import dev.adriele.adolescare.database.entities.Conversations
+import dev.adriele.adolescare.database.entities.CycleLogEntity
+import dev.adriele.adolescare.database.entities.DailyLog
+import dev.adriele.adolescare.database.entities.LearningModule
+import dev.adriele.adolescare.database.entities.MenstrualCycle
+import dev.adriele.adolescare.database.entities.MenstrualHistoryEntity
+import dev.adriele.adolescare.database.entities.Reminder
+import dev.adriele.adolescare.database.entities.User
+
+@Database(
+    entities = [
+        User::class,
+        MenstrualCycle::class,
+        DailyLog::class,
+        LearningModule::class,
+        Reminder::class,
+        Conversations::class,
+        MenstrualHistoryEntity::class,
+        CycleLogEntity::class
+    ],
+    version = 1,
+    exportSchema = false
+)
+
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun userDao(): UserDao
+    abstract fun cycleDao(): CycleDao
+    abstract fun dailyLogDao(): DailyLogDao
+    abstract fun moduleDao(): ModuleDao
+    abstract fun reminderDao(): ReminderDao
+    abstract fun conversationDao(): ConversationDao
+    abstract fun menstrualHistoryDao() : MenstrualHistoryDao
+    abstract fun cycleLogDao() : CycleLogDao
+}

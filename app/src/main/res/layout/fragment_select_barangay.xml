@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="@dimen/margin_large"
+    android:gravity="center"
+    tools:context=".authentication.fragments.SelectBarangayFragment">
+
+    <ImageView
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:src="@drawable/house_3d"
+        android:contentDescription="@string/app_name"
+        />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
+        android:hint="Select Barangay"
+        android:layout_margin="32dp"
+        app:endIconMode="dropdown_menu"
+        >
+
+        <AutoCompleteTextView
+            android:textColor="@color/textColor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/auto_select_barangay"
+            android:fontFamily="@font/roboto"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+</LinearLayout>
