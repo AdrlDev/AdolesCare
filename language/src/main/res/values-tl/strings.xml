@@ -48,8 +48,19 @@
     <string name="warning_message">Walang ibang makakaalam sa impormasyong ito kung di tayo lang.</string>
     <string name="first_period_q">Nagkaroon kana ba ng regla?</string>
 
+    <string name="first_period_no_msg">Ayos lang yan! Pwede mo pa ring magamit ang AdolesCare para maging mas maalam ka tungkol sa katawan mo, maging aware ka tungkol sa teenage pregnancy at para maiwasan ito.</string>
+    <string name="still_remember_last_period">Natatandaan mo pa ba kung kailan nagsimula ang huli mong regla?</string>
+    <string name="still_remember_how_many_days">Natatandaan mo pa ba kung ilang araw nagtagal ang huling regla mo?</string>
+    <string name="still_remember_number_of_weeks">Alam mo ba ang linggo sa pagitan ng iyong regla?</string>
+
+    <string name="last_period_started_no_msg">
+        Hindi problema yan! Kaya nandito ang AdolesCare para matulungan kang mag-track. Sa ngayon, sabihin na lang muna nating 2 weeks ago ito. Pwede mo itong baguhin mamaya kung gusto mo.
+    </string>
+
     <string name="yes">Oo</string>
     <string name="no">Hindi</string>
+
+    <string name="change">Palitan</string>
 
     //chatbot
     <string name="ask">Magtanong…</string>

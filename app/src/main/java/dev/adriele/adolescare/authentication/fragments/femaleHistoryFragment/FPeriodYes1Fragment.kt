@@ -1,60 +1,67 @@
 package dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import dev.adriele.adolescare.R
+import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
+import dev.adriele.adolescare.databinding.FragmentFPeriodYes1Binding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [FPeriodYes1Fragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class FPeriodYes1Fragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private var _binding: FragmentFPeriodYes1Binding? = null
+    private val binding get() = _binding!!
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private var dataListener: FragmentDataListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_f_period_yes1, container, false)
+        _binding = FragmentFPeriodYes1Binding.inflate(layoutInflater, container, false)
+        init()
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment FPeriodYes1Fragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            FPeriodYes1Fragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun handleSelection(firstPeriodReported: Boolean) {
+        val data = mapOf(FemaleMenstrualHistory.LAST_PERIOD_STARTED.name to firstPeriodReported)
+        dataListener?.onDataCollected(data)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is FragmentDataListener) {
+            dataListener = context
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        dataListener = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    private fun init() {
+        binding.toggleGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
+            if (isChecked) {
+                when (checkedId) {
+                    R.id.btn_yes -> {
+                        // User selected "Yes"
+                        handleSelection(true)
+                    }
+                    R.id.btn_no -> {
+                        // User selected "No"
+                        handleSelection(false)
+                    }
                 }
             }
+        }
     }
 }

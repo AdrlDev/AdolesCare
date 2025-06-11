@@ -1,6 +1,5 @@
 package dev.adriele.adolescare.authentication
 
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -18,6 +17,7 @@ import dev.adriele.adolescare.database.dao.UserDao
 import dev.adriele.adolescare.database.entities.User
 import dev.adriele.adolescare.database.repositories.implementation.UserRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivitySignUpBinding
+import dev.adriele.adolescare.dialogs.MyLoadingDialog
 import dev.adriele.adolescare.viewmodel.UserViewModel
 import dev.adriele.adolescare.viewmodel.factory.UserViewModelFactory
 
@@ -29,7 +29,7 @@ class SignUpActivity : AppCompatActivity(), TermsPrivacyClickListener, Utility.L
 
     private lateinit var userViewModel: UserViewModel
 
-    private lateinit var loadingDialog: Dialog
+    private lateinit var loadingDialog: MyLoadingDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +47,8 @@ class SignUpActivity : AppCompatActivity(), TermsPrivacyClickListener, Utility.L
     }
 
     private fun init() {
+        loadingDialog = MyLoadingDialog(this)
+
         Utility.setupTermOfUseText(binding.tvTermOfUse, this)
         Utility.setupAlreadyHaveAccountText(binding.tvAlreadyHaveAccount, this)
         Utility.setupDatePicker(binding.etBirthday, this, this)
@@ -73,7 +75,7 @@ class SignUpActivity : AppCompatActivity(), TermsPrivacyClickListener, Utility.L
         }
 
         binding.btnSignup.setOnClickListener {
-            loadingDialog = Utility.showLoadingDialog(this, "Saving, please wait...")
+            loadingDialog.show("Saving, please wait...")
 
             val fName = binding.etFirstName.text
             val lName = binding.etLastName.text

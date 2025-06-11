@@ -1,14 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout android:orientation="vertical"
+    android:gravity="center"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".authentication.fragments.femaleHistoryFragment.FLastPeriodNoMsgFragment">
+    android:padding="32dp"
+    tools:context=".authentication.fragments.femaleHistoryFragment.FLastPeriodNoMsgFragment"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- TODO: Update blank fragment layout -->
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:id="@+id/tv_message"
+        android:fontFamily="@font/roboto_medium"
+        android:layout_marginHorizontal="12dp"
+        android:textSize="17sp"
+        android:letterSpacing=".05"
+        android:textAlignment="center"
+        android:textColor="@color/textColor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
-</FrameLayout>
+    <com.google.android.material.button.MaterialButton
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="32dp"
+        android:text="@string/change"
+        android:fontFamily="@font/roboto_medium"
+        android:textSize="16sp"
+        android:paddingVertical="12dp"
+        android:paddingHorizontal="60dp"
+        android:id="@+id/btn_change"
+        style="?attr/materialButtonOutlinedStyle"
+        app:strokeColor="@color/buttonColor"
+        android:backgroundTint="@color/button_toggle_selector"
+        android:textColor="@color/toggle_text_selector"
+        />
+
+</LinearLayout>

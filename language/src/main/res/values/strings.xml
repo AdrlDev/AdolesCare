@@ -48,8 +48,20 @@
     <string name="warning_message">We want to know you more! No one else will know this information except us.</string>
     <string name="first_period_q">Have you had your period?</string>
 
+    <string name="first_period_no_msg">That\'s okay! You can still use AdolesCare to learn more about your body, be aware of teenage pregnancy, and how to prevent it.</string>
+    <string name="still_remember_last_period">Do you still remember when your last period started?</string>
+    <string name="still_remember_how_many_days">Do you still remember how many days your last period lasted?</string>
+    <string name="still_remember_number_of_weeks">Do you know the number of weeks between your periods?</string>
+
+    <string name="last_period_started_no_msg">
+        That\'s not a problem! AdolesCare is here to help you track it. For now, let\'s just say it was 2 weeks ago. You can change this later if you want.
+    </string>
+    
+    
     <string name="yes">Yes</string>
     <string name="no">No</string>
+
+    <string name="change">Change</string>
 
     //chatbot
     <string name="ask">Ask…</string>

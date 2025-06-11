@@ -9,7 +9,7 @@ import dev.adriele.adolescare.Utility
     tableName = "cycle_logs",
     foreignKeys = [ForeignKey(
         entity = User::class,
-        parentColumns = ["id"],
+        parentColumns = ["userId"],
         childColumns = ["userId"],
         onDelete = ForeignKey.CASCADE
     )]

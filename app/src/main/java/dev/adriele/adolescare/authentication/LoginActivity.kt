@@ -1,6 +1,5 @@
 package dev.adriele.adolescare.authentication
 
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.widget.CompoundButton
@@ -9,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import dev.adriele.adolescare.DashboardActivity
 import dev.adriele.adolescare.Utility
@@ -19,6 +17,7 @@ import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.dao.UserDao
 import dev.adriele.adolescare.database.repositories.implementation.UserRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityLoginBinding
+import dev.adriele.adolescare.dialogs.MyLoadingDialog
 import dev.adriele.adolescare.viewmodel.UserViewModel
 import dev.adriele.adolescare.viewmodel.factory.UserViewModelFactory
 
@@ -30,7 +29,7 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
 
     private lateinit var userViewModel: UserViewModel
 
-    private lateinit var loadingDialog: Dialog
+    private lateinit var loadingDialog: MyLoadingDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,7 +77,7 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
         }
 
         binding.btnLogin.setOnClickListener {
-            loadingDialog = Utility.showLoadingDialog(this, "Logging In, please wait...")
+            loadingDialog.show("Logging In, please wait...")
 
             val username = binding.etUsername.text.toString()
             val password = binding.etPassword.text.toString()
@@ -113,7 +112,7 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
 
         binding.tvForget.setOnClickListener {
             Utility.showChangePasswordDialog(this) { username, newPassword ->
-                loadingDialog = Utility.showLoadingDialog(this, "Updating password, please wait...")
+                loadingDialog.show("Updating password, please wait...")
                 userViewModel.updatePasswordByUsername(username, newPassword)
             }
         }
@@ -121,6 +120,8 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
 
     private fun init() {
         Utility.setupDonatHaveAccountText(binding.tvDoNotHaveAccount, this)
+
+        loadingDialog = MyLoadingDialog(this)
 
         userDao = AppDatabaseProvider.getDatabase(this).userDao()
         userRepositoryImpl = UserRepositoryImpl(userDao)

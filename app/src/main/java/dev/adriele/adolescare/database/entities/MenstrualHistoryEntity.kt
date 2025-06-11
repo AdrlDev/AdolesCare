@@ -9,7 +9,7 @@ import dev.adriele.adolescare.Utility
     tableName = "menstrual_history",
     foreignKeys = [ForeignKey(
         entity = User::class, // Assuming you already have this
-        parentColumns = ["id"],
+        parentColumns = ["userId"],
         childColumns = ["userId"],
         onDelete = ForeignKey.CASCADE
     )]

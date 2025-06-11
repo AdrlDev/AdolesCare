@@ -123,6 +123,7 @@
             android:textSize="16sp"
             android:fontFamily="@font/roboto_medium"
             android:paddingVertical="16dp"
+            android:textColor="@color/buttonTextColor"
             app:backgroundTint="@color/buttonColor"
             android:layout_marginTop="28dp"
             android:layout_marginBottom="6dp"

@@ -1,60 +1,65 @@
 package dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import dev.adriele.adolescare.R
+import dev.adriele.adolescare.Utility.animateTypingWithCursor
+import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
+import dev.adriele.adolescare.databinding.FragmentFLastPeriodNoMsgBinding
+import kotlinx.coroutines.Job
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [FLastPeriodNoMsgFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class FLastPeriodNoMsgFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private var _binding: FragmentFLastPeriodNoMsgBinding? = null
+    private val binding get() = _binding!!
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private var typingJob: Job? = null
+
+    private var dataListener: FragmentDataListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_f_last_period_no_msg, container, false)
+        _binding = FragmentFLastPeriodNoMsgBinding.inflate(layoutInflater, container, false)
+
+        binding.tvMessage.animateTypingWithCursor(
+            getString(dev.adriele.language.R.string.last_period_started_no_msg),
+            onTypingComplete = {
+                binding.btnChange.visibility = View.VISIBLE // ✅ Show when done
+            }
+        )
+
+        binding.btnChange.setOnClickListener {
+            val data = mapOf(FemaleMenstrualHistory.CHANGE_LAST_PERIOD_STARTED.name to true)
+            dataListener?.onDataCollected(data)
+        }
+
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment FLastPeriodNoMsgFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            FLastPeriodNoMsgFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is FragmentDataListener) {
+            dataListener = context
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        dataListener = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        typingJob?.cancel()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

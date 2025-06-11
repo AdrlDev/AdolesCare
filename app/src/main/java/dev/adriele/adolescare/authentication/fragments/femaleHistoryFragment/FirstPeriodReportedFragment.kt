@@ -36,7 +36,7 @@ class FirstPeriodReportedFragment : Fragment() {
     }
 
     private fun handleSelection(firstPeriodReported: Boolean) {
-        val data = mapOf("firstPeriodReported" to firstPeriodReported)
+        val data = mapOf(FemaleMenstrualHistory.FIRST_PERIOD.name to firstPeriodReported)
         dataListener?.onDataCollected(data)
     }
 

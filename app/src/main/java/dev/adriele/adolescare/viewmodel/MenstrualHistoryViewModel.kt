@@ -10,18 +10,19 @@ import dev.adriele.adolescare.database.repositories.MenstrualHistoryRepository
 import kotlinx.coroutines.launch
 
 class MenstrualHistoryViewModel(private val repository: MenstrualHistoryRepository) : ViewModel() {
-    private val _insertStatus = MutableLiveData<Pair<Boolean, String>>()
-    val insertStatus: LiveData<Pair<Boolean, String>> = _insertStatus
+    private val _insertStatus = MutableLiveData<Pair<Boolean, Boolean>>()
+    val insertStatus: LiveData<Pair<Boolean, Boolean>> = _insertStatus
 
     fun insertMenstrualHistory(history: MenstrualHistoryEntity) {
         viewModelScope.launch {
             try {
                 repository.insertMenstrualHistory(history)
-                _insertStatus.value = Pair(true, history.userId)
+                _insertStatus.value = Pair(true, history.firstPeriodReported)
             } catch (e: Exception) {
                 Log.e("UserViewModel", "Error inserting menstrual history", e)
-                _insertStatus.value = Pair(false, history.userId)
+                _insertStatus.value = Pair(false, history.firstPeriodReported)
             }
         }
     }
+
 }

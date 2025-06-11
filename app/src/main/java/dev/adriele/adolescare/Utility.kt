@@ -37,6 +37,12 @@ import java.util.UUID
 import androidx.core.content.edit
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 object Utility {
     interface TermsPrivacyClickListener {
@@ -415,5 +421,40 @@ object Utility {
     fun getCurrentDateTime(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd hh:mm a", Locale.getDefault())
         return sdf.format(Date())
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun TextView.animateTypingWithCursor(
+        fullText: String,
+        typingDelay: Long = 100L,
+        cursorBlinkDelay: Long = 500L,
+        showCursor: Boolean = true,
+        onTypingComplete: (() -> Unit)? = null
+    ): Job {
+        var isCursorVisible = true
+        text = ""
+        val job = Job()
+        val scope = CoroutineScope(Dispatchers.Main + job)
+
+        scope.launch {
+            // Typing animation
+            for (i in fullText.indices) {
+                text = fullText.substring(0, i + 1) + if (showCursor) "_" else ""
+                delay(typingDelay)
+            }
+
+            onTypingComplete?.invoke() // ✅ Call after typing finishes
+
+            if (showCursor) {
+                // Blinking cursor loop
+                while (isActive) {
+                    text = if (isCursorVisible) "${fullText}_" else fullText
+                    isCursorVisible = !isCursorVisible
+                    delay(cursorBlinkDelay)
+                }
+            }
+        }
+
+        return job
     }
 }
