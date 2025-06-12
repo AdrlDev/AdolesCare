@@ -21,21 +21,38 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <com.google.android.material.button.MaterialButton
-        android:visibility="gone"
-        android:layout_width="wrap_content"
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggle_group"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:layout_marginVertical="32dp"
-        android:text="@string/change"
-        android:fontFamily="@font/roboto_medium"
-        android:textSize="16sp"
-        android:paddingVertical="12dp"
-        android:paddingHorizontal="60dp"
-        android:id="@+id/btn_change"
-        style="?attr/materialButtonOutlinedStyle"
-        app:strokeColor="@color/buttonColor"
-        android:backgroundTint="@color/button_toggle_selector"
-        android:textColor="@color/toggle_text_selector"
-        />
+        android:visibility="gone"
+        app:singleSelection="true"
+        app:selectionRequired="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_yes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/change"
+            android:backgroundTint="@color/button_toggle_selector"
+            android:textColor="@color/toggle_text_selector"
+            android:fontFamily="@font/roboto_medium"
+            app:strokeColor="@color/textColor"
+            style="?attr/materialButtonOutlinedStyle" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/next"
+            android:backgroundTint="@color/button_toggle_selector"
+            android:textColor="@color/toggle_text_selector"
+            app:strokeColor="@color/textColor"
+            android:fontFamily="@font/roboto_medium"
+            style="?attr/materialButtonOutlinedStyle" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
 </LinearLayout>

@@ -32,7 +32,7 @@ class CompleteSetupActivity : AppCompatActivity(), FragmentDataListener {
     private lateinit var btnNext: Button
 
     private lateinit var pagerAdapter: PagerAdapter
-    private lateinit var fragments: List<Fragment>
+    private val fragments = mutableListOf<Fragment>()
 
     private val collectedData = mutableMapOf<String, Any>()
 
@@ -73,18 +73,20 @@ class CompleteSetupActivity : AppCompatActivity(), FragmentDataListener {
         loadingDialog = MyLoadingDialog(this)
 
         //default fragment
-        fragments = listOf(
+
+        fragments.addAll(listOf(
             SelectBarangayFragment(),
             SelectSexFragment()
-        )
+        ))
 
-        pagerAdapter = PagerAdapter(this, fragments)
+        pagerAdapter = PagerAdapter(this)
         vp.adapter = pagerAdapter
 
-        // Initialize stepper indicators
+        pagerAdapter.updateFragments(fragments) // <-- Load fragments first
+
+        // Now that fragments are added, initialize stepper
         Utility.setupStepper(pagerAdapter.itemCount, resources, this, stepper)
 
-        // Change button text on the last page
         vp.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 Utility.updateStepper(position, pagerAdapter.itemCount, stepper, binding.tvStep, resources)

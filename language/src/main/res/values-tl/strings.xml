@@ -3,6 +3,7 @@
     <string name="app_name">AdolesCare</string>
 
     <string name="select_language">Pumili ng Wika</string>
+    <string name="select_date">Pumili ng Date</string>
     <string name="tagalog">Tagalog</string>
     <string name="english">Ingles</string>
     <string name="cancel">Kanselahin</string>
@@ -61,6 +62,7 @@
     <string name="no">Hindi</string>
 
     <string name="change">Palitan</string>
+    <string name="when_was_this">Kailan ito?</string>
 
     //chatbot
     <string name="ask">Magtanong…</string>

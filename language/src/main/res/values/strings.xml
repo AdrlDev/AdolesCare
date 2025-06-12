@@ -3,6 +3,7 @@
     <string name="app_name">AdolesCare</string>
 
     <string name="select_language">Select Language</string>
+    <string name="select_date">Select Date</string>
     <string name="tagalog">Tagalog</string>
     <string name="english">English</string>
     <string name="cancel">Cancel</string>
@@ -62,6 +63,7 @@
     <string name="no">No</string>
 
     <string name="change">Change</string>
+    <string name="when_was_this">When was this?</string>
 
     //chatbot
     <string name="ask">Ask…</string>

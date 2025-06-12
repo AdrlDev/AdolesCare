@@ -2,6 +2,7 @@ package dev.adriele.adolescare.authentication
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -21,8 +22,10 @@ import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FLa
 import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FPeriodNoFragment
 import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FPeriodNoLastFragment
 import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FPeriodYes1Fragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FPeriodYes2Fragment
 import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FemaleMenstrualHistory
 import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FirstPeriodReportedFragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.SelectLPSDateFragment
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.MenstrualHistoryEntity
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
@@ -39,11 +42,9 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
     private lateinit var btnNext: Button
 
     private lateinit var pagerAdapter: PagerAdapter
-    private lateinit var fragments: List<Fragment>
 
     private val collectedData = mutableMapOf<String, Any>()
 
-    private lateinit var menstrualHistoryRepositoryImpl: MenstrualHistoryRepositoryImpl
     private lateinit var menstrualHistoryViewModel: MenstrualHistoryViewModel
 
     private lateinit var loadingDialog: MyLoadingDialog
@@ -75,32 +76,28 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
     }
 
     private fun init() {
-        intent.getStringExtra("userId")?.let {
-            userId = it
-        }
-
-        intent.getStringExtra("userSex")?.let {
-            userSex = it
-        }
+        userId = intent.getStringExtra("userId")
+        userSex = intent.getStringExtra("userSex")
 
         loadingDialog = MyLoadingDialog(this)
 
-        //default fragment
-        fragments = listOf(
-            FirstPeriodReportedFragment()
-        )
+        val menstrualDao = AppDatabaseProvider.getDatabase(this).menstrualHistoryDao()
+        val menstrualHistoryRepositoryImpl = MenstrualHistoryRepositoryImpl(menstrualDao)
 
-        pagerAdapter = PagerAdapter(this, fragments)
+        val factory = MenstrualHistoryViewModelFactory(menstrualHistoryRepositoryImpl)
+        menstrualHistoryViewModel = ViewModelProvider(this, factory)[MenstrualHistoryViewModel::class.java]
+    }
+
+    private fun afterInit() {
+        setupViewPager()
+        observeViewModel()
+        setupButton()
+    }
+
+    private fun setupViewPager() {
+        pagerAdapter = PagerAdapter(this)
         vp.adapter = pagerAdapter
 
-        stepper.visibility = View.GONE
-        btnNext.visibility = View.GONE
-        binding.tvStep.visibility = View.GONE
-
-        // Initialize stepper indicators
-        Utility.setupStepper(pagerAdapter.itemCount, resources, this, stepper)
-
-        // Change button text on the last page
         vp.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 Utility.updateStepper(position, pagerAdapter.itemCount, stepper, binding.tvStep, resources)
@@ -108,161 +105,113 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
             }
         })
 
-        val menstrualDao = AppDatabaseProvider.getDatabase(this).menstrualHistoryDao()
-        menstrualHistoryRepositoryImpl = MenstrualHistoryRepositoryImpl(menstrualDao)
+        Utility.setupStepper(pagerAdapter.itemCount, resources, this, stepper)
+        binding.tvStep.visibility = View.GONE
+        stepper.visibility = View.GONE
+        btnNext.visibility = View.GONE
 
-        val factory = MenstrualHistoryViewModelFactory(menstrualHistoryRepositoryImpl)
-        menstrualHistoryViewModel = ViewModelProvider(this, factory)[MenstrualHistoryViewModel::class.java]
+        pagerAdapter.updateFragments(listOf(FirstPeriodReportedFragment()))
     }
 
-    private fun afterInit() {
+    private fun observeViewModel() {
         menstrualHistoryViewModel.insertStatus.observe(this) { (success, hasPeriod) ->
-            if(success) {
-                loadingDialog.dismiss()
-                if(!hasPeriod) {
+            loadingDialog.dismiss()
+            if (success) {
+                if (!hasPeriod) {
                     startActivity(Intent(this, DashboardActivity::class.java))
                     finish()
                 }
             } else {
-                loadingDialog.dismiss()
                 Snackbar.make(binding.main, "Failed to save menstrual history...", Snackbar.LENGTH_LONG).show()
             }
         }
+    }
 
+    private fun setupButton() {
         btnNext.setOnClickListener {
-            val currentItem = vp.currentItem
-            if (currentItem < pagerAdapter.itemCount - 1) {
-                // Move to the next page
-                vp.currentItem = currentItem + 1
+            val current = vp.currentItem
+            if (current < pagerAdapter.itemCount - 1) {
+                vp.currentItem = current + 1
             } else {
+                val lpsDate = collectedData[FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE.name] as? String
+                val data = MenstrualHistoryEntity(
+                    userId = userId ?: return@setOnClickListener,
+                    firstPeriodReported = hasMenstrualPeriod == true,
+                    lastPeriodStart = lpsDate,
+                    periodDurationDays = 0,
+                    cycleIntervalWeeks = 0
+                )
                 loadingDialog.show("Saving, please wait...")
-
-                hasMenstrualPeriod?.let { hasPeriod ->
-                    if(!hasPeriod) {
-                        val mensHistoryData = MenstrualHistoryEntity(
-                            userId = userId!!,
-                            firstPeriodReported = false,
-                            lastPeriodStart = null,
-                            periodDurationDays = 0,
-                            cycleIntervalWeeks = 0
-                        )
-
-                        menstrualHistoryViewModel.insertMenstrualHistory(mensHistoryData)
-                    } else {
-                        val mensHistoryData = MenstrualHistoryEntity(
-                            userId = userId!!,
-                            firstPeriodReported = true,
-                            lastPeriodStart = null,
-                            periodDurationDays = 0,
-                            cycleIntervalWeeks = 0
-                        )
-
-                        menstrualHistoryViewModel.insertMenstrualHistory(mensHistoryData)
-                    }
-                }
+                menstrualHistoryViewModel.insertMenstrualHistory(data)
             }
         }
-
     }
 
     override fun onDataCollected(data: Map<String, Any>) {
         collectedData.putAll(data)
-        hasMenstrualPeriod = collectedData[FemaleMenstrualHistory.FIRST_PERIOD.name] as? Boolean
-        hasMenstrualPeriod?.let {
-            updateFragments(it)
-        }
+        val pages = mutableListOf<Fragment>()
 
+        val hasMenstrualPeriod = collectedData[FemaleMenstrualHistory.FIRST_PERIOD.name] as? Boolean
         val lastPeriodStarted = collectedData[FemaleMenstrualHistory.LAST_PERIOD_STARTED.name] as? Boolean
-        lastPeriodStarted?.let {
-            updateLastPeriodStartedFragments(it)
-        }
-
+        val nextClicked = collectedData[FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE_NEXT.name] as? Boolean
         val lastPeriodStartedChange = collectedData[FemaleMenstrualHistory.CHANGE_LAST_PERIOD_STARTED.name] as? Boolean
-        lastPeriodStartedChange?.let {
-            updateLastPeriodStartedChangeFragments(it)
+
+        Log.d("FlowDebug", "Collected: $collectedData")
+
+        if (hasMenstrualPeriod == false && !collectedData.containsKey(FemaleMenstrualHistory.LAST_PERIOD_STARTED.name)) {
+            pages.clear()
+            pages.addAll(
+                listOf(FPeriodNoFragment(), FPeriodNoLastFragment.newInstance(false))
+            )
         }
+
+        if (hasMenstrualPeriod == true && !collectedData.containsKey(FemaleMenstrualHistory.LAST_PERIOD_STARTED.name)) {
+            pages.clear()
+            pages.add(FPeriodYes1Fragment())
+        }
+
+        if (lastPeriodStarted != null
+            && !collectedData.containsKey(FemaleMenstrualHistory.CHANGE_LAST_PERIOD_STARTED.name)) {
+            pages.clear()
+            pages.add(
+                if (lastPeriodStarted) SelectLPSDateFragment()
+                else FLastPeriodNoMsgFragment()
+            )
+        }
+
+        if (lastPeriodStartedChange != null && !collectedData.containsKey(FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE_NEXT.name)) {
+            pages.clear()
+            pages.add(
+                if (lastPeriodStartedChange) SelectLPSDateFragment()
+                else FPeriodYes2Fragment()
+            )
+        }
+
+        if (nextClicked != null) {
+            pages.clear()
+            pages.add(FPeriodYes2Fragment())
+        }
+
+        if (pages.isEmpty()) {
+            Log.w("FlowDebug", "No fragment condition matched")
+        }
+
+        setFragments(pages)
     }
 
-    private fun updateFragments(hasPeriod: Boolean) {
-        stepper.visibility = View.VISIBLE
-        btnNext.visibility = View.VISIBLE
-        binding.tvStep.visibility = View.VISIBLE
-
-        fragments = if (hasPeriod == true) {
-            stepper.visibility = View.GONE
-            btnNext.visibility = View.GONE
-            binding.tvStep.visibility = View.GONE
-
-            listOf(
-                FPeriodYes1Fragment()
-            )
-        } else {
-            listOf(
-                FPeriodNoFragment(),
-                FPeriodNoLastFragment.newInstance(hasPeriod = false)
-            )
-        }
-
-        pagerAdapter = PagerAdapter(this, fragments)
-        vp.adapter = pagerAdapter
-
-        // Reinitialize stepper indicators
-        stepper.removeAllViews()
-        Utility.setupStepper(pagerAdapter.itemCount, resources, this, stepper)
-
-        // Reset the ViewPager to the first page
+    private fun setFragments(pages: List<Fragment>) {
+        pagerAdapter.updateFragments(pages)
         vp.currentItem = 0
+
+        val showStepper = pages.size > 1
+        stepper.visibility = if (showStepper) View.VISIBLE else View.GONE
+        binding.tvStep.visibility = if (showStepper) View.VISIBLE else View.GONE
+        btnNext.visibility = if (showStepper) View.VISIBLE else View.GONE
+
+        Utility.updateStepper(0, pages.size, stepper, binding.tvStep, resources)
+        btnNext.text = if (pages.size == 1) "Finish" else "Next"
+
+        Utility.setupStepper(pages.size, resources, this, stepper)
     }
 
-    private fun updateLastPeriodStartedFragments(remember: Boolean) {
-        stepper.visibility = View.VISIBLE
-        btnNext.visibility = View.VISIBLE
-        binding.tvStep.visibility = View.VISIBLE
-
-        fragments = if (remember == true) {
-            listOf(
-
-            )
-        } else {
-            listOf(
-                FLastPeriodNoMsgFragment()
-            )
-        }
-
-        pagerAdapter = PagerAdapter(this, fragments)
-        vp.adapter = pagerAdapter
-
-        // Reinitialize stepper indicators
-        stepper.removeAllViews()
-        Utility.setupStepper(pagerAdapter.itemCount, resources, this, stepper)
-
-        // Reset the ViewPager to the first page
-        vp.currentItem = 0
-    }
-
-    private fun updateLastPeriodStartedChangeFragments(change: Boolean) {
-        stepper.visibility = View.VISIBLE
-        btnNext.visibility = View.VISIBLE
-        binding.tvStep.visibility = View.VISIBLE
-
-        fragments = if (change == true) {
-            listOf(
-
-            )
-        } else {
-            listOf(
-
-            )
-        }
-
-        pagerAdapter = PagerAdapter(this, fragments)
-        vp.adapter = pagerAdapter
-
-        // Reinitialize stepper indicators
-        stepper.removeAllViews()
-        Utility.setupStepper(pagerAdapter.itemCount, resources, this, stepper)
-
-        // Reset the ViewPager to the first page
-        vp.currentItem = 0
-    }
 }

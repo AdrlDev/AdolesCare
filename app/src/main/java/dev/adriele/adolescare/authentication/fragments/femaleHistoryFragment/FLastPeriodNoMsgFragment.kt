@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import dev.adriele.adolescare.R
 import dev.adriele.adolescare.Utility.animateTypingWithCursor
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
 import dev.adriele.adolescare.databinding.FragmentFLastPeriodNoMsgBinding
@@ -29,16 +30,31 @@ class FLastPeriodNoMsgFragment : Fragment() {
         binding.tvMessage.animateTypingWithCursor(
             getString(dev.adriele.language.R.string.last_period_started_no_msg),
             onTypingComplete = {
-                binding.btnChange.visibility = View.VISIBLE // ✅ Show when done
+                binding.toggleGroup.visibility = View.VISIBLE // ✅ Show when done
             }
         )
 
-        binding.btnChange.setOnClickListener {
-            val data = mapOf(FemaleMenstrualHistory.CHANGE_LAST_PERIOD_STARTED.name to true)
-            dataListener?.onDataCollected(data)
+        binding.toggleGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
+            if (isChecked) {
+                when (checkedId) {
+                    R.id.btn_yes -> {
+                        // User selected "Yes"
+                        handleSelection(true)
+                    }
+                    R.id.btn_no -> {
+                        // User selected "No"
+                        handleSelection(false)
+                    }
+                }
+            }
         }
 
         return binding.root
+    }
+
+    private fun handleSelection(lastPeriodLasted: Boolean) {
+        val data = mapOf(FemaleMenstrualHistory.CHANGE_LAST_PERIOD_STARTED.name to lastPeriodLasted)
+        dataListener?.onDataCollected(data)
     }
 
     override fun onAttach(context: Context) {

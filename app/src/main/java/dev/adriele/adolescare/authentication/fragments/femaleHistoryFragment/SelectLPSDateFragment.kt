@@ -1,60 +1,93 @@
 package dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.android.material.snackbar.Snackbar
 import dev.adriele.adolescare.R
+import dev.adriele.adolescare.Utility
+import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
+import dev.adriele.adolescare.databinding.FragmentSelectLPSDateBinding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class SelectLPSDateFragment : Fragment(), Utility.OnDatePickedCallback {
+    private var _binding: FragmentSelectLPSDateBinding? = null
+    private val binding get() = _binding!!
 
-/**
- * A simple [Fragment] subclass.
- * Use the [SelectLPSDateFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class SelectLPSDateFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private var dataListener: FragmentDataListener? = null
+    private var selectedDate: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_select_l_p_s_date, container, false)
+        _binding = FragmentSelectLPSDateBinding.inflate(layoutInflater, container, false)
+
+        init()
+
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment SelectLPSDateFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            SelectLPSDateFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun init() {
+        Utility.setupDatePicker(binding.btnYes, "Select when your last period started", requireActivity(), this)
+
+        binding.toggleGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
+            if (isChecked) {
+                when (checkedId) {
+                    R.id.btn_yes -> {
+                        // Only proceed if date was picked already
+                        if (selectedDate != null) {
+                            handleSelection(selectedDate!!)
+                        }
+                    }
+                    R.id.btn_no -> {
+                        if (selectedDate == null) {
+                            Snackbar.make(
+                                binding.root,
+                                "Please select a date of your last period.",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            handleNextSelection()
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    private fun handleSelection(selected: String) {
+        val data = mapOf(FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE.name to selected)
+        dataListener?.onDataCollected(data)
+    }
+
+    private fun handleNextSelection() {
+        val nextClicked = mapOf(FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE_NEXT.name to true)
+        dataListener?.onDataCollected(nextClicked)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is FragmentDataListener) {
+            dataListener = context
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        dataListener = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onDatePicked(formattedDate: String, computedResult: String) {
+        this.selectedDate = formattedDate
+        binding.tvSelectedDate.text = formattedDate
     }
 }

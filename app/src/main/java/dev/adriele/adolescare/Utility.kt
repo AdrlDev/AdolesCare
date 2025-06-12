@@ -37,6 +37,7 @@ import java.util.UUID
 import androidx.core.content.edit
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
+import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -233,6 +234,23 @@ object Utility {
 
                 val age = computeAgeFromDate(date)
                 callback.onDatePicked(formatted, age.toString())
+            }
+        }
+    }
+
+    fun setupDatePicker(btn: MaterialButton, title: String, fragmentActivity: FragmentActivity, callback: OnDatePickedCallback) {
+        btn.setOnClickListener {
+            val picker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText(title)
+                .build()
+
+            picker.show(fragmentActivity.supportFragmentManager, "DATE_PICKER")
+
+            picker.addOnPositiveButtonClickListener { selection ->
+                val date = Date(selection)
+                val formatted = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(date)
+
+                callback.onDatePicked(formatted, "")
             }
         }
     }
