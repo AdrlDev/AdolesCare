@@ -37,12 +37,6 @@ class SelectLPSDateFragment : Fragment(), Utility.OnDatePickedCallback {
         binding.toggleGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
             if (isChecked) {
                 when (checkedId) {
-                    R.id.btn_yes -> {
-                        // Only proceed if date was picked already
-                        if (selectedDate != null) {
-                            handleSelection(selectedDate!!)
-                        }
-                    }
                     R.id.btn_no -> {
                         if (selectedDate == null) {
                             Snackbar.make(
@@ -51,7 +45,7 @@ class SelectLPSDateFragment : Fragment(), Utility.OnDatePickedCallback {
                                 Snackbar.LENGTH_SHORT
                             ).show()
                         } else {
-                            handleNextSelection()
+                            handleSelection(selectedDate!!)
                         }
                     }
                 }
@@ -62,11 +56,6 @@ class SelectLPSDateFragment : Fragment(), Utility.OnDatePickedCallback {
     private fun handleSelection(selected: String) {
         val data = mapOf(FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE.name to selected)
         dataListener?.onDataCollected(data)
-    }
-
-    private fun handleNextSelection() {
-        val nextClicked = mapOf(FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE_NEXT.name to true)
-        dataListener?.onDataCollected(nextClicked)
     }
 
     override fun onAttach(context: Context) {

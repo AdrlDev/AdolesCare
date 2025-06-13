@@ -5,7 +5,6 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
@@ -16,15 +15,11 @@ import android.text.style.ClickableSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
@@ -38,6 +33,8 @@ import androidx.core.content.edit
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointBackward
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -222,8 +219,13 @@ object Utility {
 
     fun setupDatePicker(editText: TextInputEditText, fragmentActivity: FragmentActivity, callback: OnDatePickedCallback) {
         editText.setOnClickListener {
+            val constraints = CalendarConstraints.Builder()
+                .setValidator(DateValidatorPointBackward.now()) // only allow past dates
+                .build()
+
             val picker = MaterialDatePicker.Builder.datePicker()
                 .setTitleText("Select your birthday")
+                .setCalendarConstraints(constraints)
                 .build()
 
             picker.show(fragmentActivity.supportFragmentManager, "DATE_PICKER")
@@ -231,7 +233,6 @@ object Utility {
             picker.addOnPositiveButtonClickListener { selection ->
                 val date = Date(selection)
                 val formatted = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(date)
-
                 val age = computeAgeFromDate(date)
                 callback.onDatePicked(formatted, age.toString())
             }
@@ -264,48 +265,6 @@ object Utility {
             age--
         }
         return age
-    }
-
-    fun showLoadingDialog(context: Context, message: String): Dialog {
-        val dialog = Dialog(context)
-
-        val layout = LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(48, 48, 48, 48)
-            gravity = Gravity.CENTER
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        }
-
-        val progressBar = ProgressBar(context).apply {
-            isIndeterminate = true
-            indeterminateDrawable.setColorFilter(
-                ContextCompat.getColor(context, R.color.buttonColor),
-                android.graphics.PorterDuff.Mode.SRC_IN
-            )
-        }
-
-        val textView = TextView(context).apply {
-            text = message
-            setPadding(32, 0, 0, 0) // spacing between ProgressBar and text
-            textSize = 16f
-            setTextColor(ContextCompat.getColor(context, R.color.textColor))
-        }
-
-        layout.addView(progressBar)
-        layout.addView(textView)
-
-        dialog.setContentView(layout)
-        dialog.setCancelable(false)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-
-        dialog.show()
-        return dialog
     }
 
     fun showChangePasswordDialog(context: Context, onConfirm: (String, String) -> Unit) {
@@ -341,6 +300,8 @@ object Utility {
     fun setupStepper(totalSteps: Int, resources: android.content.res.Resources, context: Context, stepper: LinearLayout) {
         val inactiveSize = resources.getDimensionPixelSize(R.dimen.stepper_dot_inactive_size)
         val margin = resources.getDimensionPixelSize(R.dimen.margin_small)
+
+        stepper.removeAllViews() // ✅ Clear existing dots before adding new ones
 
         for (i in 0 until totalSteps) {
             val dot = View(context).apply {
@@ -474,5 +435,14 @@ object Utility {
         }
 
         return job
+    }
+
+    fun getTwoWeeksAgo(): String {
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_YEAR, -14) // Subtract 14 days
+        val twoWeeksAgo = calendar.time
+
+        val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        return formatter.format(twoWeeksAgo)
     }
 }

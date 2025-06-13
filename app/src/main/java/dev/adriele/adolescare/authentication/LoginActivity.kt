@@ -57,7 +57,9 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
             if (binding.etPassword.text.toString().isNotEmpty()) {
                 if (SecurityUtils.checkPassword(binding.etPassword.text.toString(), user.password)) {
                     loadingDialog.dismiss()
-                    startActivity(Intent(this, DashboardActivity::class.java))
+                    startActivity(Intent(this, DashboardActivity::class.java)
+                        .putExtra("userId", user.userId)
+                        .putExtra("userName", user.username))
                     finish()
                 } else {
                     loadingDialog.dismiss()
@@ -113,7 +115,7 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
         binding.tvForget.setOnClickListener {
             Utility.showChangePasswordDialog(this) { username, newPassword ->
                 loadingDialog.show("Updating password, please wait...")
-                userViewModel.updatePasswordByUsername(username, newPassword)
+                userViewModel.updatePasswordByUsername(username, SecurityUtils.hashPasswordBcrypt(newPassword))
             }
         }
     }

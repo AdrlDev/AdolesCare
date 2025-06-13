@@ -58,6 +58,14 @@
         Hindi problema yan! Kaya nandito ang AdolesCare para matulungan kang mag-track. Sa ngayon, sabihin na lang muna nating 2 weeks ago ito. Pwede mo itong baguhin mamaya kung gusto mo.
     </string>
 
+    <string name="how_many_days">Ilang araw ito nagtagal?</string>
+    <string name="select_number_of_days">Pumili kung ilang araw</string>
+    <string name="number_of_weeks">Alam mo ba ang linggo sa pagitan ng iyong regla?</string>
+    <string name="select_number_of_weeks">Piliin ang bilang ng mga linggo.</string>
+
+    <string name="days_no_message">Walang problema! Sabay na lang nating i-track \'to sa susunod mong period. Sa ngayon, sabihin muna nating 5 araw tumatagal ang regla mo. Pwede mo ito baguhin mamaya kung gusto mo.</string>
+    <string name="weeks_no_message">Ayos lang \'yan! Matutulungan ka ng AdolesCare. Madalas na 3 weeks ang pagitan ng mga period, kaya ito na muna ang sundan natin sa ngayon. Mas magiging accurate o swak ito habang nagtatrack ka gamit ang app!</string>
+
     <string name="yes">Oo</string>
     <string name="no">Hindi</string>
 

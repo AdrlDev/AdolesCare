@@ -21,9 +21,9 @@
         />
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/menstruation_calendar"
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        android:src="@drawable/schedule"
         android:contentDescription="@string/app_name"
         />
 

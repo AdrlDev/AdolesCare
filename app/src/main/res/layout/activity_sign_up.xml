@@ -137,13 +137,15 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/roboto"
                     android:textColor="@color/textColor"
-                    android:focusable="true"
-                    android:clickable="true"
+                    android:focusable="false"
+                    android:cursorVisible="false"
                     android:inputType="none"
+                    android:clickable="true"
+                    android:longClickable="false"
                     android:drawableTint="@color/buttonColor"
                     android:drawableEnd="@drawable/round_calendar_month_24"
                     android:id="@+id/et_birthday"
-                    />
+                    tools:ignore="KeyboardInaccessibleWidget" />
 
             </com.google.android.material.textfield.TextInputLayout>
 

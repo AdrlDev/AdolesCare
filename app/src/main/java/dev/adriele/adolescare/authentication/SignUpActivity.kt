@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import dev.adriele.adolescare.R
 import dev.adriele.adolescare.Utility
@@ -20,6 +21,9 @@ import dev.adriele.adolescare.databinding.ActivitySignUpBinding
 import dev.adriele.adolescare.dialogs.MyLoadingDialog
 import dev.adriele.adolescare.viewmodel.UserViewModel
 import dev.adriele.adolescare.viewmodel.factory.UserViewModelFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SignUpActivity : AppCompatActivity(), TermsPrivacyClickListener, Utility.LoginHereClickListener, Utility.OnDatePickedCallback {
     private lateinit var binding: ActivitySignUpBinding
@@ -113,12 +117,21 @@ class SignUpActivity : AppCompatActivity(), TermsPrivacyClickListener, Utility.L
                 binding.etPassword.requestFocus()
                 loadingDialog.dismiss()
                 return@setOnClickListener
-            } else {
-                if(password.toString() != confirmPassword.toString()) {
-                    binding.llConfirmPassword.error = "Password not match. Try again."
-                    binding.etConfirmPassword.requestFocus()
-                    loadingDialog.dismiss()
-                    return@setOnClickListener
+            } else if(password.toString() != confirmPassword.toString()) {
+                binding.llConfirmPassword.error = "Password not match. Try again."
+                binding.etConfirmPassword.requestFocus()
+                loadingDialog.dismiss()
+                return@setOnClickListener
+            }
+
+            lifecycleScope.launch {
+                val isTaken = userViewModel.isUsernameTaken(username.toString())
+                if (isTaken) {
+                    withContext(Dispatchers.Main) {
+                        loadingDialog.dismiss()
+                        binding.llUsername.error = "Username already exists. Please choose another."
+                        binding.etUsername.requestFocus()
+                    }
                 } else {
                     val userData = User(
                         userId = uid,

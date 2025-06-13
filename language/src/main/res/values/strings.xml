@@ -57,7 +57,14 @@
     <string name="last_period_started_no_msg">
         That\'s not a problem! AdolesCare is here to help you track it. For now, let\'s just say it was 2 weeks ago. You can change this later if you want.
     </string>
-    
+
+    <string name="how_many_days">How many days was it?</string>
+    <string name="select_number_of_days">Select number of days</string>
+    <string name="number_of_weeks">Do you know the number of weeks between your periods?</string>
+    <string name="select_number_of_weeks">Select number of weeks.</string>
+
+    <string name="days_no_message">No problem! We\'ll track it together during your next period. For now, let\'s say your period lasts for 5 days. You can change this later if you want.</string>
+    <string name="weeks_no_message">That\'s okay! AdolesCare can help you. Periods usually come about 3 weeks apart, so let\'s use that for now. It will become more accurate as you track using the app!</string>
     
     <string name="yes">Yes</string>
     <string name="no">No</string>

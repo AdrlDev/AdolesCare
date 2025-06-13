@@ -68,4 +68,8 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             }
         }
     }
+
+    suspend fun isUsernameTaken(username: String): Boolean {
+        return repository.isUsernameTaken(username)
+    }
 }

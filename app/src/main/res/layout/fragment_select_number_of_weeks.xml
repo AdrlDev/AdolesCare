@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".authentication.fragments.femaleHistoryFragment.SelectNumberOfWeeksFragment">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/select_number_of_weeks"
+        android:layout_marginHorizontal="22dp"
+        android:textAlignment="center"
+        android:textSize="26sp"
+        android:fontFamily="@font/roboto_bold"
+        android:textColor="@color/textColor"
+        />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_marginVertical="32dp"
+        android:hint="@string/select_number_of_weeks"
+        >
+
+        <AutoCompleteTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/auto_weeks"
+            android:fontFamily="@font/roboto_medium"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/next"
+        android:paddingHorizontal="52dp"
+        android:paddingVertical="12dp"
+        android:textColor="@color/buttonTextColor"
+        android:fontFamily="@font/roboto_medium"
+        android:backgroundTint="@color/buttonColor"
+        android:id="@+id/btn_next"
+        />
+
+</LinearLayout>

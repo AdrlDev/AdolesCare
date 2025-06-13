@@ -12,4 +12,5 @@
     <color name="requiredColorHelper">#DB2D39</color>
 
     <color name="gray">#989898</color>
+    <color name="dark_gray">#CDCDCD</color>
 </resources>

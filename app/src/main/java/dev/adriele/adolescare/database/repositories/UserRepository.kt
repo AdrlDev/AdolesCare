@@ -10,4 +10,6 @@ interface UserRepository {
     suspend fun updatePasswordByUsername(username: String, newPassword: String)
 
     suspend fun updateSexAndBarangay(sex: String, barangay: String, uid: String)
+
+    suspend fun isUsernameTaken(username: String): Boolean
 }

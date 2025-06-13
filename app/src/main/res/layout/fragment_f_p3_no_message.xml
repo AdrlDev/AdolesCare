@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".authentication.fragments.femaleHistoryFragment.FP3NoMessageFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+    <TextView
+        android:id="@+id/tv_message"
+        android:fontFamily="@font/roboto_medium"
+        android:layout_marginHorizontal="12dp"
+        android:textSize="17sp"
+        android:letterSpacing=".05"
+        android:textAlignment="center"
+        android:textColor="@color/textColor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggle_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginVertical="32dp"
+        android:visibility="gone"
+        app:singleSelection="true"
+        app:selectionRequired="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_yes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/change"
+            android:backgroundTint="@color/button_toggle_selector"
+            android:textColor="@color/toggle_text_selector"
+            android:fontFamily="@font/roboto_medium"
+            app:strokeColor="@color/textColor"
+            style="?attr/materialButtonOutlinedStyle" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/next"
+            android:backgroundTint="@color/button_toggle_selector"
+            android:textColor="@color/toggle_text_selector"
+            app:strokeColor="@color/textColor"
+            android:fontFamily="@font/roboto_medium"
+            style="?attr/materialButtonOutlinedStyle" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+</LinearLayout>

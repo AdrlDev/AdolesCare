@@ -28,4 +28,8 @@ class UserRepositoryImpl(private val userDao: UserDao) : UserRepository {
         userDao.updateSexAndBarangay(sex = sex, barangay = barangay, uid = uid)
     }
 
+    override suspend fun isUsernameTaken(username: String): Boolean {
+        return userDao.getUserByUsername(username) != null
+    }
+
 }

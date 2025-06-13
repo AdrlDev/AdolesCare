@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import dev.adriele.adolescare.R
+import dev.adriele.adolescare.Utility
 import dev.adriele.adolescare.Utility.animateTypingWithCursor
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
 import dev.adriele.adolescare.databinding.FragmentFLastPeriodNoMsgBinding
@@ -44,6 +45,7 @@ class FLastPeriodNoMsgFragment : Fragment() {
                     R.id.btn_no -> {
                         // User selected "No"
                         handleSelection(false)
+                        handleNextSelection()
                     }
                 }
             }
@@ -54,6 +56,11 @@ class FLastPeriodNoMsgFragment : Fragment() {
 
     private fun handleSelection(lastPeriodLasted: Boolean) {
         val data = mapOf(FemaleMenstrualHistory.CHANGE_LAST_PERIOD_STARTED.name to lastPeriodLasted)
+        dataListener?.onDataCollected(data)
+    }
+
+    private fun handleNextSelection() {
+        val data = mapOf(FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE.name to Utility.getTwoWeeksAgo())
         dataListener?.onDataCollected(data)
     }
 

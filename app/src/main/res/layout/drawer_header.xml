@@ -1,0 +1,14 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="160dp" android:padding="16dp"
+    android:background="@color/buttonColor">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Adriel Espiritu"
+        android:fontFamily="@font/roboto_medium"
+        android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+        android:textColor="@color/buttonTextColor" />
+
+</LinearLayout>
