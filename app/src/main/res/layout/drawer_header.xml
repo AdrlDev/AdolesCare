@@ -4,9 +4,10 @@
     android:background="@color/buttonColor">
 
     <TextView
+        android:id="@+id/tv_username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Adriel Espiritu"
+        android:textSize="22sp"
         android:fontFamily="@font/roboto_medium"
         android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
         android:textColor="@color/buttonTextColor" />

@@ -77,6 +77,11 @@ class ChatBotFragment : Fragment() {
         return binding.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     private fun afterInit() {
         // Observe chat messages from ViewModel

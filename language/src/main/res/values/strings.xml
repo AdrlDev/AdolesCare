@@ -72,6 +72,19 @@
     <string name="change">Change</string>
     <string name="when_was_this">When was this?</string>
 
+    <string name="insight">Insights</string>
+    <string name="today_tips">Today\'s Tips</string>
+    <string name="reminder">Reminder</string>
+    <string name="log_daily_mood">Log your daily mood, activities, and symptoms</string>
+
+    <string name="remarks_1">High chance of getting pregnant (fertile window).</string>
+    <string name="remarks_2">Ovulation is estimated to occur in</string>
+    <string name="remarks_2_1">day(s).</string>
+    <string name="remarks_3">Low chance of pregnancy today.</string>
+
+    <string name="recent_read_watch">Recently read and watch</string>
+    <string name="modules">Modules</string>
+
     //chatbot
     <string name="ask">Ask…</string>
 

@@ -1,0 +1,35 @@
+package dev.adriele.adolescare.viewmodel
+
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
+import dev.adriele.adolescare.ModuleContentType
+import dev.adriele.adolescare.database.entities.CycleLogEntity
+import dev.adriele.adolescare.database.entities.LearningModule
+import dev.adriele.adolescare.database.repositories.ModuleRepository
+import kotlinx.coroutines.launch
+
+class ModuleViewModel(private val repository: ModuleRepository) : ViewModel() {
+    private val _insertStatus = MutableLiveData<Boolean>()
+    val insertStatus: LiveData<Boolean> = _insertStatus
+
+    fun insertModules(modules: List<LearningModule>) {
+        viewModelScope.launch {
+            try {
+                repository.insertModules(modules)
+                _insertStatus.value = true
+            } catch (e: Exception) {
+                Log.e("UserViewModel", "Error inserting modules", e)
+                _insertStatus.value = false
+            }
+        }
+    }
+
+    fun getAllModules(moduleContentType: ModuleContentType): LiveData<List<LearningModule>?> = liveData {
+        emit(repository.getAllModules(moduleContentType))
+    }
+
+}

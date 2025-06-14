@@ -14,6 +14,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_calendar"
+        android:title="Menstrual Tracker"
+        android:icon="@drawable/round_calendar_month_24"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_video"
         android:title="Video"
         android:icon="@drawable/round_videocam_24"

@@ -6,8 +6,11 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.pdf.PdfRenderer
+import android.os.ParcelFileDescriptor
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
@@ -41,6 +44,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
+import androidx.core.graphics.createBitmap
 
 object Utility {
     interface TermsPrivacyClickListener {
@@ -239,18 +245,37 @@ object Utility {
         }
     }
 
-    fun setupDatePicker(btn: MaterialButton, title: String, fragmentActivity: FragmentActivity, callback: OnDatePickedCallback) {
+    fun setupDatePicker(btn: MaterialButton, title: String, disablePastDate: Boolean, fragmentActivity: FragmentActivity, callback: OnDatePickedCallback) {
         btn.setOnClickListener {
-            val picker = MaterialDatePicker.Builder.datePicker()
+            val builder = MaterialDatePicker.Builder.datePicker()
                 .setTitleText(title)
-                .build()
 
+            val today = MaterialDatePicker.todayInUtcMilliseconds()
+
+            if (disablePastDate) {
+                // Only allow dates from today onwards
+                builder.setSelection(today)
+                builder.setCalendarConstraints(
+                    CalendarConstraints.Builder()
+                        .setStart(today)
+                        .build()
+                )
+            } else {
+                // Only allow past and today’s date
+                builder.setSelection(today)
+                builder.setCalendarConstraints(
+                    CalendarConstraints.Builder()
+                        .setEnd(today)
+                        .build()
+                )
+            }
+
+            val picker = builder.build()
             picker.show(fragmentActivity.supportFragmentManager, "DATE_PICKER")
 
             picker.addOnPositiveButtonClickListener { selection ->
                 val date = Date(selection)
                 val formatted = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(date)
-
                 callback.onDatePicked(formatted, "")
             }
         }
@@ -393,12 +418,12 @@ object Utility {
     }
 
     fun getCurrentDate(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
         return sdf.format(Date())
     }
 
     fun getCurrentDateTime(): String {
-        val sdf = SimpleDateFormat("yyyy-MM-dd hh:mm a", Locale.getDefault())
+        val sdf = SimpleDateFormat("MMMM dd, yyyy hh:mm a", Locale.getDefault())
         return sdf.format(Date())
     }
 
@@ -444,5 +469,34 @@ object Utility {
 
         val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
         return formatter.format(twoWeeksAgo)
+    }
+
+    fun copyAssetToCache(context: Context, assetPath: String): File {
+        val file = File(context.cacheDir, File(assetPath).name)
+
+        if (!file.exists()) {
+            context.assets.open(assetPath).use { inputStream ->
+                FileOutputStream(file).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+        }
+
+        return file
+    }
+
+    fun generatePdfThumbnail(pdfFile: File): Bitmap? {
+        val fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
+        val renderer = PdfRenderer(fileDescriptor)
+        val page = renderer.openPage(0)
+
+        val bitmap = createBitmap(page.width, page.height)
+        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+
+        page.close()
+        renderer.close()
+        fileDescriptor.close()
+
+        return bitmap
     }
 }

@@ -13,7 +13,7 @@ class MenstrualHistoryRepositoryImpl(private val menstrualHistoryDao: MenstrualH
         menstrualHistoryDao.update(menstrualHistoryEntity)
     }
 
-    override suspend fun getMenstrualHistoryById(userId: String) {
-        menstrualHistoryDao.getByUserId(userId)
+    override suspend fun getMenstrualHistoryById(userId: String): MenstrualHistoryEntity? {
+        return menstrualHistoryDao.getLatestHistoryForUser(userId)
     }
 }

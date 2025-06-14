@@ -11,6 +11,6 @@ interface MenstrualHistoryDao {
     @Update
     suspend fun update(history: MenstrualHistoryEntity)
 
-    @Query("SELECT * FROM menstrual_history WHERE userId = :userId LIMIT 1")
-    suspend fun getByUserId(userId: String): MenstrualHistoryEntity?
+    @Query("SELECT * FROM menstrual_history WHERE userId = :userId ORDER BY createdAt DESC LIMIT 1")
+    fun getLatestHistoryForUser(userId: String): MenstrualHistoryEntity?
 }

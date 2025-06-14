@@ -72,6 +72,19 @@
     <string name="change">Palitan</string>
     <string name="when_was_this">Kailan ito?</string>
 
+    <string name="insight">Mga Insight</string>
+    <string name="today_tips">Mga Tip Ngayon</string>
+    <string name="reminder">Paalala</string>
+    <string name="log_daily_mood">I-log ang iyong pang-araw-araw na mood, aktibidad, at sintomas</string>
+
+    <string name="remarks_1">Mataas ang posibilidad na mabuntis (panahon ng fertility).</string>
+    <string name="remarks_2">Tinatayang magaganap ang obulasyon sa loob ng</string>
+    <string name="remarks_2_1">araw/araw pa.</string>
+    <string name="remarks_3">Mababang pagkakataon ng pagbubuntis ngayon.</string>
+
+    <string name="recent_read_watch">Kamakailang binasa at napanood</string>
+    <string name="modules">Mga Modyul</string>
+
     //chatbot
     <string name="ask">Magtanong…</string>
 

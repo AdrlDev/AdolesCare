@@ -5,11 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import dev.adriele.adolescare.api.RetrofitInstance
+import dev.adriele.adolescare.api.request.InsightsRequest
 import dev.adriele.adolescare.chatbot.ResponseType
 import dev.adriele.adolescare.contracts.IChatBot
 import dev.adriele.adolescare.database.entities.Conversations
 import dev.adriele.adolescare.database.repositories.ChatBotRepository
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,7 +33,7 @@ class ChatBotViewModel(
     }
 
     fun sendQueryToBot(query: String, iChatBot: IChatBot) {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val response = RetrofitInstance.api.getResponse(query)
                 withContext(Dispatchers.Main) {
@@ -51,5 +51,42 @@ class ChatBotViewModel(
         }
     }
 
+    fun getTodayTips(iChatBot: IChatBot.Tips) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val response = RetrofitInstance.api.getTodayTip()
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful) {
+                        response.body()?.let {
+                            iChatBot.onResult(it)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e("AdolesCare Tip Error", e.message ?: "Unknown error", e)
+                }
+            }
+        }
+    }
+
+    fun getInsights(insightsRequest: InsightsRequest, iChatBot: IChatBot.Insight) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val response = RetrofitInstance.api.getInsights(insightsRequest)
+                withContext(Dispatchers.Main) {
+                    if(response.isSuccessful) {
+                        response.body()?.let {
+                            iChatBot.onResult(it)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e("AdolesCare Insight Error:", e.message, e)
+                }
+            }
+        }
+    }
 
 }

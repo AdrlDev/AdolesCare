@@ -7,5 +7,5 @@ interface MenstrualHistoryRepository {
 
     suspend fun updateMenstrualHistory(menstrualHistoryEntity: MenstrualHistoryEntity)
 
-    suspend fun getMenstrualHistoryById(userId: String)
+    suspend fun getMenstrualHistoryById(userId: String) : MenstrualHistoryEntity?
 }

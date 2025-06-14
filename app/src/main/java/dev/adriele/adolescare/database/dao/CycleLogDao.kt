@@ -12,5 +12,5 @@ interface CycleLogDao {
     suspend fun getAllByUserId(userId: Int): List<CycleLogEntity>
 
     @Query("SELECT * FROM cycle_logs WHERE userId = :userId AND date = :date LIMIT 1")
-    suspend fun getByDate(userId: Int, date: String): CycleLogEntity?
+    suspend fun getByDate(userId: String, date: String): CycleLogEntity?
 }

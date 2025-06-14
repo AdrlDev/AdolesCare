@@ -1,4 +1,4 @@
-package dev.adriele.adolescare.api
+package dev.adriele.adolescare.api.response
 
 data class OuterResponse(
     val answer: ChatResponse

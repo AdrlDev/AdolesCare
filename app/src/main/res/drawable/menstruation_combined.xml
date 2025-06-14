@@ -1,0 +1,4 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Top icon (e.g., blood drop) -->
+    <item android:drawable="@drawable/menstruation_calendar" />
+</layer-list>

@@ -113,7 +113,8 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
         menstrualHistoryViewModel.insertStatus.observe(this) { (success, _) ->
             loadingDialog.dismiss()
             if (success) {
-                startActivity(Intent(this, DashboardActivity::class.java))
+                startActivity(Intent(this, DashboardActivity::class.java)
+                    .putExtra("userId", userId))
                 finish()
             } else {
                 Snackbar.make(binding.main, "Failed to save menstrual history...", Snackbar.LENGTH_LONG).show()

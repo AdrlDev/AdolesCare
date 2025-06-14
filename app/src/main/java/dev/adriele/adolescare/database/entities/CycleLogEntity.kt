@@ -19,9 +19,9 @@ data class CycleLogEntity(
     val userId: String,
     val cycleDay: Int,
     val date: String,
-    val symptoms: String?, // JSON string (e.g., ["cramps", "headache"])
-    val sexActivity: String?, // e.g., "protected", "unprotected"
-    val pregnancyTestResult: String?, // "positive", "negative", etc.
+    val symptoms: List<String>?, // JSON string (e.g., ["cramps", "headache"])
+    val sexActivity: List<String>?, // e.g., "protected", "unprotected"
+    val pregnancyTestResult: List<String>?, // "positive", "negative", etc.
     val notes: String?,
     val createdAt: String = Utility.getCurrentDate()
 )

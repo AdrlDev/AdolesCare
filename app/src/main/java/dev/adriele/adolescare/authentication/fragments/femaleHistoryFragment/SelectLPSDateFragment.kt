@@ -32,7 +32,7 @@ class SelectLPSDateFragment : Fragment(), Utility.OnDatePickedCallback {
     }
 
     private fun init() {
-        Utility.setupDatePicker(binding.btnYes, "Select when your last period started", requireActivity(), this)
+        Utility.setupDatePicker(binding.btnYes, "Select when your last period started", false, requireActivity(), this)
 
         binding.toggleGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
             if (isChecked) {

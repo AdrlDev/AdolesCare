@@ -37,6 +37,9 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -45,6 +48,8 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
 
     // ✅ Test dependencies
     testImplementation(libs.junit)
@@ -59,11 +64,16 @@ dependencies {
     // lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx) // Optional
+
+    implementation(libs.material.calendar.view)
 
     // retrofit
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp.logging)
+
+    implementation(libs.facebook.shimmer)
 
     implementation(libs.jbcrypt)
 
