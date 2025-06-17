@@ -7,7 +7,7 @@
     <string name="tagalog">Tagalog</string>
     <string name="english">Ingles</string>
     <string name="cancel">Kanselahin</string>
-    <string name="welcome_message">Maligayang pagdating sa AdolesCare!</string>
+    <string name="welcome_message">Maligayang pagdating sa</string>
 
     <string name="login_text">Mag log in</string>
     <string name="signup_text">Gumawa ng Account</string>
@@ -77,7 +77,7 @@
     <string name="reminder">Paalala</string>
     <string name="log_daily_mood">I-log ang iyong pang-araw-araw na mood, aktibidad, at sintomas</string>
 
-    <string name="remarks_1">Mataas ang posibilidad na mabuntis (panahon ng fertility).</string>
+    <string name="remarks_1">Mataas ang posibilidad na mabuntis</string>
     <string name="remarks_2">Tinatayang magaganap ang obulasyon sa loob ng</string>
     <string name="remarks_2_1">araw/araw pa.</string>
     <string name="remarks_3">Mababang pagkakataon ng pagbubuntis ngayon.</string>

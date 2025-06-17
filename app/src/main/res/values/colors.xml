@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="background">#F5F5F5</color>
-    <color name="textColor">#1E1E1E</color>
+    <color name="textColor">#4d5d78</color>
 
-    <color name="buttonColor">#DB8C22</color>
-    <color name="buttonColor1">#37B23B</color>
-    <color name="buttonTextColor">#F5F5F5</color>
+    <color name="buttonColor">#ffaebd</color>
+    <color name="buttonColor1">#c57988</color>
+    <color name="buttonTextColor">#2f4858</color>
+
+    <color name="chatbot_response_button_color">#a384aa</color>
 
     <color name="textColorLink">#153CCE</color>
 
     <color name="requiredColorHelper">#DB2D39</color>
 
     <color name="gray">#989898</color>
-    <color name="dark_gray">#CDCDCD</color>
+    <color name="dark_gray">#757194</color>
 </resources>

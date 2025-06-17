@@ -9,24 +9,11 @@
     android:layout_height="match_parent"
     tools:context=".SplashActivity">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        style="?attr/floatingActionButtonSmallPrimaryStyle"
-        app:backgroundTint="@color/buttonColor"
-        android:layout_marginEnd="12dp"
-        android:layout_marginTop="12dp"
-        app:tint="@color/buttonTextColor"
-        android:src="@drawable/round_support_agent_24"
-        android:id="@+id/fab_chat"
-        />
-
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="140dp"
+        android:layout_height="140dp"
         android:src="@drawable/adoloscare_logo"
+        android:layout_marginBottom="22dp"
         app:layout_constraintBottom_toTopOf="@id/tv_splash_message"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -67,7 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/login_text"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:paddingVertical="16dp"
             android:layout_marginVertical="8dp"
             android:fontFamily="@font/roboto_medium"
@@ -80,31 +67,30 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/signup_text"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:paddingVertical="16dp"
             android:layout_marginVertical="8dp"
             android:fontFamily="@font/roboto_medium"
-            app:strokeColor="@color/buttonColor"
-            android:textColor="@color/buttonColor"
+            app:strokeColor="@color/buttonColor1"
+            android:textColor="@color/buttonColor1"
             style="@style/Widget.Material3.Button.IconButton.Outlined"
             />
 
     </LinearLayout>
 
-    <com.google.android.material.progressindicator.LinearProgressIndicator
+    <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/progressBar"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:indeterminate="false"
+        android:indeterminate="true"
         android:max="100"
         android:progress="0"
-        android:layout_marginHorizontal="52dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="42dp"
-        app:indicatorColor="?attr/colorPrimary"
-        app:trackColor="?attr/colorSurfaceVariant"
+        app:indicatorColor="@color/buttonColor1"
+        app:trackColor="@color/buttonColor"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

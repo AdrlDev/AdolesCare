@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 class MenstrualHistoryViewModel(private val repository: MenstrualHistoryRepository) : ViewModel() {
     private val _insertStatus = MutableLiveData<Pair<Boolean, Boolean>>()
@@ -49,15 +50,12 @@ class MenstrualHistoryViewModel(private val repository: MenstrualHistoryReposito
         val periodDuration = history.periodDurationDays
         val cycleIntervalWeeks = history.cycleIntervalWeeks
 
-        if (lastPeriodStart.isNullOrBlank() || periodDuration == null || cycleIntervalWeeks == null) {
-            return null
-        }
+        if (lastPeriodStart.isNullOrBlank() || periodDuration == null || cycleIntervalWeeks == null) return null
 
         Log.e("LMP", "LMP: $lastPeriodStart\nPERIOD_DURATION_IN_DAYS: $periodDuration\nCYCLE_INTERVAL_IN_WEEKS: $cycleIntervalWeeks")
 
         return try {
-            val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
-            sdf.isLenient = false
+            val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).apply { isLenient = false }
             val lastPeriodDate = sdf.parse(lastPeriodStart) ?: return null
 
             val cycleDays = cycleIntervalWeeks * 7
@@ -69,50 +67,68 @@ class MenstrualHistoryViewModel(private val repository: MenstrualHistoryReposito
                 set(Calendar.MILLISECOND, 0)
             }
 
-            val ovulationCal = Calendar.getInstance().apply { time = lastPeriodDate }
-            while (true) {
-                val nextOvulation = (ovulationCal.clone() as Calendar).apply {
-                    add(Calendar.DAY_OF_YEAR, cycleDays - 14)
-                    set(Calendar.HOUR_OF_DAY, 0)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
+            val daysSinceLMP = ((today.timeInMillis - lastPeriodDate.time) / (1000 * 60 * 60 * 24)).toInt()
+            val cycleIndex = if (daysSinceLMP >= 0) daysSinceLMP / cycleDays else 0
 
-                if (nextOvulation.after(today)) {
-                    ovulationCal.time = nextOvulation.time
-                    break
-                }
-
-                ovulationCal.add(Calendar.DAY_OF_YEAR, cycleDays)
+            // Calculate menstruation window
+            val menstruationStart = Calendar.getInstance().apply {
+                time = lastPeriodDate
+                add(Calendar.DAY_OF_YEAR, cycleIndex * cycleDays)
+            }
+            val menstruationEnd = (menstruationStart.clone() as Calendar).apply {
+                add(Calendar.DAY_OF_YEAR, periodDuration)
             }
 
-            val ovulationDate = ovulationCal.time
+            // Calculate ovulation window
+            val ovulationCal = (menstruationStart.clone() as Calendar).apply {
+                add(Calendar.DAY_OF_YEAR, cycleDays - 14)
+            }
             val fertileStart = (ovulationCal.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, -5) }
             val fertileEnd = (ovulationCal.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }
 
-            val menstruationStart = Calendar.getInstance().apply { time = lastPeriodDate }
-            val menstruationEnd = (menstruationStart.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, periodDuration) }
-
-            val daysUntilOvulation = ((ovulationDate.time - today.timeInMillis) / (1000 * 60 * 60 * 24)).coerceAtLeast(0)
-            val cycleDay = ((today.timeInMillis - lastPeriodDate.time) / (1000 * 60 * 60 * 24)).toInt() + 1
-
-            val fertilityRemark = when (cycleDay) {
-                in 1..7 -> context.getString(R.string.remarks_3) + " (Low fertility)"
-                in 8..9 -> "Chance increasing"
-                in 10..15 -> context.getString(R.string.remarks_1) + " (High fertility)"
-                in 16..20 -> "Fertility declining"
-                in 21..28 -> context.getString(R.string.remarks_3) + " (Low fertility)"
-                else -> "Cycle day out of range"
+            // Ensure windows are in the future by advancing them
+            while (menstruationEnd.before(today.time)) {
+                menstruationStart.add(Calendar.DAY_OF_YEAR, cycleDays)
+                menstruationEnd.add(Calendar.DAY_OF_YEAR, cycleDays)
+                fertileStart.add(Calendar.DAY_OF_YEAR, cycleDays)
+                fertileEnd.add(Calendar.DAY_OF_YEAR, cycleDays)
             }
+
+            val ovulationDate = ovulationCal.time
+            val daysUntilOvulation = ((ovulationDate.time - today.timeInMillis) / (1000 * 60 * 60 * 24)).coerceAtLeast(0)
+            val cycleDay = (daysSinceLMP % cycleDays) + 1
+
+            val todayTime = today.timeInMillis
+            val menstrualStartTime = menstruationStart.timeInMillis
+            val menstrualEndTime = menstruationEnd.timeInMillis
+            val fertileStartTime = fertileStart.timeInMillis
+            val fertileEndTime = fertileEnd.timeInMillis
+
+            Log.e("PHASE", "menstrualStartTime: $menstrualStartTime \nmenstrualEndTime: $menstrualEndTime \n" +
+                    "fertileStartTime: $fertileStartTime \nfertileEndTime: $fertileEndTime")
 
             val phase = when {
-                today.before(menstruationEnd) -> MenstrualPhase.MENSTRUAL
-                today.time in menstruationEnd.time..fertileStart.time -> MenstrualPhase.FOLLICULAR
-                today.time in fertileStart.time..fertileEnd.time -> MenstrualPhase.OVULATION
-                today.after(fertileEnd.time) -> MenstrualPhase.LUTEAL
+                todayTime in menstrualStartTime until menstrualEndTime -> MenstrualPhase.MENSTRUAL
+                todayTime in menstrualEndTime until fertileStartTime -> MenstrualPhase.FOLLICULAR
+                todayTime in fertileStartTime until fertileEndTime -> MenstrualPhase.OVULATION
+                todayTime >= fertileEndTime -> MenstrualPhase.LUTEAL
                 else -> MenstrualPhase.UNKNOWN
             }
+
+            val ovulationCountdownRemark = if (
+                phase == MenstrualPhase.FOLLICULAR &&
+                daysUntilOvulation in 1..10
+            ) {
+                " (${context.getString(R.string.remarks_2)} $daysUntilOvulation ${context.getString(R.string.remarks_2_1)})"
+            } else ""
+
+            val fertilityRemark = when (phase) {
+                MenstrualPhase.MENSTRUAL -> context.getString(R.string.remarks_3) + " (Low fertility)"
+                MenstrualPhase.FOLLICULAR -> "Chance increasing"
+                MenstrualPhase.OVULATION -> context.getString(R.string.remarks_1) + " (High fertility)"
+                MenstrualPhase.LUTEAL -> "Fertility declining"
+                MenstrualPhase.UNKNOWN -> "Cycle day out of range"
+            } + ovulationCountdownRemark
 
             val remarksText = when (phase) {
                 MenstrualPhase.MENSTRUAL -> "🔵 $fertilityRemark (Menstrual phase)"

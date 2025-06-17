@@ -20,6 +20,8 @@ import dev.adriele.adolescare.database.repositories.implementation.ModuleReposit
 import dev.adriele.adolescare.databinding.ActivityDashboardBinding
 import dev.adriele.adolescare.fragments.ChatBotFragment
 import dev.adriele.adolescare.fragments.HomeFragment
+import dev.adriele.adolescare.fragments.ModulesFragment
+import dev.adriele.adolescare.fragments.VideosFragment
 import dev.adriele.adolescare.viewmodel.ModuleViewModel
 import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
 
@@ -68,7 +70,7 @@ class DashboardActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun afterInit() {
-        insertAllChapters()
+        insertModule1()
 
         btnMenu.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
@@ -96,9 +98,9 @@ class DashboardActivity : AppCompatActivity() {
         bottomNavView.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.action_home -> loadFragment(HomeFragment.newInstance(userId ?: "", userName ?: ""))
-                R.id.action_module -> {}
+                R.id.action_module -> loadFragment(ModulesFragment.newInstance(userId ?: ""))
                 R.id.action_calendar -> {}
-                R.id.action_video -> {}
+                R.id.action_video -> loadFragment(VideosFragment.newInstance(userId ?: ""))
                 R.id.action_chat_bot -> loadFragment(ChatBotFragment.newInstance(userId ?: "", userName ?: ""))
             }
             true
@@ -124,30 +126,21 @@ class DashboardActivity : AppCompatActivity() {
             .commit()
     }
 
-    private fun insertAllChapters() {
-        val romanNumerals = listOf("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X")
+    private fun insertModule1() {
+        val chapters = Utility.loadLearningModules(this).toMutableList()
 
-        val chapters = (1..10).map { index ->
-            val roman = romanNumerals[index - 1] // index - 1 is safe here (1..10 range)
-            LearningModule(
-                id = index.toString(),
-                title = "Chapter $index",
-                category = "dswd_teenage_pregnancy_guidelines",
-                contentType = ModuleContentType.PDF,
-                contentUrl = "modules/dswd_teenage_pregnancy_guidelines/CHAPTER_${roman}.pdf"
+        // Insert 13 videos
+        (1..13).forEach { index ->
+            chapters.add(
+                LearningModule(
+                    id = "video_$index", // Use unique ID like VID_1, VID_2...
+                    title = "Guidelines Video $index",
+                    category = "DSWD Teenage Pregnancy Videos",
+                    contentType = ModuleContentType.VIDEO, // Make sure you define this in your enum
+                    contentUrl = "modules/videos/video_$index.mp4" // Path inside assets or Firebase/hosted
+                )
             )
-        }.toMutableList()
-
-        // Add the last full PDF document
-        chapters.add(
-            LearningModule(
-                id = "11",
-                title = "Complete Guidelines",
-                category = "dswd_teenage_pregnancy_guidelines",
-                contentType = ModuleContentType.PDF,
-                contentUrl = "modules/dswd_teenage_pregnancy_guidelines/dswd_teenage_pregnancy_guidelines.pdf"
-            )
-        )
+        }
 
         moduleViewModel.insertModules(chapters)
     }

@@ -14,4 +14,11 @@ class ModuleRepositoryImpl(private val dao: ModuleDao): ModuleRepository {
         return dao.getAllModules(moduleContentType)
     }
 
+    override suspend fun getAllModulesByCategory(
+        moduleContentType: ModuleContentType,
+        category: String
+    ): List<LearningModule> {
+        return dao.getAllModulesByCategory(moduleContentType, category)
+    }
+
 }

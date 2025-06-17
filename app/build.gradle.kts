@@ -75,6 +75,17 @@ dependencies {
 
     implementation(libs.facebook.shimmer)
 
+    implementation(libs.glide)
+    ksp(libs.glide.compiler)
+
+    implementation(libs.exoplayer.core)
+    implementation(libs.exoplayer.dash)
+    implementation(libs.exoplayer.common)
+    implementation(libs.exoplayer.ui)
+
+    implementation(libs.pdfbox.android)
+    implementation(libs.photoview)
+
     implementation(libs.jbcrypt)
 
     implementation(project(":language"))

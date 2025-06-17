@@ -2,9 +2,9 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <corners
         android:radius="25dp"
-        android:bottomLeftRadius="25dp"
+        android:bottomLeftRadius="18dp"
         android:topLeftRadius="0dp"/>
 
     <solid
-        android:color="@color/textColor"/>
+        android:color="@color/chatbot_response_button_color"/>
 </shape>

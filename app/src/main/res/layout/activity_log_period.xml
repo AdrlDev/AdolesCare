@@ -47,14 +47,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="32dp"
+            android:paddingHorizontal="32dp"
             >
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Year View"
+                android:fontFamily="@font/roboto_medium"
+                android:layout_gravity="end"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="@color/buttonColor"
+                android:textColor="@color/buttonTextColor"
+                app:strokeColor="@color/buttonColor"/>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardBackgroundColor="@color/background"
                 app:cardCornerRadius="12dp"
+                app:cardElevation="8dp"
+                android:layout_margin="8dp"
                 style="?attr/materialCardViewFilledStyle"
                 >
 
@@ -92,6 +106,11 @@
                 android:id="@+id/shimmerLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:shimmer_direction="top_to_bottom"
+                app:shimmer_repeat_mode="restart"
+                app:shimmer_shape="linear"
+                app:shimmer_auto_start="true"
+                app:shimmer_duration="1500"
                 >
 
                 <LinearLayout

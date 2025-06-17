@@ -14,4 +14,7 @@ interface ModuleDao {
 
     @Query("SELECT * FROM modules WHERE contentType = :contentType")
     suspend fun getAllModules(contentType: ModuleContentType): List<LearningModule>
+
+    @Query("SELECT * FROM modules WHERE contentType = :contentType AND category LIKE :category")
+    suspend fun getAllModulesByCategory(contentType: ModuleContentType, category: String): List<LearningModule>
 }

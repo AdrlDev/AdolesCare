@@ -10,6 +10,9 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.pdf.PdfRenderer
+import android.media.MediaMetadataRetriever
+import android.net.Uri
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.text.SpannableString
 import android.text.Spanned
@@ -20,6 +23,8 @@ import android.text.style.UnderlineSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -47,6 +52,11 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import androidx.core.graphics.createBitmap
+import androidx.core.view.WindowCompat
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.text.PDFTextStripper
+import dev.adriele.adolescare.database.entities.LearningModule
+import java.io.IOException
 
 object Utility {
     interface TermsPrivacyClickListener {
@@ -485,18 +495,148 @@ object Utility {
         return file
     }
 
-    fun generatePdfThumbnail(pdfFile: File): Bitmap? {
-        val fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
-        val renderer = PdfRenderer(fileDescriptor)
-        val page = renderer.openPage(0)
+    fun generatePdfThumbnail(file: File, pageIndex: Int = 0): Bitmap? {
+        if (!file.exists()) return null
 
-        val bitmap = createBitmap(page.width, page.height)
+        val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+        val pdfRenderer = PdfRenderer(fileDescriptor)
+        val page = pdfRenderer.openPage(pageIndex)
+
+        val width = page.width
+        val height = page.height
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+
         page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
 
         page.close()
-        renderer.close()
+        pdfRenderer.close()
         fileDescriptor.close()
 
         return bitmap
     }
+
+    fun toRoman(number: Int): String {
+        val numerals = listOf(
+            1000 to "M",
+            900 to "CM",
+            500 to "D",
+            400 to "CD",
+            100 to "C",
+            90 to "XC",
+            50 to "L",
+            40 to "XL",
+            10 to "X",
+            9 to "IX",
+            5 to "V",
+            4 to "IV",
+            1 to "I"
+        )
+
+        var num = number
+        val roman = StringBuilder()
+
+        for ((value, symbol) in numerals) {
+            while (num >= value) {
+                roman.append(symbol)
+                num -= value
+            }
+        }
+
+        return roman.toString()
+    }
+
+    fun getVideoThumbnailFromAssets(context: Context, path: String): Bitmap? {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            val assetFd = context.assets.openFd(path)
+            retriever.setDataSource(assetFd.fileDescriptor, assetFd.startOffset, assetFd.length)
+            val bitmap = retriever.getFrameAtTime(1_000_000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC) // 1 sec
+            retriever.release()
+            bitmap
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    fun enableFullscreen(window: android.view.Window) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // API 30+
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            window.insetsController?.let { controller ->
+                controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+                controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            // API 24 to 29
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        }
+    }
+
+    fun loadLearningModules(context: Context): List<LearningModule> {
+        val modules = mutableListOf<LearningModule>()
+        val assetManager = context.assets
+        val basePath = "modules/pdf"
+
+        val folders = assetManager.list(basePath) ?: return emptyList()
+
+        for (folder in folders) {
+            val files = assetManager.list("$basePath/$folder")?.filter { it.endsWith(".pdf") } ?: continue
+
+            for ((index, file) in files.withIndex()) {
+                val title = file.removeSuffix(".pdf").replace('_', ' ').replaceFirstChar { it.uppercaseChar() }
+                val enumCategory = PDFModulesCategory.entries.find {
+                    it.name.equals(folder.uppercase().replace("-", "_"), ignoreCase = true)
+                }?.category ?: folder.replace('_', ' ')
+
+                modules.add(
+                    LearningModule(
+                        id = "${folder}_$index",
+                        title = title,
+                        category = enumCategory,
+                        contentType = ModuleContentType.PDF,
+                        contentUrl = "$basePath/$folder/$file"
+                    )
+                )
+            }
+        }
+
+        return modules
+    }
+
+    fun buildTextIndex(file: File): Map<Int, String> {
+        val document = PDDocument.load(file)
+        val index = mutableMapOf<Int, String>()
+        val stripper = PDFTextStripper()
+        for (page in 1..document.numberOfPages) {
+            stripper.startPage = page
+            stripper.endPage = page
+            val text = stripper.getText(document)
+            index[page - 1] = text
+        }
+        document.close()
+        return index
+    }
+
+    fun findPagesWithText(query: String, index: Map<Int, String>): List<Int> {
+        return index.filter { (_, text) -> text.contains(query, ignoreCase = true) }
+            .keys
+            .toList()
+    }
+
+    fun getFileFromUri(context: Context, uri: Uri): File {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: throw IOException("Unable to open URI")
+        val file = File(context.cacheDir, "temp_pdf_for_search.pdf")
+        inputStream.use { input ->
+            FileOutputStream(file).use { output ->
+                input.copyTo(output)
+            }
+        }
+        return file
+    }
+
 }

@@ -4,6 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
+    android:background="@color/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".authentication.LoginActivity">
@@ -16,18 +17,34 @@
         android:padding="28dp"
         >
 
-        <TextView
-            android:layout_marginHorizontal="22dp"
-            android:layout_marginBottom="19dp"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/welcome_message"
-            android:textSize="32sp"
-            android:textAlignment="center"
-            android:fontFamily="@font/roboto_bold"
-            android:layout_gravity="center"
-            android:textColor="@color/textColor"
-            />
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginVertical="22dp"
+            >
+
+            <TextView
+                android:layout_marginHorizontal="22dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/welcome_message"
+                android:textSize="30sp"
+                android:textAlignment="center"
+                android:fontFamily="@font/roboto_bold"
+                android:textColor="@color/textColor"
+                />
+
+            <ImageView
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:src="@drawable/adoloscare_logo"
+                android:layout_gravity="center"
+                android:contentDescription="@string/app_name"
+                />
+
+        </LinearLayout>
 
         <TextView
             android:layout_marginVertical="8dp"
@@ -95,6 +112,8 @@
                 android:text="@string/remember_me"
                 android:fontFamily="@font/roboto"
                 android:id="@+id/cb_remember"
+                android:buttonTint="@color/textColor"
+                android:textColor="@color/textColor"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
                 />

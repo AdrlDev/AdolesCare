@@ -146,10 +146,5 @@ class SplashActivity : AppCompatActivity() {
         binding.btnLogin.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
         }
-
-        binding.fabChat.setOnClickListener {
-            startActivity(Intent(this, ChatBotActivity::class.java)
-                .putExtra("user_id", "demo-123"))
-        }
     }
 }

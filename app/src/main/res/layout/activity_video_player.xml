@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".VideoPlayerActivity">
+
+    <androidx.media3.ui.PlayerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/playerView"
+        app:use_controller="true"
+        app:show_timeout="5000"
+        app:resize_mode="fit"
+        app:animation_enabled="true"
+        android:keepScreenOn="true"
+        app:auto_show="true"
+        app:show_vr_button="true"
+        app:show_shuffle_button="true"
+        android:layout_gravity="center"
+        app:show_subtitle_button="true"
+        app:show_buffering="when_playing"
+        app:fullscreen_enter_icon="@drawable/round_fullscreen_24"
+        app:fullscreen_exit_icon="@drawable/round_fullscreen_exit_24"
+        />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

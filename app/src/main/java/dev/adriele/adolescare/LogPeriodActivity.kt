@@ -1,6 +1,7 @@
 package dev.adriele.adolescare
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -11,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.applandeo.materialcalendarview.EventDay
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.CycleLogEntity
+import dev.adriele.adolescare.database.entities.MenstrualHistoryEntity
 import dev.adriele.adolescare.database.repositories.implementation.ChatBotRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.CycleLogRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
@@ -24,7 +26,6 @@ import dev.adriele.adolescare.viewmodel.factory.MenstrualHistoryViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-
 
 class LogPeriodActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLogPeriodBinding
@@ -106,48 +107,44 @@ class LogPeriodActivity : AppCompatActivity() {
                 binding.calendarView.setEvents(periodEvents)
                 binding.calendarView.setHighlightedDays(highlightDates)
 
-                calculateLMP(lmp)
+                calculateLMP(history)
             }
         }
     }
 
     @SuppressLint("SetTextI18n")
-    private fun calculateLMP(lmp: String) {
-        val lastPeriod = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).parse(lmp)
-        val today = Calendar.getInstance()
+    private fun calculateLMP(history: MenstrualHistoryEntity) {
+        val lastPeriodStart = history.lastPeriodStart
+        val cycleIntervalWeeks = history.cycleIntervalWeeks ?: 4 // Default 28 days
+        val cycleLength = cycleIntervalWeeks * 7
 
+        val lastPeriod = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).parse(lastPeriodStart!!)
+        val today = Calendar.getInstance()
         val calendarLMP = Calendar.getInstance().apply { time = lastPeriod!! }
+
         val diffInMillis = today.timeInMillis - calendarLMP.timeInMillis
         val totalDays = (diffInMillis / (1000 * 60 * 60 * 24)).toInt() + 1
 
-        val cycleLength = 28
         val currentCycle = (totalDays - 1) / cycleLength + 1
         val cycleDay = (totalDays - 1) % cycleLength + 1
 
         val dateFormatted = SimpleDateFormat("MMM d", Locale.getDefault()).format(today.time)
         binding.tvDateCycle.text = "$dateFormatted - Cycle $currentCycle Day $cycleDay"
 
-        // Apply fertility remarks based on cycle day
+        // Ovulation window calculation based on dynamic cycle length
+        val ovulationDay = cycleLength - 14
+        val fertileStartDay = ovulationDay - 5
+        val fertileEndDay = ovulationDay + 1
+
         val remark = when (cycleDay) {
             in 1..7 -> "Low chance of getting pregnant"
-            in 8..9 -> "Chance increasing"
-            in 10..15 -> "High chance of getting pregnant"
-            in 16..20 -> "Fertility declining"
-            in 21..28 -> "Low chance of getting pregnant"
+            in 8 until fertileStartDay -> "Chance increasing"
+            in fertileStartDay..fertileEndDay -> "High chance of getting pregnant"
+            in (fertileEndDay + 1)..cycleLength -> "Fertility declining"
             else -> "Cycle day out of range"
         }
 
         binding.tvRemarks.text = remark
-
-        val cycleLog = CycleLogEntity(
-            userId = userId!!,
-            cycleDay = cycleDay,
-            date = dateFormatted,
-            symptoms = null,
-            sexActivity = null,
-            pregnancyTestResult = null,
-            notes = remark
-        )
 
         cycleLogViewModel.getLogByDate(userId!!, dateFormatted).observe(this) { existingLog ->
             if (existingLog == null) {
@@ -178,6 +175,12 @@ class LogPeriodActivity : AppCompatActivity() {
 
     private fun handleButtons() {
         binding.btnBack.setOnClickListener {
+            finish()
+        }
+
+        binding.btnYear.setOnClickListener {
+            startActivity(Intent(this, LogPeriodYearlyActivity::class.java)
+                .putExtra("userId", userId))
             finish()
         }
     }

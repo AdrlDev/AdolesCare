@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragments.HomeFragment">
 
@@ -55,6 +56,8 @@
                     android:layout_height="wrap_content"
                     app:cardBackgroundColor="@color/buttonColor"
                     style="?attr/materialCardViewFilledStyle"
+                    app:cardElevation="8dp"
+                    android:layout_margin="14dp"
                     >
 
                     <RelativeLayout
@@ -68,6 +71,10 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_margin="16dp"
+                            app:shimmer_direction="top_to_bottom"
+                            app:shimmer_repeat_mode="restart"
+                            app:shimmer_colored="true"
+                            app:shimmer_shape="linear"
                             app:shimmer_auto_start="true"
                             app:shimmer_duration="1500">
 
@@ -78,29 +85,25 @@
                                 android:padding="16dp"
                                 >
 
-                                <TextView
+                                <View
+                                    android:layout_marginVertical="3dp"
                                     android:layout_width="40dp"
-                                    android:layout_height="wrap_content"
+                                    android:layout_height="20dp"
                                     android:background="@drawable/shimmer_placeholder"
-                                    android:fontFamily="@font/roboto"
-                                    android:textSize="12sp"
                                     />
 
-                                <TextView
-                                    android:layout_marginVertical="8dp"
+                                <View
+                                    android:layout_marginVertical="3dp"
                                     android:layout_width="120dp"
-                                    android:layout_height="wrap_content"
+                                    android:layout_height="20dp"
                                     android:background="@drawable/shimmer_placeholder"
-                                    android:fontFamily="@font/roboto_bold"
-                                    android:textSize="18sp"
                                     />
 
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
+                                <View
+                                    android:layout_marginVertical="3dp"
+                                    android:layout_width="180dp"
+                                    android:layout_height="20dp"
                                     android:background="@drawable/shimmer_placeholder"
-                                    android:fontFamily="@font/roboto_medium"
-                                    android:textSize="16sp"
                                     />
 
                             </LinearLayout>
@@ -135,7 +138,7 @@
                                 android:text="Title"
                                 android:id="@+id/tv_title"
                                 android:fontFamily="@font/roboto_bold"
-                                android:textSize="18sp"
+                                android:textSize="16sp"
                                 />
 
                             <TextView
@@ -145,7 +148,7 @@
                                 android:text="Title"
                                 android:id="@+id/tv_tips"
                                 android:fontFamily="@font/roboto"
-                                android:textSize="16sp"
+                                android:textSize="14sp"
                                 />
 
                         </LinearLayout>
@@ -185,16 +188,18 @@
                     />
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_marginVertical="8dp"
+                    android:layout_margin="14dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     style="?attr/materialCardViewElevatedStyle"
+                    app:cardBackgroundColor="@color/background"
+                    app:cardElevation="8dp"
                     >
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="32dp"
+                        android:padding="22dp"
                         android:orientation="vertical">
 
                         <TextView
@@ -237,6 +242,7 @@
                             android:fontFamily="@font/roboto"
                             android:layout_gravity="center"
                             android:textSize="14sp"
+                            android:textAlignment="center"
                             android:layout_marginVertical="12dp"
                             android:textColor="@color/textColor"
                             />
@@ -286,14 +292,79 @@
                     android:textSize="16sp"
                     />
 
-                <ImageView
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginVertical="12dp"
-                    android:id="@+id/img_module"
-                    android:contentDescription="@string/app_name"
-                    />
+                    android:id="@+id/shimmer_layout_recent"
+                    >
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        >
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="120dp"
+                            android:layout_weight="1"
+                            android:layout_margin="8dp"
+                            android:background="@drawable/shimmer_placeholder"
+                            />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="120dp"
+                            android:layout_weight="1"
+                            android:layout_margin="8dp"
+                            android:background="@drawable/shimmer_placeholder"
+                            />
+
+                    </LinearLayout>
+
+                </com.facebook.shimmer.ShimmerFrameLayout>
+
+                <RelativeLayout
+                    android:id="@+id/ll_recent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    >
+
+                    <LinearLayout
+                        android:layout_centerInParent="true"
+                        android:id="@+id/ll_no_recent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="12dp">
+
+                        <ImageView
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:src="@drawable/no_data"
+                            android:contentDescription="@string/app_name"
+                            />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="No recently read and watch!"
+                            android:fontFamily="@font/roboto"
+                            />
+
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:visibility="gone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/rv_recent"
+                        android:layout_centerInParent="true"
+                        />
+
+                </RelativeLayout>
 
             </LinearLayout>
 

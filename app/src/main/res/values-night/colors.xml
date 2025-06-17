@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">#1E1E1E</color>
+    <color name="background">#2f4858</color>
     <color name="textColor">#F5F5F5</color>
 
-    <color name="buttonColor">#CEA461</color>
-    <color name="buttonColor1">#85FF89</color>
-    <color name="buttonTextColor">#252525</color>
+    <color name="buttonColor">#c57988</color>
+    <color name="buttonColor1">#d398b7</color>
+    <color name="buttonTextColor">#F5F5F5</color>
+
+    <color name="chatbot_response_button_color">#757194</color>
 
     <color name="textColorLink">#6E8FFF</color>
 
     <color name="requiredColorHelper">#FC6771</color>
-
-    <color name="gray">#DBDBDB</color>
 </resources>

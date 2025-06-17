@@ -11,7 +11,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import dev.adriele.adolescare.LogPeriodActivity
-import dev.adriele.adolescare.ModuleContentType
 import dev.adriele.adolescare.Utility
 import dev.adriele.adolescare.api.response.TipResponse
 import dev.adriele.adolescare.contracts.IChatBot
@@ -132,15 +131,6 @@ class HomeFragment : Fragment() {
                 .putExtra("userId", userId))
         }
 
-        moduleViewModel.getAllModules(ModuleContentType.PDF).observe(viewLifecycleOwner) { modules ->
-            if (modules != null) {
-                val path = modules[0].contentUrl
-                val file = Utility.copyAssetToCache(requireContext(), path)
-                val thumbnail = Utility.generatePdfThumbnail(file)
-
-                binding.imgModule.setImageBitmap(thumbnail)
-            }
-        }
     }
 
     @SuppressLint("SetTextI18n")

@@ -7,4 +7,6 @@ interface ModuleRepository {
     suspend fun insertModules(modules: List<LearningModule>)
 
     suspend fun getAllModules(moduleContentType: ModuleContentType): List<LearningModule>
+
+    suspend fun getAllModulesByCategory(moduleContentType: ModuleContentType, category: String): List<LearningModule>
 }
