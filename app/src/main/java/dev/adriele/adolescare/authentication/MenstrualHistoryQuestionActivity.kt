@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.snackbar.Snackbar
 import dev.adriele.adolescare.DashboardActivity
-import dev.adriele.adolescare.Utility
+import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.authentication.adapter.PagerAdapter
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
 import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FLastPeriodNoMsgFragment

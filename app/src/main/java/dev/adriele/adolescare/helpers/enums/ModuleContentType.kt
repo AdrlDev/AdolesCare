@@ -1,4 +1,4 @@
-package dev.adriele.adolescare
+package dev.adriele.adolescare.helpers.enums
 
 enum class ModuleContentType {
     VIDEO,

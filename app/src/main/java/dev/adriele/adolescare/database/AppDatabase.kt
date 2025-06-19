@@ -9,6 +9,7 @@ import dev.adriele.adolescare.database.dao.CycleLogDao
 import dev.adriele.adolescare.database.dao.DailyLogDao
 import dev.adriele.adolescare.database.dao.MenstrualHistoryDao
 import dev.adriele.adolescare.database.dao.ModuleDao
+import dev.adriele.adolescare.database.dao.RecentReadAndWatchDao
 import dev.adriele.adolescare.database.dao.ReminderDao
 import dev.adriele.adolescare.database.dao.UserDao
 import dev.adriele.adolescare.database.entities.Conversations
@@ -17,6 +18,7 @@ import dev.adriele.adolescare.database.entities.DailyLog
 import dev.adriele.adolescare.database.entities.LearningModule
 import dev.adriele.adolescare.database.entities.MenstrualCycle
 import dev.adriele.adolescare.database.entities.MenstrualHistoryEntity
+import dev.adriele.adolescare.database.entities.RecentReadAndWatch
 import dev.adriele.adolescare.database.entities.Reminder
 import dev.adriele.adolescare.database.entities.User
 
@@ -29,9 +31,10 @@ import dev.adriele.adolescare.database.entities.User
         Reminder::class,
         Conversations::class,
         MenstrualHistoryEntity::class,
-        CycleLogEntity::class
+        CycleLogEntity::class,
+        RecentReadAndWatch::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 
@@ -45,4 +48,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun menstrualHistoryDao() : MenstrualHistoryDao
     abstract fun cycleLogDao() : CycleLogDao
+    abstract fun recentReadAndWatchDao() : RecentReadAndWatchDao
 }

@@ -1,4 +1,4 @@
-package dev.adriele.adolescare
+package dev.adriele.adolescare.helpers
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
@@ -6,11 +6,11 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.pdf.PdfRenderer
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.ParcelFileDescriptor
@@ -23,40 +23,44 @@ import android.text.style.UnderlineSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.Window
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.fragment.app.FragmentActivity
-import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.textfield.TextInputEditText
-import org.mindrot.jbcrypt.BCrypt
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
 import androidx.core.content.edit
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.fragment.app.FragmentActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.textfield.TextInputEditText
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.text.PDFTextStripper
+import dev.adriele.adolescare.helpers.enums.ModuleContentType
+import dev.adriele.adolescare.helpers.enums.PDFModulesCategory
+import dev.adriele.adolescare.R
+import dev.adriele.adolescare.database.entities.LearningModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.mindrot.jbcrypt.BCrypt
 import java.io.File
 import java.io.FileOutputStream
-import androidx.core.graphics.createBitmap
-import androidx.core.view.WindowCompat
-import com.tom_roush.pdfbox.pdmodel.PDDocument
-import com.tom_roush.pdfbox.text.PDFTextStripper
-import dev.adriele.adolescare.database.entities.LearningModule
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
+import androidx.core.graphics.createBitmap
 
 object Utility {
     interface TermsPrivacyClickListener {
@@ -332,7 +336,7 @@ object Utility {
         dialog.show()
     }
 
-    fun setupStepper(totalSteps: Int, resources: android.content.res.Resources, context: Context, stepper: LinearLayout) {
+    fun setupStepper(totalSteps: Int, resources: Resources, context: Context, stepper: LinearLayout) {
         val inactiveSize = resources.getDimensionPixelSize(R.dimen.stepper_dot_inactive_size)
         val margin = resources.getDimensionPixelSize(R.dimen.margin_small)
 
@@ -351,7 +355,7 @@ object Utility {
     }
 
     @SuppressLint("SetTextI18n")
-    fun updateStepper(currentStep: Int, totalSteps: Int, stepper: LinearLayout, count: TextView?, resources: android.content.res.Resources) {
+    fun updateStepper(currentStep: Int, totalSteps: Int, stepper: LinearLayout, count: TextView?, resources: Resources) {
         for (i in 0 until stepper.childCount) {
             val dot = stepper.getChildAt(i)
 
@@ -366,7 +370,7 @@ object Utility {
         count?.text = "Step ${currentStep + 1} of $totalSteps"
     }
 
-    private fun animateDot(dot: View, active: Boolean, resources: android.content.res.Resources) {
+    private fun animateDot(dot: View, active: Boolean, resources: Resources) {
         val activeSize = resources.getDimensionPixelSize(R.dimen.stepper_dot_active_size).toFloat()
         val inactiveSize = resources.getDimensionPixelSize(R.dimen.stepper_dot_inactive_size).toFloat()
         val targetSize = if (active) activeSize else inactiveSize // Active dot is larger
@@ -429,6 +433,11 @@ object Utility {
 
     fun getCurrentDate(): String {
         val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+        return sdf.format(Date())
+    }
+
+    fun getCurrentDateOnly(): String {
+        val sdf = SimpleDateFormat("MMMM dd", Locale.getDefault())
         return sdf.format(Date())
     }
 
@@ -502,9 +511,9 @@ object Utility {
         val pdfRenderer = PdfRenderer(fileDescriptor)
         val page = pdfRenderer.openPage(pageIndex)
 
-        val width = page.width
-        val height = page.height
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val width = page.width * 3
+        val height = page.height * 3
+        val bitmap = createBitmap(width, height)
 
         page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
 
@@ -515,51 +524,7 @@ object Utility {
         return bitmap
     }
 
-    fun toRoman(number: Int): String {
-        val numerals = listOf(
-            1000 to "M",
-            900 to "CM",
-            500 to "D",
-            400 to "CD",
-            100 to "C",
-            90 to "XC",
-            50 to "L",
-            40 to "XL",
-            10 to "X",
-            9 to "IX",
-            5 to "V",
-            4 to "IV",
-            1 to "I"
-        )
-
-        var num = number
-        val roman = StringBuilder()
-
-        for ((value, symbol) in numerals) {
-            while (num >= value) {
-                roman.append(symbol)
-                num -= value
-            }
-        }
-
-        return roman.toString()
-    }
-
-    fun getVideoThumbnailFromAssets(context: Context, path: String): Bitmap? {
-        return try {
-            val retriever = MediaMetadataRetriever()
-            val assetFd = context.assets.openFd(path)
-            retriever.setDataSource(assetFd.fileDescriptor, assetFd.startOffset, assetFd.length)
-            val bitmap = retriever.getFrameAtTime(1_000_000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC) // 1 sec
-            retriever.release()
-            bitmap
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    fun enableFullscreen(window: android.view.Window) {
+    fun enableFullscreen(window: Window) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // API 30+
             WindowCompat.setDecorFitsSystemWindows(window, false)

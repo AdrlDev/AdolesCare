@@ -1,5 +1,6 @@
 package dev.adriele.adolescare.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -7,17 +8,25 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import dev.adriele.adolescare.ModuleContentType
+import dev.adriele.adolescare.VideoPlayerActivity
+import dev.adriele.adolescare.helpers.enums.ModuleContentType
 import dev.adriele.adolescare.adapter.VideoThumbnailAdapter
 import dev.adriele.adolescare.database.AppDatabaseProvider
+import dev.adriele.adolescare.database.entities.LearningModule
+import dev.adriele.adolescare.database.entities.RecentReadAndWatch
 import dev.adriele.adolescare.database.repositories.implementation.ModuleRepositoryImpl
+import dev.adriele.adolescare.database.repositories.implementation.RecentReadWatchRepositoryImpl
 import dev.adriele.adolescare.databinding.FragmentVideosBinding
+import dev.adriele.adolescare.dialogs.MyLoadingDialog
+import dev.adriele.adolescare.helpers.contracts.IModules
 import dev.adriele.adolescare.viewmodel.ModuleViewModel
+import dev.adriele.adolescare.viewmodel.RecentReadWatchViewModel
 import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
+import dev.adriele.adolescare.viewmodel.factory.RecentReadWatchViewModelFactory
 
 private const val USER_ID = "userID"
 
-class VideosFragment : Fragment() {
+class VideosFragment : Fragment(), IModules.VIDEO {
     // TODO: Rename and change types of parameters
     private var userId: String? = null
 
@@ -25,6 +34,12 @@ class VideosFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var moduleViewModel: ModuleViewModel
+    private lateinit var recentReadWatchViewModel: RecentReadWatchViewModel
+
+    private var videoList: MutableList<LearningModule> = mutableListOf()
+    private var videoPosition: Int = 0
+
+    private lateinit var loadingDialog: MyLoadingDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,8 +55,11 @@ class VideosFragment : Fragment() {
         // Inflate the layout for this fragment
         _binding = FragmentVideosBinding.inflate(layoutInflater, container, false)
 
+        loadingDialog = MyLoadingDialog(requireContext())
+
         initializeViewModel()
         initializeVideos()
+        afterInitialize()
 
         return binding.root
     }
@@ -50,11 +68,14 @@ class VideosFragment : Fragment() {
         binding.shimmerLayout.startShimmer()
 
         moduleViewModel.modules.observe(viewLifecycleOwner) { modules ->
+            videoList.clear()
             if (modules != null) {
+                videoList.addAll(modules)
+
                 binding.noDataLl.visibility = View.GONE
                 binding.rvVideo.visibility = View.VISIBLE
 
-                val adapter = VideoThumbnailAdapter(requireContext(), modules)
+                val adapter = VideoThumbnailAdapter(requireContext(), modules, this)
                 binding.rvVideo.layoutManager = GridLayoutManager(requireContext(), 3)
                 binding.rvVideo.adapter = adapter
                 hideShimmer()
@@ -79,6 +100,31 @@ class VideosFragment : Fragment() {
         val moduleRepository = ModuleRepositoryImpl(moduleDao)
         val moduleViewModelFactory = ModuleViewModelFactory(moduleRepository)
         moduleViewModel = ViewModelProvider(this, moduleViewModelFactory)[ModuleViewModel::class]
+
+        val recentReadWatchDao = AppDatabaseProvider.getDatabase(requireActivity()).recentReadAndWatchDao()
+        val recentReadWatchRepository = RecentReadWatchRepositoryImpl(recentReadWatchDao)
+        val recentReadWatchViewModelFactory = RecentReadWatchViewModelFactory(recentReadWatchRepository)
+        recentReadWatchViewModel = ViewModelProvider(this, recentReadWatchViewModelFactory)[RecentReadWatchViewModel::class]
+    }
+
+    private fun afterInitialize() {
+        recentReadWatchViewModel.addRecentStatus.observe(viewLifecycleOwner) { isSuccess ->
+            if (isSuccess) {
+                loadingDialog.dismiss()
+                val intent = Intent(requireContext(), VideoPlayerActivity::class.java)
+                intent.putExtra("path", videoList[videoPosition].contentUrl)
+                startActivity(intent)
+            }
+        }
+    }
+
+    override fun onVideoClick(position: Int, videoFile: String) {
+        loadingDialog.show("Please wait...")
+        videoPosition = position
+        recentReadWatchViewModel.addRecent(RecentReadAndWatch(
+            moduleId = videoList[position].id,
+            timestamp = System.currentTimeMillis()
+        ))
     }
 
     companion object {

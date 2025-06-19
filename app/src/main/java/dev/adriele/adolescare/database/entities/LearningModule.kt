@@ -2,7 +2,7 @@ package dev.adriele.adolescare.database.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import dev.adriele.adolescare.ModuleContentType
+import dev.adriele.adolescare.helpers.enums.ModuleContentType
 
 @Entity(tableName = "modules")
 data class LearningModule(

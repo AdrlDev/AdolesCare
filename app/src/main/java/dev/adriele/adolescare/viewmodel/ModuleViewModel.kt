@@ -4,8 +4,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
-import dev.adriele.adolescare.ModuleContentType
+import dev.adriele.adolescare.helpers.enums.ModuleContentType
 import dev.adriele.adolescare.database.entities.LearningModule
 import dev.adriele.adolescare.database.repositories.ModuleRepository
 import kotlinx.coroutines.launch
@@ -41,6 +42,10 @@ class ModuleViewModel(private val repository: ModuleRepository) : ViewModel() {
             val modules = repository.getAllModulesByCategory(moduleContentType, category)
             _modules.postValue(modules)
         }
+    }
+
+    fun getModuleByIdLive(moduleId: String): LiveData<LearningModule?> = liveData {
+        emit(repository.getModuleById(moduleId))
     }
 
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="today">#EC407A</color>
+    <color name="not_today">#2f4858</color>
+</resources>

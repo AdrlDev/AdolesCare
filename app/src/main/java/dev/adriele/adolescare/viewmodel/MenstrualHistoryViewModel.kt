@@ -10,7 +10,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dev.adriele.adolescare.MenstrualPhase
+import dev.adriele.adolescare.helpers.enums.MenstrualPhase
 import dev.adriele.adolescare.database.entities.MenstrualHistoryEntity
 import dev.adriele.adolescare.database.repositories.MenstrualHistoryRepository
 import dev.adriele.adolescare.model.OvulationInfo
@@ -21,7 +21,6 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 class MenstrualHistoryViewModel(private val repository: MenstrualHistoryRepository) : ViewModel() {
     private val _insertStatus = MutableLiveData<Pair<Boolean, Boolean>>()

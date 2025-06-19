@@ -10,9 +10,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import dev.adriele.adolescare.R
-import dev.adriele.adolescare.Utility
-import dev.adriele.adolescare.Utility.SecurityUtils
-import dev.adriele.adolescare.Utility.TermsPrivacyClickListener
+import dev.adriele.adolescare.helpers.Utility
+import dev.adriele.adolescare.helpers.Utility.SecurityUtils
+import dev.adriele.adolescare.helpers.Utility.TermsPrivacyClickListener
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.dao.UserDao
 import dev.adriele.adolescare.database.entities.User

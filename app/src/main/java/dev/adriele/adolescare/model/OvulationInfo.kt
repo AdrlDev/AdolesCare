@@ -1,6 +1,6 @@
 package dev.adriele.adolescare.model
 
-import dev.adriele.adolescare.MenstrualPhase
+import dev.adriele.adolescare.helpers.enums.MenstrualPhase
 
 data class OvulationInfo(
     val ovulationDate: String,

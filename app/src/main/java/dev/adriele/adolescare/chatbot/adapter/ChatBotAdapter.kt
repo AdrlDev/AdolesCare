@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import dev.adriele.adolescare.R
-import dev.adriele.adolescare.Utility
+import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.chatbot.MessageType
 import dev.adriele.adolescare.chatbot.ResponseType
 import dev.adriele.adolescare.database.entities.Conversations

@@ -14,7 +14,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import dev.adriele.adolescare.Utility.getCurrentTime
+import dev.adriele.adolescare.helpers.Utility.getCurrentTime
 import dev.adriele.adolescare.chatbot.ResponseType
 import dev.adriele.adolescare.chatbot.adapter.ChatBotAdapter
 import dev.adriele.adolescare.contracts.IChatBot

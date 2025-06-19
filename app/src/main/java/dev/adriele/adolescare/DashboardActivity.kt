@@ -20,8 +20,11 @@ import dev.adriele.adolescare.database.repositories.implementation.ModuleReposit
 import dev.adriele.adolescare.databinding.ActivityDashboardBinding
 import dev.adriele.adolescare.fragments.ChatBotFragment
 import dev.adriele.adolescare.fragments.HomeFragment
+import dev.adriele.adolescare.fragments.MenstrualTrackerFragment
 import dev.adriele.adolescare.fragments.ModulesFragment
 import dev.adriele.adolescare.fragments.VideosFragment
+import dev.adriele.adolescare.helpers.Utility
+import dev.adriele.adolescare.helpers.enums.ModuleContentType
 import dev.adriele.adolescare.viewmodel.ModuleViewModel
 import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
 
@@ -70,7 +73,7 @@ class DashboardActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun afterInit() {
-        insertModule1()
+        insertModules()
 
         btnMenu.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
@@ -99,7 +102,7 @@ class DashboardActivity : AppCompatActivity() {
             when (it.itemId) {
                 R.id.action_home -> loadFragment(HomeFragment.newInstance(userId ?: "", userName ?: ""))
                 R.id.action_module -> loadFragment(ModulesFragment.newInstance(userId ?: ""))
-                R.id.action_calendar -> {}
+                R.id.action_calendar -> loadFragment(MenstrualTrackerFragment.newInstance(userId ?: "", userName ?: ""))
                 R.id.action_video -> loadFragment(VideosFragment.newInstance(userId ?: ""))
                 R.id.action_chat_bot -> loadFragment(ChatBotFragment.newInstance(userId ?: "", userName ?: ""))
             }
@@ -126,7 +129,7 @@ class DashboardActivity : AppCompatActivity() {
             .commit()
     }
 
-    private fun insertModule1() {
+    private fun insertModules() {
         val chapters = Utility.loadLearningModules(this).toMutableList()
 
         // Insert 13 videos

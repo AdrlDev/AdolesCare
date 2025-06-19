@@ -1,4 +1,4 @@
-package dev.adriele.adolescare
+package dev.adriele.adolescare.helpers.enums
 
 enum class PDFModulesCategory(val category: String) {
     DSWD_TEENAGE_PREGNANCY_GUIDELINES("DSWD Teenage Pregnancy Guidelines"),

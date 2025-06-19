@@ -5,7 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import dev.adriele.adolescare.Utility.animateTypingWithCursor
+import dev.adriele.adolescare.helpers.Utility.animateTypingWithCursor
 import dev.adriele.adolescare.databinding.FragmentFPeriodNoBinding
 import kotlinx.coroutines.Job
 

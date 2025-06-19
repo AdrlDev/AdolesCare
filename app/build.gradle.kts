@@ -85,8 +85,10 @@ dependencies {
 
     implementation(libs.pdfbox.android)
     implementation(libs.photoview)
+    implementation(libs.pdfView)
 
     implementation(libs.jbcrypt)
 
     implementation(project(":language"))
+    implementation(project(":calendarview"))
 }

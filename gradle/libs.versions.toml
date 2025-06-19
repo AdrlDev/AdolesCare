@@ -22,6 +22,7 @@ glide = "4.16.0"
 exoplayer = "1.7.1"
 pdfboxAndroid = "2.0.27.0"
 photoview = "1.0.3"
+pdfView = "3.2.0-beta.3"
 
 
 [libraries]
@@ -60,6 +61,7 @@ facebook-shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.r
 
 pdfbox-android = { group = "com.tom-roush", name = "pdfbox-android", version.ref = "pdfboxAndroid" }
 photoview = { group = "io.getstream", name = "photoview", version.ref = "photoview" }
+pdfView = { group = "com.github.mhiew", name = "android-pdf-viewer", version.ref = "pdfView" }
 
 material-calendar-view = { module = "com.applandeo:material-calendar-view", version.ref = "materialCalendarView" }
 

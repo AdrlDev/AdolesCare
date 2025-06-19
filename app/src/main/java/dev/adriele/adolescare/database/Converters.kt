@@ -3,7 +3,7 @@ package dev.adriele.adolescare.database
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import dev.adriele.adolescare.ModuleContentType
+import dev.adriele.adolescare.helpers.enums.ModuleContentType
 
 class Converters {
     @TypeConverter

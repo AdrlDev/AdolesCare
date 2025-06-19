@@ -7,12 +7,14 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dev.adriele.adolescare.R
+import dev.adriele.adolescare.helpers.contracts.IModules
 import dev.adriele.adolescare.model.CategoryModuleGroup
 import kotlinx.coroutines.CoroutineScope
 
 class PdfModulesAdapter(
     private val groupedModules: List<CategoryModuleGroup>,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    private val iModules: IModules.PDF
 ) : RecyclerView.Adapter<PdfModulesAdapter.CategoryViewHolder>() {
     // Shared recycled view pool for all horizontal RecyclerViews
     private val sharedPool = RecyclerView.RecycledViewPool()
@@ -43,7 +45,7 @@ class PdfModulesAdapter(
         // Set the adapter only if it's not already set or if data changed
         val currentAdapter = holder.rvList.adapter as? ModuleItemAdapter
         if (currentAdapter == null || currentAdapter.modules != group.modules) {
-            holder.rvList.adapter = ModuleItemAdapter(group.modules, scope)
+            holder.rvList.adapter = ModuleItemAdapter(group.modules, scope, position, iModules)
         }
     }
 

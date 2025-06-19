@@ -293,7 +293,6 @@
                     />
 
                 <com.facebook.shimmer.ShimmerFrameLayout
-                    android:visibility="gone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:id="@+id/shimmer_layout_recent"
@@ -326,6 +325,7 @@
                 </com.facebook.shimmer.ShimmerFrameLayout>
 
                 <RelativeLayout
+                    android:visibility="gone"
                     android:id="@+id/ll_recent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

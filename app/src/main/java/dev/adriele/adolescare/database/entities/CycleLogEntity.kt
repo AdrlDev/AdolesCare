@@ -3,7 +3,7 @@ package dev.adriele.adolescare.database.entities
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import dev.adriele.adolescare.Utility
+import dev.adriele.adolescare.helpers.Utility
 
 @Entity(
     tableName = "cycle_logs",

@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import dev.adriele.adolescare.ModuleContentType
+import dev.adriele.adolescare.helpers.enums.ModuleContentType
 import dev.adriele.adolescare.database.entities.LearningModule
 
 @Dao
@@ -17,4 +17,7 @@ interface ModuleDao {
 
     @Query("SELECT * FROM modules WHERE contentType = :contentType AND category LIKE :category")
     suspend fun getAllModulesByCategory(contentType: ModuleContentType, category: String): List<LearningModule>
+
+    @Query("SELECT * FROM modules WHERE id = :moduleId limit 1")
+    suspend fun getModuleById(moduleId: String): LearningModule
 }

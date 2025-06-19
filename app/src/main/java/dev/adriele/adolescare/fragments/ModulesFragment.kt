@@ -1,32 +1,42 @@
 package dev.adriele.adolescare.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
-import dev.adriele.adolescare.ModuleContentType
-import dev.adriele.adolescare.PDFModulesCategory
+import dev.adriele.adolescare.PdfViewerActivity
+import dev.adriele.adolescare.helpers.enums.ModuleContentType
+import dev.adriele.adolescare.helpers.enums.PDFModulesCategory
 import dev.adriele.adolescare.adapter.PdfModulesAdapter
 import dev.adriele.adolescare.database.AppDatabaseProvider
+import dev.adriele.adolescare.database.entities.RecentReadAndWatch
 import dev.adriele.adolescare.database.repositories.implementation.ModuleRepositoryImpl
+import dev.adriele.adolescare.database.repositories.implementation.RecentReadWatchRepositoryImpl
 import dev.adriele.adolescare.databinding.FragmentModulesBinding
+import dev.adriele.adolescare.dialogs.MyLoadingDialog
+import dev.adriele.adolescare.helpers.Utility
+import dev.adriele.adolescare.helpers.contracts.IModules
 import dev.adriele.adolescare.model.CategoryModuleGroup
 import dev.adriele.adolescare.viewmodel.ModuleViewModel
+import dev.adriele.adolescare.viewmodel.RecentReadWatchViewModel
 import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
+import dev.adriele.adolescare.viewmodel.factory.RecentReadWatchViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 private const val USER_ID = "userID"
 
-class ModulesFragment : Fragment() {
+class ModulesFragment : Fragment(), IModules.PDF {
     // TODO: Rename and change types of parameters
     private var userId: String? = null
 
@@ -34,6 +44,13 @@ class ModulesFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var moduleViewModel: ModuleViewModel
+    private lateinit var recentReadWatchViewModel: RecentReadWatchViewModel
+
+    private lateinit var loadingDialog: MyLoadingDialog
+    private var pdfPosition: Int = 0
+    private var pdfPath: String? = null
+
+    private var groupModules: MutableList<CategoryModuleGroup> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,8 +66,10 @@ class ModulesFragment : Fragment() {
         // Inflate the layout for this fragment
         _binding = FragmentModulesBinding.inflate(layoutInflater, container, false)
 
+        loadingDialog = MyLoadingDialog(requireContext())
         initializeViewModel()
         loadModules()
+        afterInitialize()
 
         return binding.root
     }
@@ -105,11 +124,14 @@ class ModulesFragment : Fragment() {
     }
 
     private fun displayGroupedModules(grouped: List<CategoryModuleGroup>) {
+        groupModules.clear()
+        groupModules.addAll(grouped)
+
         binding.rvModules.layoutManager = LinearLayoutManager(requireContext())
         binding.rvModules.setHasFixedSize(true)
         binding.rvModules.setItemViewCacheSize(20) // optional
         binding.rvModules.setRecycledViewPool(RecyclerView.RecycledViewPool()) // reuse
-        binding.rvModules.adapter = PdfModulesAdapter(grouped, viewLifecycleOwner.lifecycleScope)
+        binding.rvModules.adapter = PdfModulesAdapter(grouped, viewLifecycleOwner.lifecycleScope, this)
         binding.llModules.visibility = View.VISIBLE
         hideShimmer()
     }
@@ -125,6 +147,48 @@ class ModulesFragment : Fragment() {
         val moduleRepository = ModuleRepositoryImpl(moduleDao)
         val moduleViewModelFactory = ModuleViewModelFactory(moduleRepository)
         moduleViewModel = ViewModelProvider(this, moduleViewModelFactory)[ModuleViewModel::class]
+
+        val recentReadWatchDao = AppDatabaseProvider.getDatabase(requireActivity()).recentReadAndWatchDao()
+        val recentReadWatchRepository = RecentReadWatchRepositoryImpl(recentReadWatchDao)
+        val recentReadWatchViewModelFactory = RecentReadWatchViewModelFactory(recentReadWatchRepository)
+        recentReadWatchViewModel = ViewModelProvider(this, recentReadWatchViewModelFactory)[RecentReadWatchViewModel::class]
+    }
+
+    private fun afterInitialize() {
+        recentReadWatchViewModel.addRecentStatus.observe(viewLifecycleOwner) { isSuccess ->
+            if (isSuccess) {
+                lifecycleScope.launch {
+                    val cachedFile = withContext(Dispatchers.IO) {
+                        Utility.copyAssetToCache(requireContext(), pdfPath!!)
+                    }
+
+                    val uri = FileProvider.getUriForFile(
+                        requireContext(),
+                        "${requireContext().packageName}.fileprovider",
+                        cachedFile
+                    )
+
+                    val intent = Intent(requireContext(), PdfViewerActivity::class.java).apply {
+                        putExtra("pdf_uri", uri.toString())
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+
+                    loadingDialog.dismiss() // move after loading is done
+                    startActivity(intent)
+                }
+            }
+        }
+    }
+
+    override fun onPdfClick(position: Int, pdfCategoryPosition: Int, path: String) {
+        loadingDialog.show("Please wait...")
+        pdfPosition = position
+        pdfPath = path
+
+        recentReadWatchViewModel.addRecent(RecentReadAndWatch(
+            moduleId = groupModules[pdfCategoryPosition].modules[position].id,
+            timestamp = System.currentTimeMillis()
+        ))
     }
 
     companion object {

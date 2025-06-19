@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.material.snackbar.Snackbar
 import dev.adriele.adolescare.R
-import dev.adriele.adolescare.Utility
+import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
 import dev.adriele.adolescare.databinding.FragmentSelectLPSDateBinding
 

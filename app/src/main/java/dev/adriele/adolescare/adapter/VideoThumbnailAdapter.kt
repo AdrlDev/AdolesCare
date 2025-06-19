@@ -1,7 +1,6 @@
 package dev.adriele.adolescare.adapter
 
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,13 +8,14 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import dev.adriele.adolescare.R
-import dev.adriele.adolescare.Utility
-import dev.adriele.adolescare.VideoPlayerActivity
+import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.database.entities.LearningModule
+import dev.adriele.adolescare.helpers.contracts.IModules
 
 class VideoThumbnailAdapter(
     private val context: Context,
-    private val videoModules: List<LearningModule>
+    private val videoModules: List<LearningModule>,
+    private val iModules: IModules.VIDEO
 ) : RecyclerView.Adapter<VideoThumbnailAdapter.ThumbnailViewHolder>() {
 
     inner class ThumbnailViewHolder(val view: View) :
@@ -46,8 +46,7 @@ class VideoThumbnailAdapter(
             .into(imageView)
 
         holder.view.setOnClickListener {
-            context.startActivity(Intent(context, VideoPlayerActivity::class.java)
-                .putExtra("path", videoFile.contentUrl))
+            iModules.onVideoClick(position, videoFile.contentUrl)
         }
     }
 }
