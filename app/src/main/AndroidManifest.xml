@@ -22,9 +22,6 @@
         android:theme="@style/Theme.AdolesCare"
         tools:targetApi="31">
         <activity
-            android:name=".PDFWebViewActivity"
-            android:exported="false" />
-        <activity
             android:name=".PdfViewerActivity"
             android:exported="false" />
         <activity
