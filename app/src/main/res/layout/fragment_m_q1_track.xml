@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/background"
+    tools:context=".authentication.fragments.maleHistory.MQ1TrackFragment">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="42dp"
+        android:layout_gravity="center"
+        app:cardBackgroundColor="@color/background"
+        app:cardElevation="12dp"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingVertical="32dp"
+            android:paddingHorizontal="22dp"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/male_q1_track"
+                android:gravity="center"
+                android:fontFamily="@font/roboto"
+                android:textSize="16sp"
+                android:textColor="@color/textColor"
+                />
+
+            <com.google.android.material.button.MaterialButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:text="Ok"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="14sp"
+                android:paddingHorizontal="60dp"
+                android:textColor="@color/buttonTextColor"
+                android:id="@+id/btn_ok"
+                app:strokeColor="@color/buttonTextColor"
+                style="?attr/materialButtonOutlinedStyle"
+                />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</FrameLayout>

@@ -13,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import dev.adriele.adolescal.model.OvulationInfo
 import dev.adriele.adolescare.LogPeriodActivity
 import dev.adriele.adolescare.PdfViewerActivity
 import dev.adriele.adolescare.VideoPlayerActivity
@@ -28,7 +29,6 @@ import dev.adriele.adolescare.database.repositories.implementation.RecentReadWat
 import dev.adriele.adolescare.databinding.FragmentHomeBinding
 import dev.adriele.adolescare.helpers.contracts.IRecentReadAndWatch
 import dev.adriele.adolescare.helpers.enums.ModuleContentType
-import dev.adriele.adolescare.model.OvulationInfo
 import dev.adriele.adolescare.viewmodel.ChatBotViewModel
 import dev.adriele.adolescare.viewmodel.MenstrualHistoryViewModel
 import dev.adriele.adolescare.viewmodel.ModuleViewModel

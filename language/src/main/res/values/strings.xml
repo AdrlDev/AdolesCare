@@ -85,6 +85,11 @@
     <string name="recent_read_watch">Recently read and watch</string>
     <string name="modules">Modules</string>
 
+    <string name="male_q1">Do you want to track your partner\'s menstrual cycle?</string>
+    <string name="male_q2">Do you just want to gain knowledge and awareness about teenage pregnancy?</string>
+
+    <string name="male_q1_track">Ask your partner to answer the following questions.</string>
+
     //chatbot
     <string name="ask">Ask…</string>
 

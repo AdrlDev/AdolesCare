@@ -1,4 +1,4 @@
-package dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment
+package dev.adriele.adolescare.authentication.fragments.femaleHistory
 
 import android.content.Context
 import android.os.Bundle
@@ -8,10 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import dev.adriele.adolescare.R
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
-import dev.adriele.adolescare.databinding.FragmentFirstPeriodReportedBinding
+import dev.adriele.adolescare.databinding.FragmentFPeriodYes3Binding
 
-class FirstPeriodReportedFragment : Fragment() {
-    private var _binding: FragmentFirstPeriodReportedBinding? = null
+class FPeriodYes3Fragment : Fragment() {
+    private var _binding: FragmentFPeriodYes3Binding? = null
     private val binding get() = _binding!!
 
     private var dataListener: FragmentDataListener? = null
@@ -21,33 +21,11 @@ class FirstPeriodReportedFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentFirstPeriodReportedBinding.inflate(inflater, container, false)
+        _binding = FragmentFPeriodYes3Binding.inflate(layoutInflater, container, false)
 
         init()
 
         return binding.root
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is FragmentDataListener) {
-            dataListener = context
-        }
-    }
-
-    private fun handleSelection(firstPeriodReported: Boolean) {
-        val data = mapOf(FemaleMenstrualHistory.FIRST_PERIOD.name to firstPeriodReported)
-        dataListener?.onDataCollected(data)
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        dataListener = null
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun init() {
@@ -65,5 +43,27 @@ class FirstPeriodReportedFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun handleSelection(selected: Boolean) {
+        val data = mapOf(FemaleMenstrualHistory.NUMBER_OF_WEEKS.name to selected)
+        dataListener?.onDataCollected(data)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is FragmentDataListener) {
+            dataListener = context
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        dataListener = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

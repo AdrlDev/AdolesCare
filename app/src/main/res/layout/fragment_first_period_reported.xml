@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:gravity="center"
-    tools:context=".authentication.fragments.femaleHistoryFragment.FirstPeriodReportedFragment">
+    tools:context=".authentication.fragments.femaleHistory.FirstPeriodReportedFragment">
 
     <TextView
         android:layout_width="wrap_content"

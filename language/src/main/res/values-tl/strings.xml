@@ -85,6 +85,11 @@
     <string name="recent_read_watch">Kamakailang binasa at napanood</string>
     <string name="modules">Mga Modyul</string>
 
+    <string name="male_q1">Gusto mo bang i-track ang menstrual cycle ng partner mo?</string>
+    <string name="male_q2">Gusto mo lang magkaroon ng kaalaman at maging aware tungkol sa teenage pregnancy?</string>
+
+    <string name="male_q1_track">Pasagutan mo sa iyong partner ang mga sumusunod na tanong.</string>
+
     //chatbot
     <string name="ask">Magtanong…</string>
 

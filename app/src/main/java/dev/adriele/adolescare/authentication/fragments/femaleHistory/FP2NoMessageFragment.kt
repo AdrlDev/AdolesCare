@@ -1,4 +1,4 @@
-package dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment
+package dev.adriele.adolescare.authentication.fragments.femaleHistory
 
 import android.content.Context
 import android.os.Bundle
@@ -7,12 +7,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import dev.adriele.adolescare.R
+import dev.adriele.adolescare.helpers.Utility.animateTypingWithCursor
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
-import dev.adriele.adolescare.databinding.FragmentFPeriodYes3Binding
+import dev.adriele.adolescare.databinding.FragmentFP2NoMessageBinding
+import kotlinx.coroutines.Job
 
-class FPeriodYes3Fragment : Fragment() {
-    private var _binding: FragmentFPeriodYes3Binding? = null
+class FP2NoMessageFragment : Fragment() {
+    private var _binding: FragmentFP2NoMessageBinding? = null
     private val binding get() = _binding!!
+
+    private var typingJob: Job? = null
 
     private var dataListener: FragmentDataListener? = null
 
@@ -21,14 +25,15 @@ class FPeriodYes3Fragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentFPeriodYes3Binding.inflate(layoutInflater, container, false)
+        _binding = FragmentFP2NoMessageBinding.inflate(layoutInflater, container, false)
 
-        init()
+        binding.tvMessage.animateTypingWithCursor(
+            getString(dev.adriele.language.R.string.days_no_message),
+            onTypingComplete = {
+                binding.toggleGroup.visibility = View.VISIBLE // ✅ Show when done
+            }
+        )
 
-        return binding.root
-    }
-
-    private fun init() {
         binding.toggleGroup.addOnButtonCheckedListener { group, checkedId, isChecked ->
             if (isChecked) {
                 when (checkedId) {
@@ -39,14 +44,22 @@ class FPeriodYes3Fragment : Fragment() {
                     R.id.btn_no -> {
                         // User selected "No"
                         handleSelection(false)
+                        handleNextSelection()
                     }
                 }
             }
         }
+
+        return binding.root
     }
 
-    private fun handleSelection(selected: Boolean) {
-        val data = mapOf(FemaleMenstrualHistory.NUMBER_OF_WEEKS.name to selected)
+    private fun handleSelection(lastPeriodLasted: Boolean) {
+        val data = mapOf(FemaleMenstrualHistory.LAST_PERIOD_LASTED_NO.name to lastPeriodLasted)
+        dataListener?.onDataCollected(data)
+    }
+
+    private fun handleNextSelection() {
+        val data = mapOf(FemaleMenstrualHistory.LAST_PERIOD_LASTED_DAYS.name to 5)
         dataListener?.onDataCollected(data)
     }
 
@@ -60,6 +73,11 @@ class FPeriodYes3Fragment : Fragment() {
     override fun onDetach() {
         super.onDetach()
         dataListener = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        typingJob?.cancel()
     }
 
     override fun onDestroyView() {

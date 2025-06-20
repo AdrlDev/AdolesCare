@@ -1,4 +1,4 @@
-package dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment
+package dev.adriele.adolescare.authentication.fragments.femaleHistory
 
 import android.content.Context
 import android.os.Bundle
@@ -8,10 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import dev.adriele.adolescare.R
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
-import dev.adriele.adolescare.databinding.FragmentFPeriodYes1Binding
+import dev.adriele.adolescare.databinding.FragmentFPeriodYes2Binding
 
-class FPeriodYes1Fragment : Fragment() {
-    private var _binding: FragmentFPeriodYes1Binding? = null
+class FPeriodYes2Fragment : Fragment() {
+    private var _binding: FragmentFPeriodYes2Binding? = null
     private val binding get() = _binding!!
 
     private var dataListener: FragmentDataListener? = null
@@ -21,31 +21,16 @@ class FPeriodYes1Fragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentFPeriodYes1Binding.inflate(layoutInflater, container, false)
+        _binding = FragmentFPeriodYes2Binding.inflate(layoutInflater, container, false)
+
         init()
+
         return binding.root
     }
 
-    private fun handleSelection(firstPeriodReported: Boolean) {
-        val data = mapOf(FemaleMenstrualHistory.LAST_PERIOD_STARTED.name to firstPeriodReported)
+    private fun handleSelection(lastPeriodLasted: Boolean) {
+        val data = mapOf(FemaleMenstrualHistory.LAST_PERIOD_LASTED.name to lastPeriodLasted)
         dataListener?.onDataCollected(data)
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context is FragmentDataListener) {
-            dataListener = context
-        }
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        dataListener = null
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun init() {
@@ -63,5 +48,22 @@ class FPeriodYes1Fragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is FragmentDataListener) {
+            dataListener = context
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        dataListener = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -1,4 +1,4 @@
-package dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment
+package dev.adriele.adolescare.authentication.fragments.femaleHistory
 
 enum class FemaleMenstrualHistory {
     FIRST_PERIOD,

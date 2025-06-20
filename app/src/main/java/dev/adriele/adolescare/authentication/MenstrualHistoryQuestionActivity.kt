@@ -18,19 +18,22 @@ import dev.adriele.adolescare.DashboardActivity
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.authentication.adapter.PagerAdapter
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FLastPeriodNoMsgFragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FP2NoMessageFragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FP3NoMessageFragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FPeriodNoFragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.ResultFragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FPeriodYes1Fragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FPeriodYes2Fragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FPeriodYes3Fragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FemaleMenstrualHistory
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.FirstPeriodReportedFragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.LPLSelectDaysFragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.SelectLPSDateFragment
-import dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment.SelectNumberOfWeeksFragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.FLastPeriodNoMsgFragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.FP2NoMessageFragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.FP3NoMessageFragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.FPeriodNoFragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.ResultFragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.FPeriodYes1Fragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.FPeriodYes2Fragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.FPeriodYes3Fragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.FemaleMenstrualHistory
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.FirstPeriodReportedFragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.LPLSelectDaysFragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.SelectLPSDateFragment
+import dev.adriele.adolescare.authentication.fragments.femaleHistory.SelectNumberOfWeeksFragment
+import dev.adriele.adolescare.authentication.fragments.maleHistory.MQ1Fragment
+import dev.adriele.adolescare.authentication.fragments.maleHistory.MQ1TrackFragment
+import dev.adriele.adolescare.authentication.fragments.maleHistory.MaleQuestions
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.MenstrualHistoryEntity
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
@@ -97,7 +100,12 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
         pagerAdapter = PagerAdapter(this)
         vp.adapter = pagerAdapter
 
-        pagerAdapter.updateFragments(listOf(FirstPeriodReportedFragment()))
+        val fragments = when(userSex) {
+            getString(dev.adriele.language.R.string.female) -> listOf(FirstPeriodReportedFragment())
+            else -> listOf(MQ1Fragment())
+        }
+
+        pagerAdapter.updateFragments(fragments)
 
         updateStepperUI(1, false)
 
@@ -135,37 +143,51 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
 
     override fun onDataCollected(data: Map<String, Any>) {
         collectedData.putAll(data)
+
+        val pages = when(userSex) {
+            getString(dev.adriele.language.R.string.female) -> observeFemaleQ(collectedData).first
+            else -> observeMaleQ(collectedData).first
+        }
+        val isFinish = when(userSex) {
+            getString(dev.adriele.language.R.string.female) -> observeFemaleQ(collectedData).second
+            else -> observeMaleQ(collectedData).second
+        }
+
+        setFragments(pages, isFinish)
+    }
+
+    private fun observeFemaleQ(map: MutableMap<String, Any>): Pair<MutableList<Fragment>, Boolean> {
         val pages = mutableListOf<Fragment>()
 
-        val hasMenstrualPeriod = collectedData[FemaleMenstrualHistory.FIRST_PERIOD.name] as? Boolean
-        val lastPeriodStarted = collectedData[FemaleMenstrualHistory.LAST_PERIOD_STARTED.name] as? Boolean
-        val lastPeriodStartedDate = collectedData[FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE.name] as? String
-        val lastPeriodStartedChange = collectedData[FemaleMenstrualHistory.CHANGE_LAST_PERIOD_STARTED.name] as? Boolean
-        val lastPeriodLasted = collectedData[FemaleMenstrualHistory.LAST_PERIOD_LASTED.name] as? Boolean
-        val lastPeriodLastedNo = collectedData[FemaleMenstrualHistory.LAST_PERIOD_LASTED_NO.name] as? Boolean
-        val lastPeriodLastedDays = collectedData[FemaleMenstrualHistory.LAST_PERIOD_LASTED_DAYS.name] as? Int
-        val numberOfWeeks = collectedData[FemaleMenstrualHistory.NUMBER_OF_WEEKS.name] as? Boolean
-        val numberOfWeeksNo = collectedData[FemaleMenstrualHistory.NUMBER_OF_WEEKS_NO.name] as? Boolean
-        val numberOfWeeksSelected = collectedData[FemaleMenstrualHistory.NUMBER_OF_WEEKS_SELECTED.name] as? Int
+        val hasMenstrualPeriod = map[FemaleMenstrualHistory.FIRST_PERIOD.name] as? Boolean
+        val lastPeriodStarted = map[FemaleMenstrualHistory.LAST_PERIOD_STARTED.name] as? Boolean
+        val lastPeriodStartedDate = map[FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE.name] as? String
+        val lastPeriodStartedChange = map[FemaleMenstrualHistory.CHANGE_LAST_PERIOD_STARTED.name] as? Boolean
+        val lastPeriodLasted = map[FemaleMenstrualHistory.LAST_PERIOD_LASTED.name] as? Boolean
+        val lastPeriodLastedNo = map[FemaleMenstrualHistory.LAST_PERIOD_LASTED_NO.name] as? Boolean
+        val lastPeriodLastedDays = map[FemaleMenstrualHistory.LAST_PERIOD_LASTED_DAYS.name] as? Int
+        val numberOfWeeks = map[FemaleMenstrualHistory.NUMBER_OF_WEEKS.name] as? Boolean
+        val numberOfWeeksNo = map[FemaleMenstrualHistory.NUMBER_OF_WEEKS_NO.name] as? Boolean
+        val numberOfWeeksSelected = map[FemaleMenstrualHistory.NUMBER_OF_WEEKS_SELECTED.name] as? Int
 
-        Log.d("FlowDebug", "Collected: $collectedData")
+        Log.d("FlowDebug", "Collected: $map")
 
         var isFinish = false
 
-        if (hasMenstrualPeriod == false && !collectedData.containsKey(FemaleMenstrualHistory.LAST_PERIOD_STARTED.name)) {
+        if (hasMenstrualPeriod == false && !map.containsKey(FemaleMenstrualHistory.LAST_PERIOD_STARTED.name)) {
             pages.clear()
             pages.addAll(
                 listOf(FPeriodNoFragment(), ResultFragment.newInstance(false, lastPeriodStartedDate ?: "N/A", lastPeriodLastedDays ?: 0, numberOfWeeksSelected ?: 0))
             )
         }
 
-        if (hasMenstrualPeriod == true && !collectedData.containsKey(FemaleMenstrualHistory.LAST_PERIOD_STARTED.name)) {
+        if (hasMenstrualPeriod == true && !map.containsKey(FemaleMenstrualHistory.LAST_PERIOD_STARTED.name)) {
             pages.clear()
             pages.add(FPeriodYes1Fragment())
         }
 
         if (lastPeriodStarted != null
-            && !collectedData.containsKey(FemaleMenstrualHistory.CHANGE_LAST_PERIOD_STARTED.name)) {
+            && !map.containsKey(FemaleMenstrualHistory.CHANGE_LAST_PERIOD_STARTED.name)) {
             pages.clear()
             pages.add(
                 if (lastPeriodStarted) SelectLPSDateFragment()
@@ -173,7 +195,7 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
             )
         }
 
-        if (lastPeriodStartedChange != null && !collectedData.containsKey(FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE.name)) {
+        if (lastPeriodStartedChange != null && !map.containsKey(FemaleMenstrualHistory.LAST_PERIOD_STARTED_DATE.name)) {
             pages.clear()
             pages.add(
                 if (lastPeriodStartedChange) SelectLPSDateFragment()
@@ -181,17 +203,17 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
             )
         }
 
-        if (lastPeriodStartedDate != null && !collectedData.containsKey(FemaleMenstrualHistory.LAST_PERIOD_LASTED.name)) {
+        if (lastPeriodStartedDate != null && !map.containsKey(FemaleMenstrualHistory.LAST_PERIOD_LASTED.name)) {
             pages.clear()
             pages.add(FPeriodYes2Fragment())
         }
 
-        if (lastPeriodLasted != null && lastPeriodLasted == true && !collectedData.containsKey(FemaleMenstrualHistory.LAST_PERIOD_LASTED_DAYS.name)) {
+        if (lastPeriodLasted != null && lastPeriodLasted == true && !map.containsKey(FemaleMenstrualHistory.LAST_PERIOD_LASTED_DAYS.name)) {
             pages.clear()
             pages.add(LPLSelectDaysFragment())
         }
 
-        if (lastPeriodLasted != null && lastPeriodLasted == false && !collectedData.containsKey(FemaleMenstrualHistory.LAST_PERIOD_LASTED_NO.name)) {
+        if (lastPeriodLasted != null && lastPeriodLasted == false && !map.containsKey(FemaleMenstrualHistory.LAST_PERIOD_LASTED_NO.name)) {
             //if user select no in last period lasted
             pages.clear()
             pages.add(FP2NoMessageFragment())
@@ -211,12 +233,12 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
             pages.add(FPeriodYes3Fragment())
         }
 
-        if(numberOfWeeks != null && numberOfWeeks == true && !collectedData.containsKey(FemaleMenstrualHistory.NUMBER_OF_WEEKS_SELECTED.name)) {
+        if(numberOfWeeks != null && numberOfWeeks == true && !map.containsKey(FemaleMenstrualHistory.NUMBER_OF_WEEKS_SELECTED.name)) {
             pages.clear()
             pages.add(SelectNumberOfWeeksFragment())
         }
 
-        if(numberOfWeeks != null && numberOfWeeks == false && !collectedData.containsKey(FemaleMenstrualHistory.NUMBER_OF_WEEKS_NO.name)) {
+        if(numberOfWeeks != null && numberOfWeeks == false && !map.containsKey(FemaleMenstrualHistory.NUMBER_OF_WEEKS_NO.name)) {
             pages.clear()
             pages.add(FP3NoMessageFragment())
         }
@@ -254,7 +276,35 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
             Log.w("FlowDebug", "No fragment condition matched")
         }
 
-        setFragments(pages, isFinish)
+        return Pair(pages, isFinish)
+    }
+
+    private fun observeMaleQ(map: MutableMap<String, Any>): Pair<MutableList<Fragment>, Boolean> {
+        val pages = mutableListOf<Fragment>()
+
+        val maleQ1 = map["male_q1"] as? Int
+        val maleQ1Track = map["male_q1_track"] as? Int
+
+        Log.d("FlowDebug", "Collected: $map")
+
+        var isFinish = false
+
+        if (maleQ1 == MaleQuestions.TRACK_PARTNERS_MENS.value && maleQ1 != MaleQuestions.WANT_TO_LEARN_ABOUT_PREGNANCY.value) {
+            pages.clear()
+            pages.add(MQ1TrackFragment())
+        }
+
+        if (maleQ1Track == MaleQuestions.CONFIRM.value) {
+            pages.clear()
+            pages.add(FirstPeriodReportedFragment())
+            userSex = getString(dev.adriele.language.R.string.female)
+        }
+
+        if (pages.isEmpty()) {
+            Log.w("FlowDebug", "No fragment condition matched")
+        }
+
+        return Pair(pages, isFinish)
     }
 
     private fun setFragments(pages: List<Fragment>, isFinish: Boolean) {

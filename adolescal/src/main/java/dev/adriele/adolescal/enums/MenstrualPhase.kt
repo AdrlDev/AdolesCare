@@ -1,4 +1,4 @@
-package dev.adriele.adolescare.helpers.enums
+package dev.adriele.adolescal.enums
 
 enum class MenstrualPhase {
     MENSTRUAL,

@@ -1,4 +1,4 @@
-package dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment
+package dev.adriele.adolescare.authentication.fragments.femaleHistory
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

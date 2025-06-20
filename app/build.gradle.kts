@@ -91,4 +91,5 @@ dependencies {
 
     implementation(project(":language"))
     implementation(project(":calendarview"))
+    implementation(project(":adolescal"))
 }

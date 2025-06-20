@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    tools:context=".authentication.fragments.femaleHistoryFragment.ResultFragment"
+    tools:context=".authentication.fragments.femaleHistory.ResultFragment"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <com.google.android.material.card.MaterialCardView

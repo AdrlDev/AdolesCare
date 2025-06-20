@@ -1,4 +1,4 @@
-package dev.adriele.adolescare.authentication.fragments.femaleHistoryFragment
+package dev.adriele.adolescare.authentication.fragments.femaleHistory
 
 import android.content.Context
 import android.os.Bundle
@@ -9,11 +9,11 @@ import android.view.ViewGroup
 import dev.adriele.adolescare.R
 import dev.adriele.adolescare.helpers.Utility.animateTypingWithCursor
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
-import dev.adriele.adolescare.databinding.FragmentFP2NoMessageBinding
+import dev.adriele.adolescare.databinding.FragmentFP3NoMessageBinding
 import kotlinx.coroutines.Job
 
-class FP2NoMessageFragment : Fragment() {
-    private var _binding: FragmentFP2NoMessageBinding? = null
+class FP3NoMessageFragment : Fragment() {
+    private var _binding: FragmentFP3NoMessageBinding? = null
     private val binding get() = _binding!!
 
     private var typingJob: Job? = null
@@ -25,10 +25,10 @@ class FP2NoMessageFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentFP2NoMessageBinding.inflate(layoutInflater, container, false)
+        _binding = FragmentFP3NoMessageBinding.inflate(layoutInflater, container, false)
 
         binding.tvMessage.animateTypingWithCursor(
-            getString(dev.adriele.language.R.string.days_no_message),
+            getString(dev.adriele.language.R.string.weeks_no_message),
             onTypingComplete = {
                 binding.toggleGroup.visibility = View.VISIBLE // ✅ Show when done
             }
@@ -54,12 +54,12 @@ class FP2NoMessageFragment : Fragment() {
     }
 
     private fun handleSelection(lastPeriodLasted: Boolean) {
-        val data = mapOf(FemaleMenstrualHistory.LAST_PERIOD_LASTED_NO.name to lastPeriodLasted)
+        val data = mapOf(FemaleMenstrualHistory.NUMBER_OF_WEEKS_NO.name to lastPeriodLasted)
         dataListener?.onDataCollected(data)
     }
 
     private fun handleNextSelection() {
-        val data = mapOf(FemaleMenstrualHistory.LAST_PERIOD_LASTED_DAYS.name to 5)
+        val data = mapOf(FemaleMenstrualHistory.NUMBER_OF_WEEKS_SELECTED.name to 3)
         dataListener?.onDataCollected(data)
     }
 

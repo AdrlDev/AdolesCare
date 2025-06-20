@@ -6,12 +6,15 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
-import com.applandeo.materialcalendarview.EventDay
+import androidx.lifecycle.lifecycleScope
+import com.applandeo.materialcalendarview.CalendarDay
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.CycleLogEntity
+import dev.adriele.adolescare.database.entities.MenstrualCycle
 import dev.adriele.adolescare.database.entities.MenstrualHistoryEntity
 import dev.adriele.adolescare.database.repositories.implementation.ChatBotRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.CycleLogRepositoryImpl
@@ -23,6 +26,9 @@ import dev.adriele.adolescare.viewmodel.MenstrualHistoryViewModel
 import dev.adriele.adolescare.viewmodel.factory.ChatBotViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.CycleLogViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.MenstrualHistoryViewModelFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -63,7 +69,8 @@ class LogPeriodActivity : AppCompatActivity() {
         menstrualHistoryViewModel = ViewModelProvider(this, menstrualHistoryViewModelFactory)[MenstrualHistoryViewModel::class]
 
         val cycleLogDao = AppDatabaseProvider.getDatabase(this).cycleLogDao()
-        val cycleRepository = CycleLogRepositoryImpl(cycleLogDao)
+        val cycleDao = AppDatabaseProvider.getDatabase(this).cycleDao()
+        val cycleRepository = CycleLogRepositoryImpl(cycleLogDao, cycleDao)
         val cycleViewModelFactory = CycleLogViewModelFactory(cycleRepository)
         cycleLogViewModel = ViewModelProvider(this, cycleViewModelFactory)[CycleLogViewModel::class]
 
@@ -83,31 +90,54 @@ class LogPeriodActivity : AppCompatActivity() {
             if (history != null) {
                 val lmp = history.lastPeriodStart
                 val periodDays = history.periodDurationDays
+                val cycleInterval = history.cycleIntervalWeeks
 
-                val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
-                val calendar = Calendar.getInstance()
-                calendar.time = sdf.parse(lmp!!)!!
+                lifecycleScope.launch(Dispatchers.IO) {
+                    cycleLogViewModel.insertCycle(MenstrualCycle(
+                        userId = userId!!,
+                        lastPeriodStart = lmp!!,
+                        periodDurationDays = periodDays!!,
+                        cycleLengthWeeks = cycleInterval!!
+                    ))
 
-                val periodEvents = mutableListOf<EventDay>()
-                val highlightDates = mutableListOf<Calendar>()
+                    val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+                    val calendar = Calendar.getInstance().apply {
+                        time = sdf.parse(lmp)!!
+                    }
 
-                repeat(periodDays!!) {
-                    val date = calendar.clone() as Calendar
-                    highlightDates.add(date)
-                    // 🩸 Use combined icon drawable
-                    periodEvents.add(EventDay(date, R.drawable.menstruation_combined))
+                    val calendarDays = mutableListOf<CalendarDay>()
 
-                    calendar.add(Calendar.DATE, 1)
+                    repeat(periodDays) {
+                        val date = calendar.clone() as Calendar
+
+                        val periodDay = CalendarDay(date).apply {
+                            imageDrawable = ContextCompat.getDrawable(this@LogPeriodActivity, R.drawable.menstruation_combined)
+                            labelColor = R.color.buttonColor
+                        }
+                        calendarDays.add(periodDay)
+                        calendar.add(Calendar.DATE, 1)
+                    }
+
+                    val today = Calendar.getInstance()
+                    val todayDay = CalendarDay(today).apply {
+                        backgroundDrawable = ContextCompat.getDrawable(this@LogPeriodActivity, dev.adriele.calendarview.R.drawable.bg_today_circle)
+                        labelColor = R.color.requiredColorHelper
+                    }
+
+                    // Prevent duplicates
+                    if (calendarDays.none { it.calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                                it.calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR) }) {
+                        calendarDays.add(todayDay)
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        // Always check if view is attached
+                        binding.calendarView.setDate(calendarDays.first().calendar)
+                        binding.calendarView.setCalendarDays(calendarDays)
+
+                        calculateLMP(history)
+                    }
                 }
-
-                // Scroll to LMP
-                binding.calendarView.setDate(periodEvents.first().calendar)
-
-                // Set the events
-                binding.calendarView.setEvents(periodEvents)
-                binding.calendarView.setHighlightedDays(highlightDates)
-
-                calculateLMP(history)
             }
         }
     }
@@ -164,7 +194,7 @@ class LogPeriodActivity : AppCompatActivity() {
     }
 
     private fun saveCycleDays(entity: CycleLogEntity) {
-        cycleLogViewModel.insertCycle(entity)
+        cycleLogViewModel.insertCycleLog(entity)
     }
 
     private fun hideShimmer() {

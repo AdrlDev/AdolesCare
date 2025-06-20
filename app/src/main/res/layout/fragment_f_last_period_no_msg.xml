@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="32dp"
-    tools:context=".authentication.fragments.femaleHistoryFragment.FLastPeriodNoMsgFragment"
+    tools:context=".authentication.fragments.femaleHistory.FLastPeriodNoMsgFragment"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- TODO: Update blank fragment layout -->
