@@ -9,7 +9,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
-import dev.adriele.adolescare.DashboardActivity
+import dev.adriele.adolescare.ui.DashboardActivity
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.helpers.Utility.PreferenceManager
 import dev.adriele.adolescare.helpers.Utility.SecurityUtils

@@ -10,8 +10,12 @@ class ModuleRepositoryImpl(private val dao: ModuleDao): ModuleRepository {
         dao.insertAll(modules)
     }
 
-    override suspend fun getAllModules(moduleContentType: ModuleContentType): List<LearningModule> {
-        return dao.getAllModules(moduleContentType)
+    override suspend fun getAllModules(moduleContentType: ModuleContentType, category: String): List<LearningModule> {
+        return dao.getAllModules(moduleContentType, category)
+    }
+
+    override suspend fun getAllVideoModules(moduleContentType: ModuleContentType): List<LearningModule> {
+        return dao.getAllVideoModules(moduleContentType)
     }
 
     override suspend fun getAllModulesByCategory(
@@ -19,6 +23,14 @@ class ModuleRepositoryImpl(private val dao: ModuleDao): ModuleRepository {
         category: String
     ): List<LearningModule> {
         return dao.getAllModulesByCategory(moduleContentType, category)
+    }
+
+    override suspend fun searchModule(
+        moduleContentType: ModuleContentType,
+        category: String,
+        query: String
+    ): List<LearningModule> {
+        return dao.searchModule(moduleContentType, category, "%$query%")
     }
 
     override suspend fun getModuleById(moduleId: String): LearningModule {

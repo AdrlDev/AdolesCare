@@ -1,10 +1,13 @@
-package dev.adriele.adolescare
+package dev.adriele.adolescare.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
@@ -14,8 +17,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
+import com.google.gson.Gson
+import dev.adriele.adolescare.R
 import dev.adriele.adolescare.database.AppDatabaseProvider
-import dev.adriele.adolescare.database.entities.LearningModule
 import dev.adriele.adolescare.database.repositories.implementation.ModuleRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityDashboardBinding
 import dev.adriele.adolescare.fragments.ChatBotFragment
@@ -24,7 +28,6 @@ import dev.adriele.adolescare.fragments.MenstrualTrackerFragment
 import dev.adriele.adolescare.fragments.ModulesFragment
 import dev.adriele.adolescare.fragments.VideosFragment
 import dev.adriele.adolescare.helpers.Utility
-import dev.adriele.adolescare.helpers.enums.ModuleContentType
 import dev.adriele.adolescare.viewmodel.ModuleViewModel
 import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
 
@@ -57,11 +60,32 @@ class DashboardActivity : AppCompatActivity() {
             insets
         }
 
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                } else {
+                    showExitConfirmationDialog() // Fully exit the app
+                }
+            }
+        })
+
         userId = intent.getStringExtra("userId")
         userName = intent.getStringExtra("userName")
         initViews(savedInstanceState)
         initializeViewModel()
         afterInit()
+    }
+
+    private fun showExitConfirmationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Exit App")
+            .setMessage("Are you sure you want to exit?")
+            .setPositiveButton("Yes") { _, _ ->
+                finishAffinity() // Closes the app
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun initializeViewModel() {
@@ -100,11 +124,11 @@ class DashboardActivity : AppCompatActivity() {
         // Bottom nav item click
         bottomNavView.setOnItemSelectedListener {
             when (it.itemId) {
-                R.id.action_home -> loadFragment(HomeFragment.newInstance(userId ?: "", userName ?: ""))
-                R.id.action_module -> loadFragment(ModulesFragment.newInstance(userId ?: ""))
-                R.id.action_calendar -> loadFragment(MenstrualTrackerFragment.newInstance(userId ?: "", userName ?: ""))
-                R.id.action_video -> loadFragment(VideosFragment.newInstance(userId ?: ""))
-                R.id.action_chat_bot -> loadFragment(ChatBotFragment.newInstance(userId ?: "", userName ?: ""))
+                R.id.action_home -> loadFragment(HomeFragment.Companion.newInstance(userId ?: "", userName ?: ""))
+                R.id.action_module -> loadFragment(ModulesFragment.Companion.newInstance(userId ?: ""))
+                R.id.action_calendar -> loadFragment(MenstrualTrackerFragment.Companion.newInstance(userId ?: "", userName ?: ""))
+                R.id.action_video -> loadFragment(VideosFragment.Companion.newInstance(userId ?: ""))
+                R.id.action_chat_bot -> loadFragment(ChatBotFragment.Companion.newInstance(userId ?: "", userName ?: ""))
             }
             true
         }
@@ -119,7 +143,7 @@ class DashboardActivity : AppCompatActivity() {
         // Set default screen
         if (savedInstanceState == null) {
             bottomNavView.selectedItemId = R.id.action_home
-            loadFragment(HomeFragment.newInstance(userId ?: "", userName ?: ""))
+            loadFragment(HomeFragment.Companion.newInstance(userId ?: "", userName ?: ""))
         }
     }
 
@@ -131,21 +155,14 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun insertModules() {
         val chapters = Utility.loadLearningModules(this).toMutableList()
+        val videos = Utility.loadLearningVideos(this).toMutableList()
 
-        // Insert 13 videos
-        (1..13).forEach { index ->
-            chapters.add(
-                LearningModule(
-                    id = "video_$index", // Use unique ID like VID_1, VID_2...
-                    title = "Guidelines Video $index",
-                    category = "DSWD Teenage Pregnancy Videos",
-                    contentType = ModuleContentType.VIDEO, // Make sure you define this in your enum
-                    contentUrl = "modules/videos/video_$index.mp4" // Path inside assets or Firebase/hosted
-                )
-            )
+        Log.e("VIDEOS_MODULE", Gson().toJson(videos))
+
+        for(video in videos) {
+            chapters.add(video)
         }
 
         moduleViewModel.insertModules(chapters)
     }
-
 }

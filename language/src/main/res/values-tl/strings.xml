@@ -90,8 +90,13 @@
 
     <string name="male_q1_track">Pasagutan mo sa iyong partner ang mga sumusunod na tanong.</string>
 
+    <string name="symptoms">Sintomas at Mga Gawain</string>
+    <string name="add_weight_etc">Magdagdag ng timbang, pakiramdam, at mga sintomas</string>
+
     //chatbot
     <string name="ask">Magtanong…</string>
 
     <string name="splash_message">Sa tamang kaalaman, may ligtas na kinabukasan</string>
+    <string name="edit_period_dates">I-edit ang mga petsa ng regla</string>
+    <string name="log_period">I-log ang regla</string>
 </resources>

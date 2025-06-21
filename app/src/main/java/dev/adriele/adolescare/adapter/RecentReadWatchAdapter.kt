@@ -1,13 +1,19 @@
 package dev.adriele.adolescare.adapter
 
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import dev.adriele.adolescare.R
 import dev.adriele.adolescare.database.entities.RecentReadAndWatch
 import dev.adriele.adolescare.databinding.ItemRecentBinding
@@ -19,12 +25,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.text.lowercase
 
 class RecentReadWatchAdapter(
     private val recentList: List<RecentReadAndWatch>,
     private val moduleViewModel: ModuleViewModel,
     private val lifecycleOwner: LifecycleOwner,
-    private val scope: CoroutineScope,
     private val iRecentReadAndWatch: IRecentReadAndWatch
 ) : RecyclerView.Adapter<RecentReadWatchAdapter.RecentViewHolder>() {
 
@@ -49,22 +55,91 @@ class RecentReadWatchAdapter(
                         ModuleContentType.PDF -> {
                             binding.cvVideo.visibility = View.GONE
 
-                            val cachedFile = Utility.copyAssetToCache(binding.root.context, module.contentUrl)
+                            val safeTitle = module.category
+                                .lowercase()
+                                .replace(" ", "_")
 
-                            scope.launch {
-                                val bitmap: Bitmap? = withContext(Dispatchers.IO) {
+                            val assetPath = "modules/pdf/cover/$safeTitle.png"
+                            val cachedFile = try {
+                                Utility.copyAssetToCache(binding.root.context, assetPath)
+                            } catch (e: Exception) {
+                                Log.e("RecentReadWatchAdapter", "Error copying asset: $e")
+                                null
+                            }
+
+                            if (cachedFile != null && cachedFile.exists()) {
+                                Glide.with(binding.root.context)
+                                    .load(cachedFile)
+                                    .placeholder(R.drawable.pdf_icon)
+                                    .error(R.drawable.pdf_icon)
+                                    .listener(object : RequestListener<Drawable> {
+                                        override fun onLoadFailed(
+                                            e: GlideException?,
+                                            model: Any?,
+                                            target: Target<Drawable?>,
+                                            isFirstResource: Boolean
+                                        ): Boolean {
+                                            binding.imgThumbnail.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                                            return false
+                                        }
+
+                                        override fun onResourceReady(
+                                            resource: Drawable,
+                                            model: Any,
+                                            target: Target<Drawable?>?,
+                                            dataSource: DataSource,
+                                            isFirstResource: Boolean
+                                        ): Boolean {
+                                            binding.imgThumbnail.scaleType = ImageView.ScaleType.FIT_XY
+                                            return false
+                                        }
+                                    })
+                                    .into(binding.imgThumbnail)
+                            } else {
+                                // File is null or doesn't exist — show default image
+                                CoroutineScope(Dispatchers.IO).launch {
                                     try {
-                                        Utility.generatePdfThumbnail(cachedFile)
-                                    } catch (e: Exception) {
-                                        Log.e("THUMBNAIL_PDF", e.message, e)
-                                        null
-                                    }
-                                }
+                                        val file = Utility.copyAssetToCache(binding.root.context, module.contentUrl)
+                                        val thumbnail = Utility.generatePdfThumbnail(file!!, 0)
 
-                                bitmap?.let {
-                                    Glide.with(binding.root.context)
-                                        .load(it)
-                                        .into(binding.imgThumbnail)
+                                        withContext(Dispatchers.Main) {
+                                            Glide.with(binding.root.context)
+                                                .asBitmap()
+                                                .load(thumbnail)
+                                                .frame(1_000_000)
+                                                .placeholder(R.drawable.pdf_icon)
+                                                .error(R.drawable.pdf_icon)
+                                                .listener(object : RequestListener<Bitmap> {
+                                                    override fun onLoadFailed(
+                                                        e: GlideException?,
+                                                        model: Any?,
+                                                        target: Target<Bitmap?>,
+                                                        isFirstResource: Boolean
+                                                    ): Boolean {
+                                                        binding.imgThumbnail.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                                                        return false
+                                                    }
+
+                                                    override fun onResourceReady(
+                                                        resource: Bitmap,
+                                                        model: Any,
+                                                        target: Target<Bitmap?>?,
+                                                        dataSource: DataSource,
+                                                        isFirstResource: Boolean
+                                                    ): Boolean {
+                                                        binding.imgThumbnail.scaleType = ImageView.ScaleType.FIT_XY
+                                                        return false
+                                                    }
+                                                })
+                                                .into(binding.imgThumbnail)
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                        withContext(Dispatchers.Main) {
+                                            binding.imgThumbnail.setImageResource(R.drawable.pdf_icon)
+                                            binding.imgThumbnail.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -83,7 +158,7 @@ class RecentReadWatchAdapter(
                     }
 
                     binding.root.setOnClickListener {
-                        iRecentReadAndWatch.onRecentClick(type, module.contentUrl)
+                        iRecentReadAndWatch.onRecentClick(type, item, module.contentUrl)
                     }
                 }
             }

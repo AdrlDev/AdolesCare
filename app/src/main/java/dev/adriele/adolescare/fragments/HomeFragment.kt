@@ -7,21 +7,20 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import dev.adriele.adolescal.model.OvulationInfo
-import dev.adriele.adolescare.LogPeriodActivity
-import dev.adriele.adolescare.PdfViewerActivity
-import dev.adriele.adolescare.VideoPlayerActivity
+import dev.adriele.adolescare.ui.LogPeriodActivity
+import dev.adriele.adolescare.ui.PdfViewerActivity
+import dev.adriele.adolescare.ui.VideoPlayerActivity
 import dev.adriele.adolescare.adapter.RecentReadWatchAdapter
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.api.response.TipResponse
 import dev.adriele.adolescare.contracts.IChatBot
 import dev.adriele.adolescare.database.AppDatabaseProvider
+import dev.adriele.adolescare.database.entities.RecentReadAndWatch
 import dev.adriele.adolescare.database.repositories.implementation.ChatBotRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.ModuleRepositoryImpl
@@ -157,7 +156,8 @@ class HomeFragment : Fragment(), IRecentReadAndWatch {
                 binding.llNoRecent.visibility = View.GONE
 
                 binding.rvRecent.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-                binding.rvRecent.adapter = RecentReadWatchAdapter(recentList, moduleViewModel, viewLifecycleOwner, viewLifecycleOwner.lifecycleScope, this)
+                binding.rvRecent.adapter = RecentReadWatchAdapter(recentList, moduleViewModel, viewLifecycleOwner,
+                    this)
                 binding.rvRecent.adapter?.notifyDataSetChanged()
                 binding.rvRecent.smoothScrollToPosition(0)
 
@@ -202,20 +202,14 @@ class HomeFragment : Fragment(), IRecentReadAndWatch {
 
     override fun onRecentClick(
         moduleType: ModuleContentType,
+        recent: RecentReadAndWatch,
         path: String
     ) {
-        val cachedFile = Utility.copyAssetToCache(requireContext(), path)
 
         when(moduleType) {
             ModuleContentType.PDF -> {
-                val uri = FileProvider.getUriForFile(
-                    requireContext(),
-                    "${requireContext().packageName}.fileprovider",
-                    cachedFile
-                )
-
                 val intent = Intent(context, PdfViewerActivity::class.java).apply {
-                    putExtra("pdf_uri", uri.toString())
+                    putExtra("module_id", recent.moduleId)
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
 

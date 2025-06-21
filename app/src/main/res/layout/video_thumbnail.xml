@@ -2,47 +2,76 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center">
+    android:layout_height="wrap_content">
 
-    <com.google.android.material.card.MaterialCardView
-        style="?attr/materialCardViewFilledStyle"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        app:cardBackgroundColor="@color/background"
-        app:cardCornerRadius="5dp"
-        app:cardElevation="4dp">
+        android:orientation="vertical"
+        android:paddingBottom="12dp"
+        >
 
-        <RelativeLayout
+        <com.google.android.material.card.MaterialCardView
+            style="?attr/materialCardViewFilledStyle"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            app:cardBackgroundColor="@color/background"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="4dp">
 
-            <ImageView
-                android:id="@+id/imgThumbnail"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="180dp"
-                android:layout_centerInParent="true"
-                android:contentDescription="Video thumbnail"
-                android:scaleType="center"
-                android:src="@drawable/video" />
+                android:layout_height="match_parent">
 
-            <!-- Semi-transparent overlay -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="180dp"
-                android:layout_centerInParent="true"
-                android:background="#66000000" />
+                <ImageView
+                    android:id="@+id/imgThumbnail"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:layout_centerInParent="true"
+                    android:contentDescription="Video thumbnail"
+                    android:scaleType="center"
+                    android:src="@drawable/video" />
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_centerInParent="true"
-                android:src="@drawable/play_32"
-                app:tint="@android:color/white" />
+                <!-- Semi-transparent overlay -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:layout_centerInParent="true"
+                    android:background="#66000000" />
 
-        </RelativeLayout>
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/play_32"
+                    app:tint="@android:color/white" />
 
-    </com.google.android.material.card.MaterialCardView>
+            </RelativeLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:layout_marginVertical="8dp"
+            android:layout_marginHorizontal="12dp"
+            android:textSize="16sp"
+            android:fontFamily="@font/roboto_medium"
+            android:id="@+id/tv_title"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Credits"
+            android:layout_marginHorizontal="12dp"
+            android:textSize="12sp"
+            android:fontFamily="@font/roboto_medium"
+            android:id="@+id/tv_credits"
+            />
+
+    </LinearLayout>
 
 </FrameLayout>

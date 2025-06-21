@@ -8,7 +8,9 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
@@ -61,6 +63,13 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import androidx.core.graphics.createBitmap
+import com.google.gson.reflect.TypeToken
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 
 object Utility {
     interface TermsPrivacyClickListener {
@@ -490,7 +499,7 @@ object Utility {
         return formatter.format(twoWeeksAgo)
     }
 
-    fun copyAssetToCache(context: Context, assetPath: String): File {
+    fun copyAssetToCache(context: Context, assetPath: String): File? {
         val file = File(context.cacheDir, File(assetPath).name)
 
         if (!file.exists()) {
@@ -558,13 +567,16 @@ object Utility {
                     it.name.equals(folder.uppercase().replace("-", "_"), ignoreCase = true)
                 }?.category ?: folder.replace('_', ' ')
 
+                val orderBy = if (title.equals(enumCategory, ignoreCase = true)) 0 else index + 1
+
                 modules.add(
                     LearningModule(
                         id = "${folder}_$index",
                         title = title,
                         category = enumCategory,
                         contentType = ModuleContentType.PDF,
-                        contentUrl = "$basePath/$folder/$file"
+                        contentUrl = "$basePath/$folder/$file",
+                        orderBy = orderBy
                     )
                 )
             }
@@ -573,24 +585,81 @@ object Utility {
         return modules
     }
 
-    fun buildTextIndex(file: File): Map<Int, String> {
-        val document = PDDocument.load(file)
-        val index = mutableMapOf<Int, String>()
-        val stripper = PDFTextStripper()
-        for (page in 1..document.numberOfPages) {
-            stripper.startPage = page
-            stripper.endPage = page
-            val text = stripper.getText(document)
-            index[page - 1] = text
+    fun loadLearningVideos(context: Context): List<LearningModule> {
+        val modules = mutableListOf<LearningModule>()
+        val assetManager = context.assets
+        val basePath = "modules/videos"
+
+        val files = assetManager.list(basePath)?.filter { it.endsWith(".mp4") } ?: return emptyList()
+
+        for ((index, file) in files.withIndex()) {
+            val title = file.removeSuffix(".mp4")
+            val formattedTitle = title.replace('_', ' ').replaceFirstChar { it.uppercaseChar() }
+            val creditLink = videoCredits[title]
+
+            modules.add(
+                LearningModule(
+                    id = "video_$index",
+                    title = formattedTitle,
+                    category = "Learning Videos",
+                    contentType = ModuleContentType.VIDEO,
+                    contentUrl = "$basePath/$file",
+                    contentCreditsUrl = creditLink,
+                    orderBy = index
+                )
+            )
         }
-        document.close()
+
+        return modules
+    }
+
+    private val videoCredits = mapOf(
+        "how_do_contraceptives_work" to "https://youtu.be/Zx8zbTMTncs?si=9VEENxtA2XxJVaKK",
+        "contraceptives_101" to "https://youtu.be/KyU880oHSxM?si=GA28M1_27hObceBg",
+        "how_to_decide_which_birth_control_is_right_for_you" to "https://youtu.be/aWUJ3J0EV0U?si=NWY58R5299DbsWS1",
+        "tips_for_safer_sex_and_pregnancy_prevention" to "https://youtu.be/fhl6SFBHgcs?si=lJzgI1qbg3SVzAbo",
+        "what_is_emergency_contraception_the_morning_after_pill" to "https://youtu.be/Z1LTban3Z84?si=GPx8PW33nrjRciKp",
+        "first_time_ganito_po_ang_tamang_paginom_ng_pills" to "https://youtu.be/-D0d14Tpa0A?si=1J6lsOm4uA8QS5hM",
+        "paano_ang_tamang_paraan_ng_paggamit_ng_condom" to "https://youtu.be/wwk2RlpE-1Q?si=Y44kEOe3aSqf3P2b",
+        "ito_ang_natural_at_epektibong_contraceptive_method" to "https://youtu.be/hEyjMgQsJaw?si=SOkKXcMIk3AHep5F",
+        "bakit_pinipili_ng_ibang_kababaihan_ang_iud" to "https://youtu.be/7KQ6wKRgdlY?si=DYNxnLwPWAYJiGHc",
+        "depo_injectable_o_dmpa_ano_nga_ba_ito" to "https://youtu.be/cQApY1AFAvU?si=q4Tn_cE-AiWJMEHK",
+        "teenager_palang_ako_pwede_bang_gumamit_ng_contraception" to "https://youtu.be/njlFlmZ7PSs?si=3MZAhk8vMae0iC-y",
+        "ano_po_ang_side_effects_ng_injectables_o_depo" to "https://youtu.be/X9Zg3aGCVSc?si=8fdOp6FWj4LNismn",
+        "masakit_ba_magpalagay_ng_implant" to "https://youtu.be/ouzDUzYgk5g?si=0QurLUHSbXb-ZYIy"
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun buildTextIndexViaOcr(file: File): Map<Int, String> {
+        val index = mutableMapOf<Int, String>()
+
+        val renderer = PdfRenderer(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY))
+
+        for (i in 0 until renderer.pageCount) {
+            val page = renderer.openPage(i)
+            val bitmap = createBitmap(page.width, page.height)
+            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+            page.close()
+
+            val image = InputImage.fromBitmap(bitmap, 0)
+            val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+            val result = suspendCancellableCoroutine<String> { cont ->
+                recognizer.process(image)
+                    .addOnSuccessListener { cont.resume(it.text, null) }
+                    .addOnFailureListener { cont.resumeWith(Result.success("")) }
+            }
+
+            index[i] = result
+        }
+
+        renderer.close()
         return index
     }
 
     fun findPagesWithText(query: String, index: Map<Int, String>): List<Int> {
-        return index.filter { (_, text) -> text.contains(query, ignoreCase = true) }
-            .keys
-            .toList()
+        val lower = query.lowercase()
+        return index.filter { it.value.lowercase().contains(lower) }.map { it.key }
     }
 
     fun getFileFromUri(context: Context, uri: Uri): File {
@@ -602,6 +671,74 @@ object Utility {
             }
         }
         return file
+    }
+
+    fun saveOcrCache(context: Context, fileName: String, index: Map<Int, String>) {
+        val gson = com.google.gson.Gson()
+        val json = gson.toJson(index)
+        val outFile = File(context.cacheDir, "ocr_$fileName.json")
+        outFile.writeText(json)
+    }
+
+    fun loadOcrCache(context: Context, fileName: String): Map<Int, String>? {
+        val gson = com.google.gson.Gson()
+        val file = File(context.cacheDir, "ocr_$fileName.json")
+        return if (file.exists()) {
+            val json = file.readText()
+            gson.fromJson(json, object : TypeToken<Map<Int, String>>() {}.type)
+        } else null
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun generateHighlightedBitmap(
+        file: File,
+        pageIndex: Int,
+        query: String
+    ): Bitmap = withContext(Dispatchers.IO) {
+        val renderer = PdfRenderer(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY))
+        val page = renderer.openPage(pageIndex)
+
+        val bitmap = createBitmap(page.width, page.height)
+        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+        page.close()
+        renderer.close()
+
+        val canvas = Canvas(bitmap)
+        val paint = Paint().apply {
+            style = Paint.Style.FILL
+            color = Color.YELLOW
+            alpha = 120
+        }
+
+        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        val inputImage = InputImage.fromBitmap(bitmap.copy(Bitmap.Config.ARGB_8888, true), 0)
+
+        val visionText = suspendCancellableCoroutine<com.google.mlkit.vision.text.Text> { cont ->
+            recognizer.process(inputImage)
+                .addOnSuccessListener { cont.resume(it, null) }
+                .addOnFailureListener { cont.resumeWith(Result.failure(it)) }
+        }
+
+        visionText.textBlocks.forEach { block ->
+            if (block.text.contains(query, ignoreCase = true)) {
+                block.boundingBox?.let { canvas.drawRect(it, paint) }
+            }
+        }
+
+        bitmap
+    }
+
+    fun getPdfPageCount(context: Context, assetPath: String): Int {
+        return try {
+            val file = copyAssetToCache(context, assetPath)
+            val renderer = PdfRenderer(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY))
+            val pageCount = renderer.pageCount
+            renderer.close()
+            pageCount
+        } catch (e: Exception) {
+            e.printStackTrace()
+            0
+        }
     }
 
 }

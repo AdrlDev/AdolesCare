@@ -1,2 +1,3 @@
 /build
+# Recursively ignore everything inside assets
 app/src/main/assets/

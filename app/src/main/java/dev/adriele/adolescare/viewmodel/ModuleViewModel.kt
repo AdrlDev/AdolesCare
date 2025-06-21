@@ -9,12 +9,10 @@ import androidx.lifecycle.viewModelScope
 import dev.adriele.adolescare.helpers.enums.ModuleContentType
 import dev.adriele.adolescare.database.entities.LearningModule
 import dev.adriele.adolescare.database.repositories.ModuleRepository
+import dev.adriele.adolescare.helpers.enums.PDFModulesCategory
 import kotlinx.coroutines.launch
 
 class ModuleViewModel(private val repository: ModuleRepository) : ViewModel() {
-    private val _insertStatus = MutableLiveData<Boolean>()
-    val insertStatus: LiveData<Boolean> = _insertStatus
-
     private val _modules = MutableLiveData<List<LearningModule>>()
     val modules: LiveData<List<LearningModule>> get() = _modules
 
@@ -22,24 +20,43 @@ class ModuleViewModel(private val repository: ModuleRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 repository.insertModules(modules)
-                _insertStatus.value = true
             } catch (e: Exception) {
                 Log.e("UserViewModel", "Error inserting modules", e)
-                _insertStatus.value = false
             }
         }
     }
 
     fun getAllModules(moduleContentType: ModuleContentType) {
         viewModelScope.launch {
-            val modules = repository.getAllModules(moduleContentType)
-            _modules.postValue(modules)
+            when (moduleContentType) {
+                ModuleContentType.VIDEO -> {
+                    _modules.postValue(repository.getAllVideoModules(moduleContentType))
+                }
+                ModuleContentType.PDF -> {
+                    val result = mutableListOf<LearningModule>()
+                    for (categoryEnum in PDFModulesCategory.entries) {
+                        val one = repository.getAllModules(
+                            moduleContentType,
+                            categoryEnum.category.lowercase()
+                        ).firstOrNull()
+                        if (one != null) result.add(one)
+                    }
+                    _modules.postValue(result)
+                }
+            }
         }
     }
 
     fun getAllModulesByCategory(moduleContentType: ModuleContentType, category: String) {
         viewModelScope.launch {
             val modules = repository.getAllModulesByCategory(moduleContentType, category)
+            _modules.postValue(modules)
+        }
+    }
+
+    fun searchModule(moduleContentType: ModuleContentType, category: String, query: String) {
+        viewModelScope.launch {
+            val modules = repository.searchModule(ModuleContentType.PDF, category, "%$query%")
             _modules.postValue(modules)
         }
     }

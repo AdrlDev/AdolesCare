@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.snackbar.Snackbar
-import dev.adriele.adolescare.DashboardActivity
+import dev.adriele.adolescare.ui.DashboardActivity
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.authentication.adapter.PagerAdapter
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
@@ -298,6 +298,11 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
             pages.clear()
             pages.add(FirstPeriodReportedFragment())
             userSex = getString(dev.adriele.language.R.string.female)
+        }
+
+        if (maleQ1 != MaleQuestions.TRACK_PARTNERS_MENS.value && maleQ1 == MaleQuestions.WANT_TO_LEARN_ABOUT_PREGNANCY.value) {
+            pages.clear()
+            isFinish = true
         }
 
         if (pages.isEmpty()) {

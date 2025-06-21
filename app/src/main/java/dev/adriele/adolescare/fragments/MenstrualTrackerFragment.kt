@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import dev.adriele.adolescal.model.OvulationInfo
-import dev.adriele.adolescare.LogPeriodActivity
+import dev.adriele.adolescare.ui.LogPeriodActivity
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
 import dev.adriele.adolescare.databinding.FragmentMenstrualTrackerBinding

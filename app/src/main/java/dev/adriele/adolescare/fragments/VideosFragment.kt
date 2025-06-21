@@ -7,8 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.GridLayoutManager
-import dev.adriele.adolescare.VideoPlayerActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
+import dev.adriele.adolescare.ui.VideoPlayerActivity
 import dev.adriele.adolescare.helpers.enums.ModuleContentType
 import dev.adriele.adolescare.adapter.VideoThumbnailAdapter
 import dev.adriele.adolescare.database.AppDatabaseProvider
@@ -76,7 +77,7 @@ class VideosFragment : Fragment(), IModules.VIDEO {
                 binding.rvVideo.visibility = View.VISIBLE
 
                 val adapter = VideoThumbnailAdapter(requireContext(), modules, this)
-                binding.rvVideo.layoutManager = GridLayoutManager(requireContext(), 3)
+                binding.rvVideo.layoutManager = LinearLayoutManager(requireContext())
                 binding.rvVideo.adapter = adapter
                 hideShimmer()
             } else {
@@ -108,12 +109,18 @@ class VideosFragment : Fragment(), IModules.VIDEO {
     }
 
     private fun afterInitialize() {
-        recentReadWatchViewModel.addRecentStatus.observe(viewLifecycleOwner) { isSuccess ->
+        recentReadWatchViewModel.addRecentStatus.observe(viewLifecycleOwner) { (isSuccess, moduleId) ->
             if (isSuccess) {
-                loadingDialog.dismiss()
-                val intent = Intent(requireContext(), VideoPlayerActivity::class.java)
-                intent.putExtra("path", videoList[videoPosition].contentUrl)
-                startActivity(intent)
+                moduleViewModel.getModuleByIdLive(moduleId).observe(viewLifecycleOwner) { module ->
+                    if (module != null) {
+                        loadingDialog.dismiss()
+                        val intent = Intent(requireContext(), VideoPlayerActivity::class.java)
+                        intent.putExtra("path", module.contentUrl)
+                        startActivity(intent)
+                    } else {
+                        Snackbar.make(binding.root, "Module not found", Snackbar.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
     }

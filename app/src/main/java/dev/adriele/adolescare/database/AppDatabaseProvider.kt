@@ -3,6 +3,8 @@ package dev.adriele.adolescare.database
 import android.content.Context
 import android.os.Environment
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import java.io.File
 
 object AppDatabaseProvider {
@@ -23,6 +25,8 @@ object AppDatabaseProvider {
                 dbFile.absolutePath // raw external path
             )
                 .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_2_3)
+                .addMigrations(MIGRATION_3_4)
                 .build()
 
             INSTANCE = instance
@@ -30,8 +34,8 @@ object AppDatabaseProvider {
         }
     }
 
-    val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
-        override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+    val MIGRATION_1_2 = object : Migration(1, 2) {
+        override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL(
                 """
             CREATE TABLE IF NOT EXISTS recent_read_and_watch (
@@ -42,6 +46,18 @@ object AppDatabaseProvider {
             )
             """.trimIndent()
             )
+        }
+    }
+
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE modules ADD COLUMN contentCreditsUrl TEXT")
+        }
+    }
+
+    val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE modules ADD COLUMN orderBy INTEGER DEFAULT 0 NOT NULL")
         }
     }
 

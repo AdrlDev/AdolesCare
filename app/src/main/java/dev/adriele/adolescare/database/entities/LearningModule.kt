@@ -10,5 +10,7 @@ data class LearningModule(
     val title: String,
     val category: String,
     val contentType: ModuleContentType, // ARTICLE or VIDEO
-    val contentUrl: String
+    val contentUrl: String,
+    val contentCreditsUrl: String? = null,
+    val orderBy: Int
 )

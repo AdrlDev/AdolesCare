@@ -1,4 +1,4 @@
-package dev.adriele.adolescare
+package dev.adriele.adolescare.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -12,6 +12,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.applandeo.materialcalendarview.CalendarDay
+import dev.adriele.adolescare.ui.LogPeriodYearlyActivity
+import dev.adriele.adolescare.R
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.CycleLogEntity
 import dev.adriele.adolescare.database.entities.MenstrualCycle
@@ -65,8 +67,12 @@ class LogPeriodActivity : AppCompatActivity() {
     private fun initializeViewModel() {
         val menstrualHistoryDao = AppDatabaseProvider.getDatabase(this).menstrualHistoryDao()
         val menstrualHistoryRepo = MenstrualHistoryRepositoryImpl(menstrualHistoryDao)
-        val menstrualHistoryViewModelFactory = MenstrualHistoryViewModelFactory(menstrualHistoryRepo)
-        menstrualHistoryViewModel = ViewModelProvider(this, menstrualHistoryViewModelFactory)[MenstrualHistoryViewModel::class]
+        val menstrualHistoryViewModelFactory =
+            MenstrualHistoryViewModelFactory(menstrualHistoryRepo)
+        menstrualHistoryViewModel = ViewModelProvider(
+            this,
+            menstrualHistoryViewModelFactory
+        )[MenstrualHistoryViewModel::class]
 
         val cycleLogDao = AppDatabaseProvider.getDatabase(this).cycleLogDao()
         val cycleDao = AppDatabaseProvider.getDatabase(this).cycleDao()
@@ -93,12 +99,14 @@ class LogPeriodActivity : AppCompatActivity() {
                 val cycleInterval = history.cycleIntervalWeeks
 
                 lifecycleScope.launch(Dispatchers.IO) {
-                    cycleLogViewModel.insertCycle(MenstrualCycle(
-                        userId = userId!!,
-                        lastPeriodStart = lmp!!,
-                        periodDurationDays = periodDays!!,
-                        cycleLengthWeeks = cycleInterval!!
-                    ))
+                    cycleLogViewModel.insertCycle(
+                        MenstrualCycle(
+                            userId = userId!!,
+                            lastPeriodStart = lmp!!,
+                            periodDurationDays = periodDays!!,
+                            cycleLengthWeeks = cycleInterval!!
+                        )
+                    )
 
                     val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
                     val calendar = Calendar.getInstance().apply {
@@ -209,7 +217,8 @@ class LogPeriodActivity : AppCompatActivity() {
         }
 
         binding.btnYear.setOnClickListener {
-            startActivity(Intent(this, LogPeriodYearlyActivity::class.java)
+            startActivity(
+                Intent(this, LogPeriodYearlyActivity::class.java)
                 .putExtra("userId", userId))
             finish()
         }

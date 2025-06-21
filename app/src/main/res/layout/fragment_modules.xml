@@ -24,12 +24,6 @@
             android:orientation="vertical"
             >
 
-            <View
-                android:layout_margin="5dp"
-                android:layout_width="250dp"
-                android:layout_height="20dp"
-                android:background="@drawable/shimmer_placeholder"/>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -37,35 +31,60 @@
                 android:orientation="horizontal"
                 >
 
-                <View
-                    android:layout_margin="5dp"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    tools:ignore="NestedWeights"
+                    >
 
-                <View
-                    android:layout_margin="5dp"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:layout_weight="1"/>
+                    <View
+                        android:layout_margin="5dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:background="@drawable/shimmer_placeholder"
+                        android:layout_weight="1"
+                        tools:ignore="NestedWeights" />
 
-                <View
-                    android:layout_margin="5dp"
+                    <View
+                        android:layout_marginStart="5dp"
+                        android:layout_marginVertical="5dp"
+                        android:layout_marginEnd="30dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="23dp"
+                        android:background="@drawable/shimmer_placeholder"/>
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    tools:ignore="NestedWeights"
+                    >
+
+                    <View
+                        android:layout_margin="5dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:background="@drawable/shimmer_placeholder"
+                        android:layout_weight="1"
+                        tools:ignore="NestedWeights" />
+
+                    <View
+                        android:layout_marginStart="5dp"
+                        android:layout_marginVertical="5dp"
+                        android:layout_marginEnd="50dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="23dp"
+                        android:background="@drawable/shimmer_placeholder"/>
+
+                </LinearLayout>
 
             </LinearLayout>
 
-            <View
-                android:layout_margin="5dp"
-                android:layout_width="200dp"
-                android:layout_height="20dp"
-                android:background="@drawable/shimmer_placeholder"/>
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -73,62 +92,57 @@
                 android:orientation="horizontal"
                 >
 
-                <View
-                    android:layout_margin="5dp"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    tools:ignore="NestedWeights"
+                    >
 
-                <View
-                    android:layout_margin="5dp"
+                    <View
+                        android:layout_margin="5dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:background="@drawable/shimmer_placeholder"
+                        android:layout_weight="1"
+                        tools:ignore="NestedWeights" />
+
+                    <View
+                        android:layout_marginStart="5dp"
+                        android:layout_marginVertical="5dp"
+                        android:layout_marginEnd="30dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="23dp"
+                        android:background="@drawable/shimmer_placeholder"/>
+
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    tools:ignore="NestedWeights"
+                    >
 
-                <View
-                    android:layout_margin="5dp"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:layout_weight="1"/>
+                    <View
+                        android:layout_margin="5dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:background="@drawable/shimmer_placeholder"
+                        android:layout_weight="1"
+                        tools:ignore="NestedWeights" />
 
-            </LinearLayout>
+                    <View
+                        android:layout_marginStart="5dp"
+                        android:layout_marginVertical="5dp"
+                        android:layout_marginEnd="50dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="23dp"
+                        android:background="@drawable/shimmer_placeholder"/>
 
-            <View
-                android:layout_margin="5dp"
-                android:layout_width="300dp"
-                android:layout_height="20dp"
-                android:background="@drawable/shimmer_placeholder"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:orientation="horizontal"
-                >
-
-                <View
-                    android:layout_margin="5dp"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:layout_weight="1"/>
-
-                <View
-                    android:layout_margin="5dp"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:layout_weight="1"/>
-
-                <View
-                    android:layout_margin="5dp"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:layout_weight="1"/>
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -137,6 +151,7 @@
     </com.facebook.shimmer.ShimmerFrameLayout>
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/ll_modules"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

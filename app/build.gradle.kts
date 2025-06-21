@@ -87,6 +87,8 @@ dependencies {
     implementation(libs.photoview)
     implementation(libs.pdfView)
 
+    implementation(libs.mlkit.text.recognition)
+
     implementation(libs.jbcrypt)
 
     implementation(project(":language"))

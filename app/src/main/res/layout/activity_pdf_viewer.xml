@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -7,60 +7,87 @@
     android:background="@color/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PdfViewerActivity">
+    tools:context=".ui.PdfViewerActivity">
 
-    <LinearLayout
-        android:id="@+id/ll_back"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="17dp"
-        android:gravity="center_vertical"
         >
 
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/round_arrow_back_ios_new_24"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/app_name"
-            android:id="@+id/btn_back"
-            app:tint="@color/textColor" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_marginStart="17dp"
-            app:boxCornerRadiusBottomEnd="30dp"
-            app:boxCornerRadiusBottomStart="30dp"
-            app:boxCornerRadiusTopStart="30dp"
-            app:boxCornerRadiusTopEnd="30dp"
-            android:id="@+id/ll_search"
-            android:hint="Search..."
+        <LinearLayout
+            android:id="@+id/ll_back"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:orientation="horizontal"
+            android:padding="17dp"
+            android:gravity="center_vertical"
+            android:layout_centerHorizontal="true"
             >
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_search"
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/round_arrow_back_ios_new_24"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/app_name"
+                android:id="@+id/btn_back"
+                app:tint="@color/textColor" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_marginStart="17dp"
+                app:boxCornerRadiusBottomEnd="30dp"
+                app:boxCornerRadiusBottomStart="30dp"
+                app:boxCornerRadiusTopStart="30dp"
+                app:boxCornerRadiusTopEnd="30dp"
+                android:id="@+id/ll_search"
+                android:hint="Search..."
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/roboto"
-                android:drawableStart="@drawable/round_search_20"
-                android:drawablePadding="12dp"
-                android:textSize="12sp"
-                android:textColor="@color/textColor"
-                android:drawableTint="@color/textColor"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                >
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto"
+                    android:drawableStart="@drawable/round_search_20"
+                    android:drawablePadding="12dp"
+                    android:textSize="12sp"
+                    android:textColor="@color/textColor"
+                    android:drawableTint="@color/textColor"
+                    />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_below="@id/ll_back"
+            android:id="@+id/app_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            >
+
+            <com.google.android.material.tabs.TabLayout
+                android:background="@color/background"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tab_ll"
                 />
 
-        </com.google.android.material.textfield.TextInputLayout>
+        </com.google.android.material.appbar.AppBarLayout>
 
-    </LinearLayout>
+        <androidx.viewpager2.widget.ViewPager2
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/app_bar"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/vp"
+            />
 
-    <com.github.barteksc.pdfviewer.PDFView
-        android:background="@color/background"
-        android:id="@+id/pdfView"
-        android:layout_below="@id/ll_back"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    </RelativeLayout>
 
-</RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

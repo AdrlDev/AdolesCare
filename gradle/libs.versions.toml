@@ -23,6 +23,7 @@ exoplayer = "1.7.1"
 pdfboxAndroid = "2.0.27.0"
 photoview = "1.0.3"
 pdfView = "3.2.0-beta.3"
+mlkit-text-recognition = "16.0.0"
 
 
 [libraries]
@@ -58,6 +59,7 @@ glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "gl
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 
 facebook-shimmer = { group = "com.facebook.shimmer", name = "shimmer", version.ref = "shimmer" }
+mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlkit-text-recognition" }
 
 pdfbox-android = { group = "com.tom-roush", name = "pdfbox-android", version.ref = "pdfboxAndroid" }
 photoview = { group = "io.getstream", name = "photoview", version.ref = "photoview" }

@@ -1,4 +1,4 @@
-package dev.adriele.adolescare
+package dev.adriele.adolescare.ui
 
 import android.content.res.Configuration
 import android.net.Uri
@@ -10,7 +10,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
-import dev.adriele.adolescare.helpers.Utility.copyAssetToCache
 import dev.adriele.adolescare.databinding.ActivityVideoPlayerBinding
 import dev.adriele.adolescare.helpers.Utility
 
@@ -51,7 +50,7 @@ class VideoPlayerActivity : AppCompatActivity() {
         binding.playerView.player = player
 
         // Copy asset to temp file because ExoPlayer doesn't support asset:// URIs directly
-        val file = copyAssetToCache(this, assetPath)
+        val file = Utility.copyAssetToCache(this, assetPath)
         val uri = Uri.fromFile(file)
 
         val mediaItem = MediaItem.fromUri(uri)

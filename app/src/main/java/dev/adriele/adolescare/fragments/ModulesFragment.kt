@@ -7,32 +7,26 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.GridLayoutManager
 import com.google.gson.Gson
-import dev.adriele.adolescare.PdfViewerActivity
+import dev.adriele.adolescare.ui.PdfViewerActivity
 import dev.adriele.adolescare.helpers.enums.ModuleContentType
-import dev.adriele.adolescare.helpers.enums.PDFModulesCategory
 import dev.adriele.adolescare.adapter.PdfModulesAdapter
 import dev.adriele.adolescare.database.AppDatabaseProvider
+import dev.adriele.adolescare.database.entities.LearningModule
 import dev.adriele.adolescare.database.entities.RecentReadAndWatch
 import dev.adriele.adolescare.database.repositories.implementation.ModuleRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.RecentReadWatchRepositoryImpl
 import dev.adriele.adolescare.databinding.FragmentModulesBinding
 import dev.adriele.adolescare.dialogs.MyLoadingDialog
-import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.helpers.contracts.IModules
-import dev.adriele.adolescare.model.CategoryModuleGroup
 import dev.adriele.adolescare.viewmodel.ModuleViewModel
 import dev.adriele.adolescare.viewmodel.RecentReadWatchViewModel
 import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.RecentReadWatchViewModelFactory
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 private const val USER_ID = "userID"
 
@@ -47,10 +41,6 @@ class ModulesFragment : Fragment(), IModules.PDF {
     private lateinit var recentReadWatchViewModel: RecentReadWatchViewModel
 
     private lateinit var loadingDialog: MyLoadingDialog
-    private var pdfPosition: Int = 0
-    private var pdfPath: String? = null
-
-    private var groupModules: MutableList<CategoryModuleGroup> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,60 +70,19 @@ class ModulesFragment : Fragment(), IModules.PDF {
 
         moduleViewModel.modules.observe(viewLifecycleOwner) { modules ->
             if (!modules.isNullOrEmpty()) {
-                lifecycleScope.launch(Dispatchers.Default) {
-                    val grouped = PDFModulesCategory.entries.mapNotNull { categoryEnum ->
-                        val category = categoryEnum.category
-                        val normalizedEnumCategory = category
-                            .lowercase()
-                            .replace("ﬁ", "fi")
-                            .replace(Regex("[^a-z0-9 ]"), "")
-                            .replace(Regex("\\s+"), " ")
-                            .trim()
+                lifecycleScope.launch {
+                    Log.e("MODULES_LIST", Gson().toJson(modules))
 
-                        Log.d("ModulesFragment", "Category: $normalizedEnumCategory")
-
-                        val filtered = modules.filter { module ->
-                            val normalizedModuleCategory = module.category
-                                .lowercase()
-                                .replace("ﬁ", "fi")
-                                .replace(Regex("[^a-z0-9 ]"), "")
-                                .replace(Regex("\\s+"), " ")
-                                .trim()
-
-                            normalizedModuleCategory == normalizedEnumCategory
-                        }
-
-                        if (filtered.isNotEmpty()) {
-                            CategoryModuleGroup(normalizedEnumCategory, filtered)
-                        } else {
-                            null
-                        }
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        Log.d("ModulesFragment", "Group Category size: ${grouped.size}")
-                        Log.d("ModulesFragment", "Group Category: " + Gson().toJson(grouped))
-
-                        displayGroupedModules(grouped)
-                    }
+                    binding.rvModules.layoutManager = GridLayoutManager(requireContext(), 2)
+                    binding.rvModules.setHasFixedSize(true)
+                    binding.rvModules.adapter = PdfModulesAdapter(modules, this@ModulesFragment)
+                    binding.llModules.visibility = View.VISIBLE
+                    hideShimmer()
                 }
             }
         }
 
         moduleViewModel.getAllModules(ModuleContentType.PDF)
-    }
-
-    private fun displayGroupedModules(grouped: List<CategoryModuleGroup>) {
-        groupModules.clear()
-        groupModules.addAll(grouped)
-
-        binding.rvModules.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvModules.setHasFixedSize(true)
-        binding.rvModules.setItemViewCacheSize(20) // optional
-        binding.rvModules.setRecycledViewPool(RecyclerView.RecycledViewPool()) // reuse
-        binding.rvModules.adapter = PdfModulesAdapter(grouped, viewLifecycleOwner.lifecycleScope, this)
-        binding.llModules.visibility = View.VISIBLE
-        hideShimmer()
     }
 
     private fun hideShimmer() {
@@ -155,38 +104,29 @@ class ModulesFragment : Fragment(), IModules.PDF {
     }
 
     private fun afterInitialize() {
-        recentReadWatchViewModel.addRecentStatus.observe(viewLifecycleOwner) { isSuccess ->
+        recentReadWatchViewModel.addRecentStatus.observe(viewLifecycleOwner) { (isSuccess, moduleId) ->
             if (isSuccess) {
                 lifecycleScope.launch {
-                    val cachedFile = withContext(Dispatchers.IO) {
-                        Utility.copyAssetToCache(requireContext(), pdfPath!!)
+                    moduleViewModel.getModuleByIdLive(moduleId).observe(viewLifecycleOwner) { module ->
+                        if(module != null) {
+                            val intent = Intent(requireContext(), PdfViewerActivity::class.java).apply {
+                                putExtra("module_category", module.category)
+                                putExtra("module_url", module.contentUrl)
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+
+                            loadingDialog.dismiss()
+                            startActivity(intent)
+                        }
                     }
-
-                    val uri = FileProvider.getUriForFile(
-                        requireContext(),
-                        "${requireContext().packageName}.fileprovider",
-                        cachedFile
-                    )
-
-                    val intent = Intent(requireContext(), PdfViewerActivity::class.java).apply {
-                        putExtra("pdf_uri", uri.toString())
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    }
-
-                    loadingDialog.dismiss() // move after loading is done
-                    startActivity(intent)
                 }
             }
         }
     }
 
-    override fun onPdfClick(position: Int, pdfCategoryPosition: Int, path: String) {
-        loadingDialog.show("Please wait...")
-        pdfPosition = position
-        pdfPath = path
-
+    override fun onPdfClick(module: LearningModule) {
         recentReadWatchViewModel.addRecent(RecentReadAndWatch(
-            moduleId = groupModules[pdfCategoryPosition].modules[position].id,
+            moduleId = module.id,
             timestamp = System.currentTimeMillis()
         ))
     }

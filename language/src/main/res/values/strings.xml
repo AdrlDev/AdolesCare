@@ -90,8 +90,13 @@
 
     <string name="male_q1_track">Ask your partner to answer the following questions.</string>
 
+    <string name="symptoms">Symptoms and Activities</string>
+    <string name="add_weight_etc">Add weight, mood, and symptoms</string>
+
     //chatbot
     <string name="ask">Ask…</string>
 
     <string name="splash_message">With the right knowledge, there is a secure future.</string>
+    <string name="edit_period_dates">Edit period dates</string>
+    <string name="log_period">Log period</string>
 </resources>

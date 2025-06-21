@@ -11,8 +11,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class RecentReadWatchViewModel(private val repository: RecentReadWatchRepository) : ViewModel() {
-    private val _addRecentStatus = MutableLiveData<Boolean>()
-    val addRecentStatus: LiveData<Boolean> = _addRecentStatus
+    private val _addRecentStatus = MutableLiveData<Pair<Boolean, String>>()
+    val addRecentStatus: LiveData<Pair<Boolean, String>> = _addRecentStatus
 
     private val _recent = MutableLiveData<List<RecentReadAndWatch>>()
     val recent: LiveData<List<RecentReadAndWatch>> get() = _recent
@@ -22,10 +22,10 @@ class RecentReadWatchViewModel(private val repository: RecentReadWatchRepository
             try {
                 repository.addRecent(recent)
                 withContext(Dispatchers.Main) {
-                    _addRecentStatus.value = true
+                    _addRecentStatus.value = Pair(true, recent.moduleId)
                 }
             } catch (e: Exception) {
-                _addRecentStatus.value = false
+                _addRecentStatus.value = Pair(false, "")
             }
         }
     }

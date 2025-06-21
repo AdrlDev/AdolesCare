@@ -1,4 +1,4 @@
-package dev.adriele.adolescare
+package dev.adriele.adolescare.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -48,7 +48,8 @@ class LogPeriodYearlyActivity : AppCompatActivity() {
 
     private fun handleButtons() {
         binding.btnBack.setOnClickListener {
-            startActivity(Intent(this, LogPeriodActivity::class.java)
+            startActivity(
+                Intent(this, LogPeriodActivity::class.java)
                 .putExtra("userId", userId))
             finish()
         }
@@ -113,7 +114,11 @@ class LogPeriodYearlyActivity : AppCompatActivity() {
     private fun initializeViewModel() {
         val menstrualHistoryDao = AppDatabaseProvider.getDatabase(this).menstrualHistoryDao()
         val menstrualHistoryRepo = MenstrualHistoryRepositoryImpl(menstrualHistoryDao)
-        val menstrualHistoryViewModelFactory = MenstrualHistoryViewModelFactory(menstrualHistoryRepo)
-        menstrualHistoryViewModel = ViewModelProvider(this, menstrualHistoryViewModelFactory)[MenstrualHistoryViewModel::class]
+        val menstrualHistoryViewModelFactory =
+            MenstrualHistoryViewModelFactory(menstrualHistoryRepo)
+        menstrualHistoryViewModel = ViewModelProvider(
+            this,
+            menstrualHistoryViewModelFactory
+        )[MenstrualHistoryViewModel::class]
     }
 }

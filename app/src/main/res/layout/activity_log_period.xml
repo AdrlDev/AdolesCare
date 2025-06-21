@@ -9,7 +9,7 @@
     android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LogPeriodActivity">
+    tools:context=".ui.LogPeriodActivity">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -33,7 +33,7 @@
             android:layout_centerVertical="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Log period"
+            android:text="@string/log_period"
             android:fontFamily="@font/roboto"
             android:textSize="16sp"
             android:textColor="@color/buttonTextColor"
@@ -102,13 +102,17 @@
                 android:id="@+id/btn_edit_period_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Edit period dates"
+                android:text="@string/edit_period_dates"
                 android:fontFamily="@font/roboto_medium"
                 android:layout_gravity="center"
-                android:textColor="@color/buttonColor"
-                app:strokeColor="@color/buttonColor"
+                android:textColor="@color/buttonTextColor"
+                android:backgroundTint="@color/buttonColor"
                 android:layout_marginVertical="18dp"
-                style="?attr/materialButtonOutlinedStyle"
+                app:icon="@drawable/round_edit_calendar_20"
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                app:iconTint="@color/buttonTextColor"
+                style="?attr/materialButtonStyle"
                 />
 
             <com.facebook.shimmer.ShimmerFrameLayout
@@ -179,9 +183,67 @@
                 android:layout_marginVertical="12dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Symptoms and activities"
+                android:text="@string/symptoms"
                 android:textSize="16sp"
-                android:fontFamily="@font/roboto"
+                android:fontFamily="@font/roboto_bold"
+                android:textColor="@color/textColor"
+                />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/background"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="5dp"
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginVertical="8dp">
+
+                <RelativeLayout
+                    android:padding="22dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/add_weight_etc"
+                        android:fontFamily="@font/roboto"
+                        android:textColor="@color/textColor"
+                        android:id="@+id/tv_hint"
+                        android:gravity="center_vertical"
+                        android:layout_alignTop="@id/btn_add"
+                        android:layout_alignBottom="@id/btn_add"
+                        android:layout_toStartOf="@id/btn_add"
+                        android:layout_alignParentStart="true"
+                        android:paddingEnd="8dp"
+                        android:paddingStart="0dp"
+                        />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="?attr/materialIconButtonFilledStyle"
+                        app:icon="@drawable/round_add_20"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentTop="true"
+                        android:id="@+id/btn_add"
+                        android:backgroundTint="@color/buttonColor"
+                        app:iconTint="@color/buttonTextColor"
+                        android:contentDescription="@string/app_name"
+                        />
+
+                </RelativeLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_marginVertical="12dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/insight"
+                android:textSize="16sp"
+                android:fontFamily="@font/roboto_bold"
                 android:textColor="@color/textColor"
                 />
 
