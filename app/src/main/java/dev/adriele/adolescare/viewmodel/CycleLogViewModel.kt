@@ -12,17 +12,15 @@ import dev.adriele.adolescare.database.repositories.CycleLogRepository
 import kotlinx.coroutines.launch
 
 class CycleLogViewModel(private val repository: CycleLogRepository) : ViewModel() {
-    private val _insertStatus = MutableLiveData<Boolean>()
-    val insertStatus: LiveData<Boolean> = _insertStatus
+    private val _updateStatus = MutableLiveData<Boolean>()
+    val updateStatus: LiveData<Boolean> = _updateStatus
 
     fun insertCycleLog(cycle: CycleLogEntity) {
         viewModelScope.launch {
             try {
                 repository.insertCycleLogs(cycle)
-                _insertStatus.value = true
             } catch (e: Exception) {
                 Log.e("UserViewModel", "Error inserting cycle log", e)
-                _insertStatus.value = false
             }
         }
     }
@@ -39,6 +37,40 @@ class CycleLogViewModel(private val repository: CycleLogRepository) : ViewModel(
 
     fun getLogByDate(userId: String, date: String): LiveData<CycleLogEntity?> = liveData {
         emit(repository.getLogByDate(userId, date))
+    }
+
+    fun updateListsByUserIdAndDate(
+        userId: String,
+        date: String,
+        dayCycle: Int,
+        symptoms: List<String>? = null,
+        sexActivity: List<String>? = null,
+        pregnancyTestResult: List<String>? = null,
+        mood: List<String>? = null,
+        vaginalDischarge: List<String>? = null,
+        digestionAndStool: List<String>? = null,
+        physicalActivity: List<String>? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                repository.updateListsByUserIdAndDate(
+                    userId = userId,
+                    date = date,
+                    dayCycle = dayCycle,
+                    symptoms = symptoms,
+                    sexActivity = sexActivity,
+                    pregnancyTestResult = pregnancyTestResult,
+                    mood = mood,
+                    vaginalDischarge = vaginalDischarge,
+                    digestionAndStool = digestionAndStool,
+                    physicalActivity = physicalActivity
+                )
+                _updateStatus.value = true
+            } catch (e: Exception) {
+                Log.e("UserViewModel", "Error updating cycle log", e)
+                _updateStatus.value = false
+            }
+        }
     }
 
 }

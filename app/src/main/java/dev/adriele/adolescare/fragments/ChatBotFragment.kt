@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import dev.adriele.adolescare.api.response.Sources
 import dev.adriele.adolescare.helpers.Utility.getCurrentTime
 import dev.adriele.adolescare.chatbot.ResponseType
 import dev.adriele.adolescare.chatbot.adapter.ChatBotAdapter
@@ -111,7 +112,7 @@ class ChatBotFragment : Fragment() {
             binding.rvChats.scrollToPosition(chatBotAdapter.itemCount - 1)
         }
 
-        chatBotViewModel.messages.observe(requireActivity()) { messages ->
+        chatBotViewModel.messages.observe(viewLifecycleOwner) { messages ->
             if(messages.isNotEmpty() && messages != null) {
                 chatBotAdapter.setMessage(messages)
                 binding.rvChats.scrollToPosition(messages.size - 1)
@@ -180,13 +181,14 @@ class ChatBotFragment : Fragment() {
                 binding.rvChats.scrollToPosition(chatBotAdapter.itemCount - 1)
 
                 chatBotViewModel.sendQueryToBot(message, object : IChatBot {
-                    override fun onResult(result: String) {
+                    override fun onResult(result: String, sources: List<Sources>?) {
                         // Add bot response
                         val botResponse = Conversations(
                             userId = userId,
                             resWith = ResponseType.BOT,
                             message = result,
-                            receivedDate = getCurrentTime()
+                            receivedDate = getCurrentTime(),
+                            sources = sources
                         )
                         chats.add(botResponse)
 

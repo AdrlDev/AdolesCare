@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomChipStyle" parent="Widget.Material3.Chip.Assist">
+        <item name="chipIconTint">@color/buttonTextColor</item>
+        <!-- Icon -->
+        <item name="chipIcon">@drawable/round_check_20</item>
+        <item name="chipBackgroundColor">@color/buttonColor</item>
+        <item name="chipStrokeWidth">2dp</item>
+        <item name="chipStrokeColor">@color/buttonColor</item>
+        <item name="checkedIconVisible">true</item>
+        <item name="checkedIconEnabled">true</item>
+        <item name="android:checked">true</item>
+        <item name="shapeAppearanceOverlay">@style/CustomChipShape</item>
+    </style>
+
+    <!-- Custom shape with radius -->
+    <style name="CustomChipShape" parent="">
+        <item name="cornerSize">16dp</item>
+    </style>
+</resources>

@@ -445,6 +445,11 @@ object Utility {
         return sdf.format(Date())
     }
 
+    fun getCurrentCycleDate(): String {
+        val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
+        return sdf.format(Date())
+    }
+
     fun getCurrentDateOnly(): String {
         val sdf = SimpleDateFormat("MMMM dd", Locale.getDefault())
         return sdf.format(Date())

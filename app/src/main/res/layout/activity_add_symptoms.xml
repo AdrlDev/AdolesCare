@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context=".ui.AddSymptomsActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="18dp">
+
+        <ImageView
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/round_arrow_back_ios_new_20"
+            app:tint="@color/buttonTextColor" />
+
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/margin_medium"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/today"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"
+                android:textColor="@color/textColor"
+                />
+
+            <TextView
+                android:id="@+id/tv_day_cycle"
+                android:layout_marginVertical="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/today"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="19sp"
+                android:textColor="@color/textColor"
+                />
+
+            <TextView
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="@string/what_are_you_feeling"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="16sp"
+                android:textColor="@color/textColor"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="@string/categories"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="18sp"
+                android:textColor="@color/textColor"
+                android:layout_marginBottom="12dp"
+                />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/background"
+                app:cardElevation="8dp"
+                android:layout_margin="@dimen/margin_medium"
+                >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/margin_medium"
+                    >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:text="@string/sex_drive"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="18sp"
+                        android:textColor="@color/textColor"
+                        android:layout_marginBottom="12dp"
+                        />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupSexDrive"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="3dp"
+                        app:singleSelection="false"
+                        app:chipSpacing="8dp"
+                        app:lineSpacing="8dp">
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/no_sex" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/protected_sex" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/unprotected_sex" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/oral_sex" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/anal_sex" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/masturbation" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/sensual_touch" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/sex_toys" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/orgasm" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/high_sex_drive" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/neutral_sex_drive" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/low_sex_drive" />
+
+                    </com.google.android.material.chip.ChipGroup>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/background"
+                app:cardElevation="8dp"
+                android:layout_margin="@dimen/margin_medium"
+                >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/margin_medium"
+                    >
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:text="@string/mood"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="18sp"
+                        android:textColor="@color/textColor"
+                        android:layout_marginBottom="12dp"
+                        />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chip_group_mood"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="3dp"
+                        app:singleSelection="false"
+                        app:chipSpacing="8dp"
+                        app:lineSpacing="8dp">
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/calm" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/happy" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/energetic" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/frisky" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/mood_swings" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/irritated" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/sad" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/anxious" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/depressed" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/feeling_guilty" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/obsessive_thoughts" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/low_energy" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/apathetic" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/confused" />
+
+                        <com.google.android.material.chip.Chip
+                            style="@style/Widget.Material3.Chip.Assist"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:chipCornerRadius="@dimen/margin_medium"
+                            android:fontFamily="@font/roboto"
+                            android:checkable="true"
+                            app:checkedIconEnabled="true"
+                            android:text="@string/very_self_critical" />
+
+                    </com.google.android.material.chip.ChipGroup>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

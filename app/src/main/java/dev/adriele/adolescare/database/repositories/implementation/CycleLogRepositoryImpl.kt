@@ -24,4 +24,30 @@ class CycleLogRepositoryImpl(
     ): CycleLogEntity? {
         return cycleLogDao.getByDate(userId, date)
     }
+
+    override suspend fun updateListsByUserIdAndDate(
+        userId: String,
+        date: String,
+        dayCycle: Int,
+        symptoms: List<String>?,
+        sexActivity: List<String>?,
+        pregnancyTestResult: List<String>?,
+        mood: List<String>?,
+        vaginalDischarge: List<String>?,
+        digestionAndStool: List<String>?,
+        physicalActivity: List<String>?
+    ) {
+        cycleLogDao.updateListsByUserIdAndDate(
+            userId = userId,
+            date = date,
+            dayCycle = dayCycle,
+            symptoms = symptoms,
+            sexActivity = sexActivity,
+            pregnancyTestResult = pregnancyTestResult,
+            mood = mood,
+            vaginalDischarge = vaginalDischarge,
+            digestionAndStool = digestionAndStool,
+            physicalActivity = physicalActivity
+        )
+    }
 }

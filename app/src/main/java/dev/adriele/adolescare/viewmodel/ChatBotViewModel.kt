@@ -39,8 +39,10 @@ class ChatBotViewModel(
                 withContext(Dispatchers.Main) {
                     if(response.isSuccessful) {
                         val answer = response.body()?.answer
+                        val sources = response.body()?.sources
+
                         val result = answer?.result ?: "AdolesCare ChatBot Error: Empty result"
-                        iChatBot.onResult(result)
+                        iChatBot.onResult(result, sources)
                     }
                 }
             } catch (e: Exception) {

@@ -19,7 +19,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import dev.adriele.adolescare.authentication.LoginActivity
 import dev.adriele.adolescare.authentication.SignUpActivity
-import dev.adriele.adolescare.chatbot.ChatBotActivity
 import dev.adriele.adolescare.databinding.ActivitySplashBinding
 import dev.adriele.language.LanguageManager
 import dev.adriele.language.LanguageSelectorDialog

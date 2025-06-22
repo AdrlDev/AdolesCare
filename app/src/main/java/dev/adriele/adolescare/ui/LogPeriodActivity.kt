@@ -1,9 +1,13 @@
 package dev.adriele.adolescare.ui
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.text.TextUtils
+import android.util.Log
 import android.view.View
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -12,8 +16,13 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.applandeo.materialcalendarview.CalendarDay
-import dev.adriele.adolescare.ui.LogPeriodYearlyActivity
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import com.google.gson.Gson
 import dev.adriele.adolescare.R
+import dev.adriele.adolescare.api.request.InsightsRequest
+import dev.adriele.adolescare.api.response.InsightsResponse
+import dev.adriele.adolescare.contracts.IChatBot
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.CycleLogEntity
 import dev.adriele.adolescare.database.entities.MenstrualCycle
@@ -22,6 +31,7 @@ import dev.adriele.adolescare.database.repositories.implementation.ChatBotReposi
 import dev.adriele.adolescare.database.repositories.implementation.CycleLogRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityLogPeriodBinding
+import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.viewmodel.ChatBotViewModel
 import dev.adriele.adolescare.viewmodel.CycleLogViewModel
 import dev.adriele.adolescare.viewmodel.MenstrualHistoryViewModel
@@ -35,14 +45,21 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class LogPeriodActivity : AppCompatActivity() {
+class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
     private lateinit var binding: ActivityLogPeriodBinding
 
     private lateinit var menstrualHistoryViewModel: MenstrualHistoryViewModel
     private lateinit var cycleLogViewModel: CycleLogViewModel
     private lateinit var chatBotViewModel: ChatBotViewModel
 
+    private var sexDrives: MutableList<String> = mutableListOf()
+    private var moods: MutableList<String> = mutableListOf()
+
     private var userId: String? = null
+    private var dateFormatted: String? = null
+    private var cycleDay: Int? = null
+
+    private var isExpanded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +79,30 @@ class LogPeriodActivity : AppCompatActivity() {
         initializeViewModel()
         init()
         handleButtons()
+    }
+
+    private fun populateChipGroup(chipGroup: ChipGroup, items: List<String>) {
+        chipGroup.removeAllViews() // Clear existing chips
+
+        Log.e("CHIP_ITEMS", Gson().toJson(items))
+
+        for (item in items) {
+            val chip = Chip(this).apply {
+                text = item
+                isChecked = true
+                isCheckable = false
+                isChipIconVisible = true
+                setChipIconResource(R.drawable.round_check_20)
+
+                setChipBackgroundColorResource(R.color.buttonColor) // optional
+                setTextColor(resources.getColor(R.color.buttonTextColor, null)) // optional
+
+                // ✅ Radius & Stroke
+                chipCornerRadius = resources.getDimension(R.dimen.margin_medium)
+                chipStrokeColor = getColorStateList(R.color.buttonColor)
+            }
+            chipGroup.addView(chip)
+        }
     }
 
     private fun initializeViewModel() {
@@ -164,9 +205,9 @@ class LogPeriodActivity : AppCompatActivity() {
         val totalDays = (diffInMillis / (1000 * 60 * 60 * 24)).toInt() + 1
 
         val currentCycle = (totalDays - 1) / cycleLength + 1
-        val cycleDay = (totalDays - 1) % cycleLength + 1
+        cycleDay = (totalDays - 1) % cycleLength + 1
 
-        val dateFormatted = SimpleDateFormat("MMM d", Locale.getDefault()).format(today.time)
+        dateFormatted = SimpleDateFormat("MMM d", Locale.getDefault()).format(today.time)
         binding.tvDateCycle.text = "$dateFormatted - Cycle $currentCycle Day $cycleDay"
 
         // Ovulation window calculation based on dynamic cycle length
@@ -184,20 +225,72 @@ class LogPeriodActivity : AppCompatActivity() {
 
         binding.tvRemarks.text = remark
 
-        cycleLogViewModel.getLogByDate(userId!!, dateFormatted).observe(this) { existingLog ->
+        cycleLogViewModel.getLogByDate(userId!!, dateFormatted ?: Utility.getCurrentCycleDate()).observe(this) { existingLog ->
+            sexDrives.clear()
+            moods.clear()
+
             if (existingLog == null) {
                 val cycleLog = CycleLogEntity(
                     userId = userId!!,
-                    cycleDay = cycleDay,
-                    date = dateFormatted,
+                    cycleDay = cycleDay ?: 0,
+                    date = dateFormatted ?: Utility.getCurrentCycleDate(),
                     symptoms = null,
                     sexActivity = null,
                     pregnancyTestResult = null,
                     notes = remark
                 )
                 saveCycleDays(cycleLog)
+            } else {
+                val hasSexDrive = !existingLog.sexActivity.isNullOrEmpty()
+                val hasMood = !existingLog.mood.isNullOrEmpty()
+
+                sexDrives.addAll(existingLog.sexActivity ?: emptyList())
+                moods.addAll(existingLog.mood ?: emptyList())
+
+                if (hasSexDrive) {
+                    populateChipGroup(binding.cgSexDrive, existingLog.sexActivity)
+                }
+
+                if (hasMood) {
+                    populateChipGroup(binding.cgMood, existingLog.mood)
+                }
+
+                val showLL = hasSexDrive || hasMood
+
+                binding.lblSexDrive.visibility = if(hasSexDrive) View.VISIBLE else View.GONE
+                binding.lblMood.visibility = if(hasMood) View.VISIBLE else View.GONE
+
+                // 👇 Show or hide the layout depending on data
+                binding.llActivities.visibility =
+                    if (showLL) View.VISIBLE else View.GONE
+
+                getInsights(sexDrives, moods, showLL)
             }
             hideShimmer()
+        }
+    }
+
+    private fun getInsights(
+        sexDrives: MutableList<String>,
+        moods: MutableList<String>,
+        isNeedInsight: Boolean
+    ) {
+        if(isNeedInsight) {
+            binding.tvLblInsight.visibility = View.VISIBLE
+            binding.cardInsight.visibility = View.GONE
+            binding.shimmerInsight.visibility = View.VISIBLE
+            binding.shimmerInsight.startShimmer()
+            chatBotViewModel.getInsights(
+                insightsRequest = InsightsRequest(
+                    sexDrives = sexDrives,
+                    moods = moods
+                ),
+                this@LogPeriodActivity
+            )
+        } else {
+            binding.shimmerInsight.visibility = View.GONE
+            binding.cardInsight.visibility = View.GONE
+            binding.tvLblInsight.visibility = View.GONE
         }
     }
 
@@ -222,5 +315,98 @@ class LogPeriodActivity : AppCompatActivity() {
                 .putExtra("userId", userId))
             finish()
         }
+
+        binding.btnAdd.setOnClickListener {
+            startActivity(
+                Intent(this, AddSymptomsActivity::class.java)
+                    .putExtra("userId", userId)
+                    .putExtra("cycle", binding.tvDateCycle.text)
+                    .putExtra("cycleDay", cycleDay)
+                    .putExtra("dateCycle", dateFormatted))
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setupInsightToggle() {
+        binding.tvInsight.post {
+            // Temporarily allow all lines to measure true line count
+            binding.tvInsight.maxLines = Integer.MAX_VALUE
+            binding.tvInsight.ellipsize = null
+
+            binding.tvInsight.measure(
+                View.MeasureSpec.makeMeasureSpec(binding.tvInsight.width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.UNSPECIFIED
+            )
+
+            val fullLineCount = binding.tvInsight.lineCount
+
+            // Restore collapsed state
+            binding.tvInsight.maxLines = 10
+            binding.tvInsight.ellipsize = TextUtils.TruncateAt.END
+
+            if (fullLineCount <= 10) {
+                binding.tvReadMore.visibility = View.GONE
+            } else {
+                binding.tvReadMore.visibility = View.VISIBLE
+            }
+        }
+
+        binding.tvReadMore.setOnClickListener {
+            val startHeight = binding.tvInsight.height
+
+            if (!isExpanded) {
+                // Expand
+                binding.tvInsight.maxLines = Int.MAX_VALUE
+                binding.tvInsight.ellipsize = null
+
+                binding.tvInsight.measure(
+                    View.MeasureSpec.makeMeasureSpec(binding.tvInsight.width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.UNSPECIFIED
+                )
+                val endHeight = binding.tvInsight.measuredHeight
+
+                animateTextViewHeight(binding.tvInsight, startHeight, endHeight)
+
+                binding.tvReadMore.text = "Show less..."
+            } else {
+                // Collapse
+                binding.tvInsight.maxLines = 10
+                binding.tvInsight.ellipsize = TextUtils.TruncateAt.END
+
+                binding.tvInsight.measure(
+                    View.MeasureSpec.makeMeasureSpec(binding.tvInsight.width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.UNSPECIFIED
+                )
+                val endHeight = binding.tvInsight.measuredHeight
+
+                animateTextViewHeight(binding.tvInsight, startHeight, endHeight)
+
+                binding.tvReadMore.text = "Read more..."
+            }
+
+            isExpanded = !isExpanded
+        }
+    }
+
+    private fun animateTextViewHeight(view: TextView, from: Int, to: Int) {
+        val animator = ValueAnimator.ofInt(from, to)
+        animator.duration = 300
+        animator.addUpdateListener { animation ->
+            val value = animation.animatedValue as Int
+            view.layoutParams.height = value
+            view.requestLayout()
+        }
+        animator.start()
+    }
+
+    override fun onResult(result: InsightsResponse) {
+        Log.e("INSIGHT_RESULT", Gson().toJson(result))
+        binding.tvInsight.text = result.insights
+
+        setupInsightToggle()
+
+        binding.shimmerInsight.stopShimmer()
+        binding.cardInsight.visibility = View.VISIBLE
+        binding.shimmerInsight.visibility = View.GONE
     }
 }

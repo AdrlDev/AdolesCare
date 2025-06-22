@@ -27,6 +27,8 @@ object AppDatabaseProvider {
                 .addMigrations(MIGRATION_1_2)
                 .addMigrations(MIGRATION_2_3)
                 .addMigrations(MIGRATION_3_4)
+                .addMigrations(MIGRATION_4_5)
+                .addMigrations(MIGRATION_5_6)
                 .build()
 
             INSTANCE = instance
@@ -58,6 +60,21 @@ object AppDatabaseProvider {
     val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE modules ADD COLUMN orderBy INTEGER DEFAULT 0 NOT NULL")
+        }
+    }
+
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE chat_bot_conversation ADD COLUMN sources TEXT")
+        }
+    }
+
+    val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE cycle_logs ADD COLUMN mood TEXT")
+            database.execSQL("ALTER TABLE cycle_logs ADD COLUMN vaginalDischarge TEXT")
+            database.execSQL("ALTER TABLE cycle_logs ADD COLUMN digestionAndStool TEXT")
+            database.execSQL("ALTER TABLE cycle_logs ADD COLUMN physicalActivity TEXT")
         }
     }
 
