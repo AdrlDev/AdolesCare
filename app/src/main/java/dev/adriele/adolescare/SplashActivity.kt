@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat
 import dev.adriele.adolescare.authentication.LoginActivity
 import dev.adriele.adolescare.authentication.SignUpActivity
 import dev.adriele.adolescare.databinding.ActivitySplashBinding
+import dev.adriele.adolescare.helpers.Utility.animateTypingWithCursor
 import dev.adriele.language.LanguageManager
 import dev.adriele.language.LanguageSelectorDialog
 import dev.adriele.language.LocaleHelper
@@ -72,6 +73,13 @@ class SplashActivity : AppCompatActivity() {
         }
 
         savedLang = LanguageManager.getSavedLanguage(this)
+
+        binding.tvSplashMessage.animateTypingWithCursor(
+            getString(dev.adriele.language.R.string.splash_message),
+            onTypingComplete = {
+
+            }
+        )
 
         simulateLoading()
     }

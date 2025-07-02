@@ -131,4 +131,77 @@
     <string name="apathetic">Walang pakialam</string>
     <string name="confused">Litó</string>
     <string name="very_self_critical">Sobrang mapanuri sa sarili</string>
+
+    <string name="symptoms_category">Mga sintomas</string>
+    <string name="everything_fine">Ayos lang</string>
+    <string name="cramps">Pananakit ng puson</string>
+    <string name="headache">Sakit ng ulo</string>
+    <string name="tender_breast">Masakit ang dibdib</string>
+    <string name="backache">Sakit ng likod</string>
+    <string name="acne">Tigyawat</string>
+    <string name="fatigue">Pagkapagod</string>
+    <string name="cravings">Pagkahilig sa pagkain</string>
+    <string name="insomnia">Hindi makatulog</string>
+    <string name="abdominal_pain">Sakit ng tiyan</string>
+    <string name="vaginal_itching">Pangangati ng ari</string>
+    <string name="vaginal_dryness">Pagkatuyo ng ari</string>
+
+    <string-array name="categories">
+        <item>Kasarian at pagnanasa sa pakikipagtalik</item>
+        <item>Kalagayan ng damdamin</item>
+        <item>Mga sintomas</item>
+        <item>Paglabas sa ari</item>
+        <item>Pagtunaw ng pagkain at pagdumi</item>
+        <item>Pagsusuri sa pagbubuntis</item>
+        <item>Pisikal na aktibidad</item>
+    </string-array>
+
+    <string-array name="sex_and_drive_options">
+        <item>Hindi nakipagtalik</item>
+        <item>Ligtas na pakikipagtalik</item>
+        <item>Walang proteksiyong pakikipagtalik</item>
+        <item>Oral na pakikipagtalik</item>
+        <item>Anal na pakikipagtalik</item>
+        <item>Pagsasarili</item>
+        <item>Senswal na haplos</item>
+        <item>Sex toys</item>
+        <item>Orgasmo</item>
+        <item>Mataas ang pagnanasa sa sex</item>
+        <item>Neutral na pagnanasa sa sex</item>
+        <item>Mababa ang pagnanasa sa sex</item>
+    </string-array>
+
+    <string-array name="mood_options">
+        <item>Kalma</item>
+        <item>Masaya</item>
+        <item>Masigla</item>
+        <item>Malandi</item>
+        <item>Pagbabago-bago ng damdamin</item>
+        <item>Inis</item>
+        <item>Malungkot</item>
+        <item>Nababahala</item>
+        <item>Depresyon</item>
+        <item>May pagkakonsensya</item>
+        <item>Mapilit na mga iniisip</item>
+        <item>Mababa ang enerhiya</item>
+        <item>Walang gana</item>
+        <item>Litong-lito</item>
+        <item>Sobrang mapanuri sa sarili</item>
+    </string-array>
+
+    <string-array name="symptoms_list">
+        <item>Ayos lang</item>
+        <item>Pananakit ng puson</item>
+        <item>Sakit ng ulo</item>
+        <item>Masakit ang dibdib</item>
+        <item>Sakit ng likod</item>
+        <item>Tigyawat</item>
+        <item>Pagkapagod</item>
+        <item>Pagkahilig sa pagkain</item>
+        <item>Hindi makatulog</item>
+        <item>Sakit ng tiyan</item>
+        <item>Pangangati ng ari</item>
+        <item>Pagkatuyo ng ari</item>
+    </string-array>
+
 </resources>

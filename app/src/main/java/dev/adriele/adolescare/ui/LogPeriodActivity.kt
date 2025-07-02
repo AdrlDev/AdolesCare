@@ -15,11 +15,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.applandeo.materialcalendarview.CalendarDay
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
 import com.google.gson.Gson
 import dev.adriele.adolescare.R
+import dev.adriele.adolescare.adapter.SymptomsActivitiesAdapter
 import dev.adriele.adolescare.api.request.InsightsRequest
 import dev.adriele.adolescare.api.response.InsightsResponse
 import dev.adriele.adolescare.contracts.IChatBot
@@ -32,6 +32,7 @@ import dev.adriele.adolescare.database.repositories.implementation.CycleLogRepos
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityLogPeriodBinding
 import dev.adriele.adolescare.helpers.Utility
+import dev.adriele.adolescare.model.SymptomsActivitiesQ
 import dev.adriele.adolescare.viewmodel.ChatBotViewModel
 import dev.adriele.adolescare.viewmodel.CycleLogViewModel
 import dev.adriele.adolescare.viewmodel.MenstrualHistoryViewModel
@@ -45,6 +46,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+
 class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
     private lateinit var binding: ActivityLogPeriodBinding
 
@@ -54,12 +56,15 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
 
     private var sexDrives: MutableList<String> = mutableListOf()
     private var moods: MutableList<String> = mutableListOf()
+    private var symptoms: MutableList<String> = mutableListOf()
 
     private var userId: String? = null
     private var dateFormatted: String? = null
     private var cycleDay: Int? = null
 
     private var isExpanded = false
+
+    private var symptomsActivitiesQ: MutableList<SymptomsActivitiesQ> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,35 +79,11 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
             insets
         }
 
-        userId = intent.getStringExtra("userId")
+        userId = intent.getStringExtra("userId") ?: ""
 
         initializeViewModel()
         init()
         handleButtons()
-    }
-
-    private fun populateChipGroup(chipGroup: ChipGroup, items: List<String>) {
-        chipGroup.removeAllViews() // Clear existing chips
-
-        Log.e("CHIP_ITEMS", Gson().toJson(items))
-
-        for (item in items) {
-            val chip = Chip(this).apply {
-                text = item
-                isChecked = true
-                isCheckable = false
-                isChipIconVisible = true
-                setChipIconResource(R.drawable.round_check_20)
-
-                setChipBackgroundColorResource(R.color.buttonColor) // optional
-                setTextColor(resources.getColor(R.color.buttonTextColor, null)) // optional
-
-                // ✅ Radius & Stroke
-                chipCornerRadius = resources.getDimension(R.dimen.margin_medium)
-                chipStrokeColor = getColorStateList(R.color.buttonColor)
-            }
-            chipGroup.addView(chip)
-        }
     }
 
     private fun initializeViewModel() {
@@ -135,17 +116,17 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
 
         menstrualHistoryViewModel.mensHistory.observe(this) { history ->
             if (history != null) {
-                val lmp = history.lastPeriodStart
-                val periodDays = history.periodDurationDays
-                val cycleInterval = history.cycleIntervalWeeks
+                val lmp = history.lastPeriodStart ?: ""
+                val periodDays = history.periodDurationDays ?: 0
+                val cycleInterval = history.cycleIntervalWeeks ?: 0
 
                 lifecycleScope.launch(Dispatchers.IO) {
                     cycleLogViewModel.insertCycle(
                         MenstrualCycle(
-                            userId = userId!!,
-                            lastPeriodStart = lmp!!,
-                            periodDurationDays = periodDays!!,
-                            cycleLengthWeeks = cycleInterval!!
+                            userId = userId ?: "",
+                            lastPeriodStart = lmp,
+                            periodDurationDays = periodDays,
+                            cycleLengthWeeks = cycleInterval
                         )
                     )
 
@@ -182,7 +163,9 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
                     withContext(Dispatchers.Main) {
                         // Always check if view is attached
                         binding.calendarView.setDate(calendarDays.first().calendar)
-                        binding.calendarView.setCalendarDays(calendarDays)
+                        binding.calendarView.post {
+                            binding.calendarView.setCalendarDays(calendarDays)
+                        }
 
                         calculateLMP(history)
                     }
@@ -193,13 +176,19 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
 
     @SuppressLint("SetTextI18n")
     private fun calculateLMP(history: MenstrualHistoryEntity) {
-        val lastPeriodStart = history.lastPeriodStart
+        val lastPeriodStart = history.lastPeriodStart ?: ""
         val cycleIntervalWeeks = history.cycleIntervalWeeks ?: 4 // Default 28 days
         val cycleLength = cycleIntervalWeeks * 7
 
-        val lastPeriod = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).parse(lastPeriodStart!!)
+        val lastPeriod = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).parse(
+            lastPeriodStart
+        )
         val today = Calendar.getInstance()
-        val calendarLMP = Calendar.getInstance().apply { time = lastPeriod!! }
+        val calendarLMP = Calendar.getInstance().apply {
+            if (lastPeriod != null) {
+                time = lastPeriod
+            }
+        }
 
         val diffInMillis = today.timeInMillis - calendarLMP.timeInMillis
         val totalDays = (diffInMillis / (1000 * 60 * 60 * 24)).toInt() + 1
@@ -224,50 +213,6 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
         }
 
         binding.tvRemarks.text = remark
-
-        cycleLogViewModel.getLogByDate(userId!!, dateFormatted ?: Utility.getCurrentCycleDate()).observe(this) { existingLog ->
-            sexDrives.clear()
-            moods.clear()
-
-            if (existingLog == null) {
-                val cycleLog = CycleLogEntity(
-                    userId = userId!!,
-                    cycleDay = cycleDay ?: 0,
-                    date = dateFormatted ?: Utility.getCurrentCycleDate(),
-                    symptoms = null,
-                    sexActivity = null,
-                    pregnancyTestResult = null,
-                    notes = remark
-                )
-                saveCycleDays(cycleLog)
-            } else {
-                val hasSexDrive = !existingLog.sexActivity.isNullOrEmpty()
-                val hasMood = !existingLog.mood.isNullOrEmpty()
-
-                sexDrives.addAll(existingLog.sexActivity ?: emptyList())
-                moods.addAll(existingLog.mood ?: emptyList())
-
-                if (hasSexDrive) {
-                    populateChipGroup(binding.cgSexDrive, existingLog.sexActivity)
-                }
-
-                if (hasMood) {
-                    populateChipGroup(binding.cgMood, existingLog.mood)
-                }
-
-                val showLL = hasSexDrive || hasMood
-
-                binding.lblSexDrive.visibility = if(hasSexDrive) View.VISIBLE else View.GONE
-                binding.lblMood.visibility = if(hasMood) View.VISIBLE else View.GONE
-
-                // 👇 Show or hide the layout depending on data
-                binding.llActivities.visibility =
-                    if (showLL) View.VISIBLE else View.GONE
-
-                getInsights(sexDrives, moods, showLL)
-            }
-            hideShimmer()
-        }
     }
 
     private fun getInsights(
@@ -408,5 +353,101 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
         binding.shimmerInsight.stopShimmer()
         binding.cardInsight.visibility = View.VISIBLE
         binding.shimmerInsight.visibility = View.GONE
+    }
+
+    override fun onResume() {
+        super.onResume()
+        symptomsActivitiesQ.clear()
+        val listOfCategories = resources.getStringArray(dev.adriele.language.R.array.categories).toList()
+
+        cycleLogViewModel.getLogByDate(userId ?: "", dateFormatted ?: Utility.getCurrentCycleDate()).observe(this) { existingLog ->
+            sexDrives.clear()
+            moods.clear()
+            symptoms.clear()
+
+            if (existingLog == null) {
+                val cycleLog = CycleLogEntity(
+                    userId = userId ?: "",
+                    cycleDay = cycleDay ?: 0,
+                    date = dateFormatted ?: Utility.getCurrentCycleDate(),
+                    notes = binding.tvRemarks.text.toString()
+                )
+                saveCycleDays(cycleLog)
+            } else {
+                val hasSexDrive = !existingLog.sexActivity.isNullOrEmpty()
+                val hasMood = !existingLog.mood.isNullOrEmpty()
+                val hasSymptom = !existingLog.symptoms.isNullOrEmpty()
+
+                val sexDriveOptions = existingLog.sexActivity ?: emptyList()
+                val moodOptions = existingLog.mood ?: emptyList()
+                val symptomOptions = existingLog.symptoms ?: emptyList()
+
+                listOfCategories.forEach { category ->
+                    when(category) {
+                        getString(dev.adriele.language.R.string.sex_drive) -> {
+                            val symptomsActivitiesQData = SymptomsActivitiesQ(
+                                category = category,
+                                choices = sexDriveOptions
+                            )
+                            if(hasSexDrive) {
+                                symptomsActivitiesQ.add(symptomsActivitiesQData)
+                            } else {
+                                symptomsActivitiesQ.remove(symptomsActivitiesQData)
+                            }
+                        }
+                        getString(dev.adriele.language.R.string.mood) -> {
+                            val symptomsActivitiesQData = SymptomsActivitiesQ(
+                                category = category,
+                                choices = moodOptions
+                            )
+                            if(hasMood) {
+                                symptomsActivitiesQ.add(symptomsActivitiesQData)
+                            } else {
+                                symptomsActivitiesQ.remove(symptomsActivitiesQData)
+                            }
+                        }
+                        getString(dev.adriele.language.R.string.symptoms_category) -> {
+                            val symptomsActivitiesQData = SymptomsActivitiesQ(
+                                category = category,
+                                choices = symptomOptions
+                            )
+                            if(hasSymptom) {
+                                symptomsActivitiesQ.add(symptomsActivitiesQData)
+                            } else {
+                                symptomsActivitiesQ.remove(symptomsActivitiesQData)
+                            }
+                        }
+                    }
+                }
+
+                val selectedMap = mutableMapOf<String, List<String>>()
+                selectedMap[getString(dev.adriele.language.R.string.sex_drive)] = sexDriveOptions
+                selectedMap[getString(dev.adriele.language.R.string.mood)] = moodOptions
+                selectedMap[getString(dev.adriele.language.R.string.symptoms_category)] = symptomOptions
+
+                setupSymptomsRecyclerView(selectedMap)
+
+                sexDrives.addAll(sexDriveOptions)
+                moods.addAll(moodOptions)
+                symptoms.addAll(symptomOptions)
+
+                val showLL = hasSexDrive || hasMood || hasSymptom
+
+                // 👇 Show or hide the layout depending on data
+                binding.rvSelectedSymptoms.visibility = if (showLL) View.VISIBLE else View.GONE
+
+                getInsights(sexDrives, moods, showLL)
+            }
+            hideShimmer()
+        }
+    }
+
+    private fun setupSymptomsRecyclerView(preselected: Map<String, List<String>>) {
+        val adapter = SymptomsActivitiesAdapter(symptomsActivitiesQ, preselected, true) { category, selected ->
+
+        }
+
+        binding.rvSelectedSymptoms.adapter = adapter
+        binding.rvSelectedSymptoms.layoutManager = LinearLayoutManager(this)
     }
 }

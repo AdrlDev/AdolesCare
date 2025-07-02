@@ -1,20 +1,18 @@
 package dev.adriele.adolescare.ui
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
-import com.google.gson.Gson
-import dev.adriele.adolescare.R
+import androidx.recyclerview.widget.LinearLayoutManager
+import dev.adriele.adolescare.adapter.SymptomsActivitiesAdapter
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.repositories.implementation.CycleLogRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityAddSymptomsBinding
+import dev.adriele.adolescare.model.SymptomsActivitiesQ
 import dev.adriele.adolescare.viewmodel.CycleLogViewModel
 import dev.adriele.adolescare.viewmodel.factory.CycleLogViewModelFactory
 import kotlinx.coroutines.launch
@@ -24,12 +22,11 @@ class AddSymptomsActivity : AppCompatActivity() {
 
     private lateinit var cycleLogViewModel: CycleLogViewModel
 
-    private var sexDriveList: MutableList<String> = mutableListOf()
-    private var moodList: MutableList<String> = mutableListOf()
-
     private var userId: String? = null
     private var dateCycle: String? = null
     private var cycleDay: Int = 0
+
+    private var symptomsActivitiesQ: MutableList<SymptomsActivitiesQ> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,10 +39,64 @@ class AddSymptomsActivity : AppCompatActivity() {
             insets
         }
 
+        addSymptomsActivity()
+
         extractIntentExtras()
         initializeViewModel()
-        setupChipGroups()
         loadAndPrefillCycleData()
+    }
+
+    private fun addSymptomsActivity() {
+        symptomsActivitiesQ.clear()
+        val listOfCategories = resources.getStringArray(dev.adriele.language.R.array.categories).toList()
+
+        listOfCategories.forEach { category ->
+            when(category) {
+                getString(dev.adriele.language.R.string.sex_drive) -> {
+                    val listOfSexDrives = resources.getStringArray(dev.adriele.language.R.array.sex_and_drive_options).toList()
+                    val symptomsActivitiesQData = SymptomsActivitiesQ(
+                        category = category,
+                        listOfSexDrives
+                    )
+                    symptomsActivitiesQ.add(symptomsActivitiesQData)
+                }
+                getString(dev.adriele.language.R.string.mood) -> {
+                    val listOfSexDrives = resources.getStringArray(dev.adriele.language.R.array.mood_options).toList()
+                    val symptomsActivitiesQData = SymptomsActivitiesQ(
+                        category = category,
+                        listOfSexDrives
+                    )
+                    symptomsActivitiesQ.add(symptomsActivitiesQData)
+                }
+                getString(dev.adriele.language.R.string.symptoms_category) -> {
+                    val listOfSymptoms = resources.getStringArray(dev.adriele.language.R.array.symptoms_list).toList()
+                    val symptomsActivitiesQData = SymptomsActivitiesQ(
+                        category = category,
+                        listOfSymptoms
+                    )
+                    symptomsActivitiesQ.add(symptomsActivitiesQData)
+                }
+            }
+        }
+    }
+
+    private fun setupSymptomsRecyclerView(preselected: Map<String, List<String>>) {
+        val adapter = SymptomsActivitiesAdapter(symptomsActivitiesQ, preselected, false) { category, selected ->
+            when(category) {
+                getString(dev.adriele.language.R.string.sex_drive) -> {
+                    updateCycleLog(sexActivity = selected)
+                }
+                getString(dev.adriele.language.R.string.mood) -> {
+                    updateCycleLog(mood = selected)
+                }
+                getString(dev.adriele.language.R.string.symptoms_category) -> {
+                    updateCycleLog(symptoms = selected)
+                }
+            }
+        }
+
+        binding.rvSymptoms.adapter = adapter
+        binding.rvSymptoms.layoutManager = LinearLayoutManager(this)
     }
 
     private fun initializeViewModel() {
@@ -63,101 +114,49 @@ class AddSymptomsActivity : AppCompatActivity() {
         cycleDay = intent.getIntExtra("cycleDay", 0)
     }
 
-    private fun setupChipGroups() {
-        setupChipGroup(
-            chipGroup = binding.chipGroupSexDrive,
-            selectedList = sexDriveList,
-            onUpdate = { updatedList ->
-                updateCycleLog(sexActivity = updatedList)
-                Log.d("SELECTED_CHIP_SEX", Gson().toJson(updatedList))
-            }
-        )
-
-        setupChipGroup(
-            chipGroup = binding.chipGroupMood,
-            selectedList = moodList,
-            onUpdate = { updatedList ->
-                updateCycleLog(mood = updatedList)
-                Log.d("SELECTED_CHIP_MOOD", Gson().toJson(updatedList))
-            }
-        )
-    }
-
-    private fun setupChipGroup(
-        chipGroup: ChipGroup,
-        selectedList: MutableList<String>,
-        onUpdate: (List<String>) -> Unit
-    ) {
-        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            selectedList.clear()
-            for (i in 0 until group.childCount) {
-                val chip = group.getChildAt(i) as Chip
-                if (chip.id in checkedIds) {
-                    selectedList.add(chip.text.toString())
-                    chip.setChipIconResource(R.drawable.round_check_20)
-                    chip.isChipIconVisible = true
-                } else {
-                    chip.chipIcon = null
-                }
-            }
-            onUpdate(selectedList)
-        }
-    }
-
     private fun updateCycleLog(
         sexActivity: List<String>? = null,
-        mood: List<String>? = null
+        mood: List<String>? = null,
+        symptoms: List<String>? = null
     ) {
-        if (userId != null && dateCycle != null) {
-            lifecycleScope.launch {
-                cycleLogViewModel.getLogByDate(userId!!, dateCycle!!).observe(this@AddSymptomsActivity) { cycleLogs ->
-                    // Keep existing values if not being updated
-                    val updatedSexActivity = sexActivity ?: cycleLogs?.sexActivity
-                    val updatedMood = mood ?: cycleLogs?.mood
+        userId?.let { uid ->
+            dateCycle?.let { cycleDate ->
+                lifecycleScope.launch {
+                    cycleLogViewModel.getLogByDate(uid, cycleDate).observe(this@AddSymptomsActivity) { cycleLogs ->
+                        // Keep existing values if not being updated
+                        val updatedSexActivity = sexActivity ?: cycleLogs?.sexActivity
+                        val updatedMood = mood ?: cycleLogs?.mood
+                        val updatedSymptom = symptoms ?: cycleLogs?.symptoms
 
-                    cycleLogViewModel.updateListsByUserIdAndDate(
-                        userId = userId!!,
-                        date = dateCycle!!,
-                        dayCycle = cycleDay,
-                        sexActivity = updatedSexActivity,
-                        mood = updatedMood
-                    )
-                }
-            }
-        }
-    }
-
-    private fun loadAndPrefillCycleData() {
-        if (userId != null && dateCycle != null) {
-            lifecycleScope.launch {
-                cycleLogViewModel.getLogByDate(userId!!, dateCycle!!).observe(this@AddSymptomsActivity) { logCycle ->
-                    logCycle.let {
-                        cycleDay = it?.cycleDay!! // ensure it's up-to-date
-                        preselectChips(binding.chipGroupSexDrive, it.sexActivity, sexDriveList)
-                        preselectChips(binding.chipGroupMood, it.mood, moodList)
+                        cycleLogViewModel.updateListsByUserIdAndDate(
+                            userId = uid,
+                            date = cycleDate,
+                            dayCycle = cycleDay,
+                            sexActivity = updatedSexActivity,
+                            mood = updatedMood,
+                            symptoms = updatedSymptom
+                        )
                     }
                 }
             }
         }
     }
 
-    private fun preselectChips(
-        chipGroup: ChipGroup,
-        values: List<String>?,
-        selectedList: MutableList<String>
-    ) {
-        selectedList.clear()
-        if (!values.isNullOrEmpty()) {
-            for (i in 0 until chipGroup.childCount) {
-                val chip = chipGroup.getChildAt(i) as Chip
-                if (values.contains(chip.text.toString())) {
-                    chip.isChecked = true
-                    chip.setChipIconResource(R.drawable.round_check_20)
-                    chip.isChipIconVisible = true
-                    selectedList.add(chip.text.toString())
-                } else {
-                    chip.isChecked = false
-                    chip.chipIcon = null
+    private fun loadAndPrefillCycleData() {
+        userId?.let { uid ->
+            dateCycle?.let { cycleDate ->
+                lifecycleScope.launch {
+                    cycleLogViewModel.getLogByDate(uid, cycleDate).observe(this@AddSymptomsActivity) { logCycle ->
+                        logCycle?.let {
+                            cycleDay = it.cycleDay
+                            val selectedMap = mutableMapOf<String, List<String>>()
+                            selectedMap[getString(dev.adriele.language.R.string.sex_drive)] = it.sexActivity ?: emptyList()
+                            selectedMap[getString(dev.adriele.language.R.string.mood)] = it.mood ?: emptyList()
+                            selectedMap[getString(dev.adriele.language.R.string.symptoms_category)] = it.symptoms ?: emptyList()
+
+                            setupSymptomsRecyclerView(selectedMap)
+                        }
+                    }
                 }
             }
         }

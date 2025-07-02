@@ -131,4 +131,77 @@
     <string name="apathetic">Apathetic</string>
     <string name="confused">Confused</string>
     <string name="very_self_critical">Very self-critical</string>
+
+    <string name="symptoms_category">Symptoms</string>
+    <string name="everything_fine">Everything is fine</string>
+    <string name="cramps">Cramps</string>
+    <string name="headache">Headache</string>
+    <string name="tender_breast">Tender breast</string>
+    <string name="backache">Backache</string>
+    <string name="acne">Acne</string>
+    <string name="fatigue">Fatigue</string>
+    <string name="cravings">Cravings</string>
+    <string name="insomnia">Insomnia</string>
+    <string name="abdominal_pain">Abdominal pain</string>
+    <string name="vaginal_itching">Vaginal itching</string>
+    <string name="vaginal_dryness">Vaginal dryness</string>
+
+    <string-array name="categories">
+        <item>Sex and sex drive</item>
+        <item>Mood</item>
+        <item>Symptoms</item>
+        <item>Vaginal discharge</item>
+        <item>Digestion and stool</item>
+        <item>Pregnancy Test</item>
+        <item>Physical activity</item>
+    </string-array>
+
+    <string-array name="sex_and_drive_options">
+        <item>Didn\'t have sex</item>
+        <item>Protected sex</item>
+        <item>Unprotected sex</item>
+        <item>Oral sex</item>
+        <item>Anal sex</item>
+        <item>Masturbation</item>
+        <item>Sensual touch</item>
+        <item>Sex toys</item>
+        <item>Orgasm</item>
+        <item>High sex drive</item>
+        <item>Neutral sex drive</item>
+        <item>Low sex drive</item>
+    </string-array>
+
+    <string-array name="mood_options">
+        <item>Calm</item>
+        <item>Happy</item>
+        <item>Energetic</item>
+        <item>Frisky</item>
+        <item>Mood swings</item>
+        <item>Irritated</item>
+        <item>Sad</item>
+        <item>Anxious</item>
+        <item>Depressed</item>
+        <item>Feeling guilty</item>
+        <item>Obsessive thoughts</item>
+        <item>Low energy</item>
+        <item>Apathetic</item>
+        <item>Confused</item>
+        <item>Very self-critical</item>
+    </string-array>
+
+    <string-array name="symptoms_list">
+        <item>Everything\'s fine</item>
+        <item>Cramps</item>
+        <item>Headache</item>
+        <item>Tender breasts</item>
+        <item>Backache</item>
+        <item>Acne</item>
+        <item>Fatigue</item>
+        <item>Cravings</item>
+        <item>Insomnia</item>
+        <item>Abdominal pain</item>
+        <item>Vaginal itching</item>
+        <item>Vaginal dryness</item>
+    </string-array>
+
 </resources>
