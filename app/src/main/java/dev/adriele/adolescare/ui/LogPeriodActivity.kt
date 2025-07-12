@@ -3,13 +3,15 @@ package dev.adriele.adolescare.ui
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.Spanned
 import android.text.TextUtils
+import android.text.style.StyleSpan
 import android.util.Log
 import android.view.View
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -17,7 +19,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.applandeo.materialcalendarview.CalendarDay
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.platform.MaterialSharedAxis
 import com.google.gson.Gson
+import dev.adriele.adolescare.BaseActivity
 import dev.adriele.adolescare.R
 import dev.adriele.adolescare.adapter.SymptomsActivitiesAdapter
 import dev.adriele.adolescare.api.request.InsightsRequest
@@ -32,6 +37,9 @@ import dev.adriele.adolescare.database.repositories.implementation.CycleLogRepos
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityLogPeriodBinding
 import dev.adriele.adolescare.helpers.Utility
+import dev.adriele.adolescare.helpers.Utility.animateTextViewHeight
+import dev.adriele.adolescare.helpers.enums.SymptomCategory
+import dev.adriele.adolescare.helpers.enums.SymptomOption
 import dev.adriele.adolescare.model.SymptomsActivitiesQ
 import dev.adriele.adolescare.viewmodel.ChatBotViewModel
 import dev.adriele.adolescare.viewmodel.CycleLogViewModel
@@ -47,7 +55,7 @@ import java.util.Calendar
 import java.util.Locale
 
 
-class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
+class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCallback {
     private lateinit var binding: ActivityLogPeriodBinding
 
     private lateinit var menstrualHistoryViewModel: MenstrualHistoryViewModel
@@ -57,16 +65,26 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
     private var sexDrives: MutableList<String> = mutableListOf()
     private var moods: MutableList<String> = mutableListOf()
     private var symptoms: MutableList<String> = mutableListOf()
+    private var vaginalDischarge: MutableList<String> = mutableListOf()
+    private var digestionStool: MutableList<String> = mutableListOf()
+    private var pregnancyTest: MutableList<String> = mutableListOf()
+    private var physicalActivity: MutableList<String> = mutableListOf()
 
     private var userId: String? = null
     private var dateFormatted: String? = null
+    private var selectedDate: Calendar? = null
     private var cycleDay: Int? = null
 
     private var isExpanded = false
+    private var isShowingAll = false
 
     private var symptomsActivitiesQ: MutableList<SymptomsActivitiesQ> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        window.enterTransition = sharedAxis
+        window.exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -84,6 +102,7 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
         initializeViewModel()
         init()
         handleButtons()
+        editLogPeriod()
     }
 
     private fun initializeViewModel() {
@@ -104,33 +123,37 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
 
         val chatBotDao = AppDatabaseProvider.getDatabase(this).conversationDao()
         val chatRepo = ChatBotRepositoryImpl(chatBotDao)
-        val chatBotViewModelFactory = ChatBotViewModelFactory(chatRepo, userId!!)
+        val chatBotViewModelFactory = ChatBotViewModelFactory(chatRepo, userId ?: "")
         chatBotViewModel = ViewModelProvider(this, chatBotViewModelFactory)[ChatBotViewModel::class]
     }
 
     private fun init() {
-        binding.shimmerLayout.startShimmer()
-
-        // Observe menstrual history
-        menstrualHistoryViewModel.getMensHistory(userId!!)
-
         menstrualHistoryViewModel.mensHistory.observe(this) { history ->
             if (history != null) {
-                val lmp = history.lastPeriodStart ?: ""
-                val periodDays = history.periodDurationDays ?: 0
-                val cycleInterval = history.cycleIntervalWeeks ?: 0
+                val lmp = history.lastPeriodStart ?: Utility.getTwoWeeksAgo()
+                val periodDays = history.periodDurationDays ?: 3
+                val cycleInterval = history.cycleIntervalWeeks ?: 3
 
                 lifecycleScope.launch(Dispatchers.IO) {
-                    cycleLogViewModel.insertCycle(
-                        MenstrualCycle(
-                            userId = userId ?: "",
-                            lastPeriodStart = lmp,
-                            periodDurationDays = periodDays,
-                            cycleLengthWeeks = cycleInterval
-                        )
+                    val menstrualCycle = cycleLogViewModel.getMenstrualCycle(
+                        userId = userId ?: "",
+                        date = Utility.getCurrentDate(),
+                        lmp = lmp
                     )
 
-                    val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+                    if (menstrualCycle == null) {
+                        cycleLogViewModel.insertCycle(
+                            cycle = MenstrualCycle(
+                                userId = userId ?: "",
+                                lastPeriodStart = lmp,
+                                periodDurationDays = periodDays,
+                                cycleLengthWeeks = cycleInterval,
+                                createdAt = Utility.getCurrentDate()
+                            )
+                        )
+                    }
+
+                    val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
                     val calendar = Calendar.getInstance().apply {
                         time = sdf.parse(lmp)!!
                     }
@@ -141,7 +164,10 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
                         val date = calendar.clone() as Calendar
 
                         val periodDay = CalendarDay(date).apply {
-                            imageDrawable = ContextCompat.getDrawable(this@LogPeriodActivity, R.drawable.menstruation_combined)
+                            imageDrawable = ContextCompat.getDrawable(
+                                this@LogPeriodActivity,
+                                R.drawable.menstruation_combined
+                            )
                             labelColor = R.color.buttonColor
                         }
                         calendarDays.add(periodDay)
@@ -150,19 +176,37 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
 
                     val today = Calendar.getInstance()
                     val todayDay = CalendarDay(today).apply {
-                        backgroundDrawable = ContextCompat.getDrawable(this@LogPeriodActivity, dev.adriele.calendarview.R.drawable.bg_today_circle)
+                        backgroundDrawable = ContextCompat.getDrawable(
+                            this@LogPeriodActivity,
+                            dev.adriele.calendarview.R.drawable.bg_today_circle
+                        )
                         labelColor = R.color.requiredColorHelper
                     }
 
                     // Prevent duplicates
-                    if (calendarDays.none { it.calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                                it.calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR) }) {
+                    if (calendarDays.none {
+                            it.calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                                    it.calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+                        }) {
                         calendarDays.add(todayDay)
                     }
 
+                    if (calendarDays.isEmpty()) {
+                        val today = Calendar.getInstance()
+                        calendarDays.add(CalendarDay(today))
+                    }
+
                     withContext(Dispatchers.Main) {
+                        binding.shimmerLlCalendar.stopShimmer()
+                        binding.shimmerLlCalendar.visibility = View.GONE
+                        binding.calendarCard.visibility = View.VISIBLE
                         // Always check if view is attached
-                        binding.calendarView.setDate(calendarDays.first().calendar)
+
+                        val targetDate = selectedDate ?: calendarDays.first().calendar
+                        binding.calendarView.setDate(targetDate) // try once immediately
+                        binding.calendarView.postDelayed({
+                            binding.calendarView.setDate(targetDate) // then force after layout
+                        }, 1000)
                         binding.calendarView.post {
                             binding.calendarView.setCalendarDays(calendarDays)
                         }
@@ -176,11 +220,11 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
 
     @SuppressLint("SetTextI18n")
     private fun calculateLMP(history: MenstrualHistoryEntity) {
-        val lastPeriodStart = history.lastPeriodStart ?: ""
+        val lastPeriodStart = history.lastPeriodStart ?: Utility.getTwoWeeksAgo()
         val cycleIntervalWeeks = history.cycleIntervalWeeks ?: 4 // Default 28 days
         val cycleLength = cycleIntervalWeeks * 7
 
-        val lastPeriod = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).parse(
+        val lastPeriod = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH).parse(
             lastPeriodStart
         )
         val today = Calendar.getInstance()
@@ -196,7 +240,7 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
         val currentCycle = (totalDays - 1) / cycleLength + 1
         cycleDay = (totalDays - 1) % cycleLength + 1
 
-        dateFormatted = SimpleDateFormat("MMM d", Locale.getDefault()).format(today.time)
+        dateFormatted = SimpleDateFormat("MMM d", Locale.ENGLISH).format(today.time)
         binding.tvDateCycle.text = "$dateFormatted - Cycle $currentCycle Day $cycleDay"
 
         // Ovulation window calculation based on dynamic cycle length
@@ -205,11 +249,11 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
         val fertileEndDay = ovulationDay + 1
 
         val remark = when (cycleDay) {
-            in 1..7 -> "Low chance of getting pregnant"
-            in 8 until fertileStartDay -> "Chance increasing"
-            in fertileStartDay..fertileEndDay -> "High chance of getting pregnant"
-            in (fertileEndDay + 1)..cycleLength -> "Fertility declining"
-            else -> "Cycle day out of range"
+            in 1..7 -> getString(dev.adriele.language.R.string.low_chance_pregnancy)
+            in 8 until fertileStartDay -> getString(dev.adriele.language.R.string.chance_increasing)
+            in fertileStartDay..fertileEndDay -> getString(dev.adriele.language.R.string.high_chance_pregnancy)
+            in (fertileEndDay + 1)..cycleLength -> getString(dev.adriele.language.R.string.fertility_declining)
+            else -> getString(dev.adriele.language.R.string.cycle_day_out_of_range)
         }
 
         binding.tvRemarks.text = remark
@@ -218,9 +262,14 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
     private fun getInsights(
         sexDrives: MutableList<String>,
         moods: MutableList<String>,
+        symptoms: MutableList<String>,
+        vaginalDischarge: MutableList<String>,
+        digestionAndStool: MutableList<String>,
+        pregnancyTest: MutableList<String>,
+        physicalActivity: MutableList<String>,
         isNeedInsight: Boolean
     ) {
-        if(isNeedInsight) {
+        if (isNeedInsight) {
             binding.tvLblInsight.visibility = View.VISIBLE
             binding.cardInsight.visibility = View.GONE
             binding.shimmerInsight.visibility = View.VISIBLE
@@ -228,7 +277,12 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
             chatBotViewModel.getInsights(
                 insightsRequest = InsightsRequest(
                     sexDrives = sexDrives,
-                    moods = moods
+                    moods = moods,
+                    symptoms = symptoms,
+                    vaginalDischarge = vaginalDischarge,
+                    digestionAndStool = digestionAndStool,
+                    pregnancyTest = pregnancyTest,
+                    physicalActivity = physicalActivity
                 ),
                 this@LogPeriodActivity
             )
@@ -251,23 +305,26 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
 
     private fun handleButtons() {
         binding.btnBack.setOnClickListener {
-            finish()
+            onBackPressedDispatcher.onBackPressed()
         }
 
         binding.btnYear.setOnClickListener {
-            startActivity(
-                Intent(this, LogPeriodYearlyActivity::class.java)
-                .putExtra("userId", userId))
-            finish()
+            val intent = Intent(this, LogPeriodYearlyActivity::class.java).apply {
+                putExtra("userId", userId)
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            startActivity(intent)
         }
 
         binding.btnAdd.setOnClickListener {
-            startActivity(
-                Intent(this, AddSymptomsActivity::class.java)
-                    .putExtra("userId", userId)
-                    .putExtra("cycle", binding.tvDateCycle.text)
-                    .putExtra("cycleDay", cycleDay)
-                    .putExtra("dateCycle", dateFormatted))
+            val intent = Intent(this, AddSymptomsActivity::class.java).apply {
+                putExtra("userId", userId)
+                putExtra("cycle", binding.tvDateCycle.text)
+                putExtra("cycleDay", cycleDay)
+                putExtra("dateCycle", dateFormatted)
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+            startActivity(intent)
         }
     }
 
@@ -305,7 +362,10 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
                 binding.tvInsight.ellipsize = null
 
                 binding.tvInsight.measure(
-                    View.MeasureSpec.makeMeasureSpec(binding.tvInsight.width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(
+                        binding.tvInsight.width,
+                        View.MeasureSpec.EXACTLY
+                    ),
                     View.MeasureSpec.UNSPECIFIED
                 )
                 val endHeight = binding.tvInsight.measuredHeight
@@ -319,7 +379,10 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
                 binding.tvInsight.ellipsize = TextUtils.TruncateAt.END
 
                 binding.tvInsight.measure(
-                    View.MeasureSpec.makeMeasureSpec(binding.tvInsight.width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(
+                        binding.tvInsight.width,
+                        View.MeasureSpec.EXACTLY
+                    ),
                     View.MeasureSpec.UNSPECIFIED
                 )
                 val endHeight = binding.tvInsight.measuredHeight
@@ -333,20 +396,50 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
         }
     }
 
-    private fun animateTextViewHeight(view: TextView, from: Int, to: Int) {
-        val animator = ValueAnimator.ofInt(from, to)
-        animator.duration = 300
-        animator.addUpdateListener { animation ->
-            val value = animation.animatedValue as Int
-            view.layoutParams.height = value
-            view.requestLayout()
-        }
-        animator.start()
-    }
-
+    @SuppressLint("SetTextI18n")
     override fun onResult(result: InsightsResponse) {
         Log.e("INSIGHT_RESULT", Gson().toJson(result))
-        binding.tvInsight.text = result.insights
+        val possibleConditions = result.insights.summary.possibleConditions
+        val recommendations = result.insights.summary.recommendations
+        val warnings = result.insights.summary.warnings
+        val notes = result.insights.summary.notes
+        val builder = SpannableStringBuilder()
+
+        fun appendSection(title: String, items: List<String>) {
+            if (items.isNotEmpty()) {
+                val start = builder.length
+                builder.append("$title:\n")
+                builder.setSpan(
+                    StyleSpan(Typeface.BOLD),
+                    start,
+                    builder.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                items.forEach { builder.append("• $it\n") }
+                builder.append("\n")
+            }
+        }
+
+        fun appendSection(title: String, text: String) {
+            if (text.isNotBlank()) {
+                val start = builder.length
+                builder.append("$title:\n")
+                builder.setSpan(
+                    StyleSpan(Typeface.BOLD),
+                    start,
+                    builder.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                builder.append(text)
+            }
+        }
+
+        appendSection("Possible Conditions", possibleConditions)
+        appendSection("Recommendations", recommendations)
+        appendSection("Warnings", warnings)
+        appendSection("Notes", notes)
+
+        binding.tvInsight.text = builder
 
         setupInsightToggle()
 
@@ -355,99 +448,266 @@ class LogPeriodActivity : AppCompatActivity(), IChatBot.Insight {
         binding.shimmerInsight.visibility = View.GONE
     }
 
+    override fun onError(message: String) {
+        binding.shimmerInsight.stopShimmer()
+        binding.shimmerInsight.visibility = View.GONE
+        binding.cardInsight.visibility = View.GONE
+        binding.tvLblInsight.visibility = View.GONE
+        Snackbar.make(binding.main, "Failed to load insights: $message", Snackbar.LENGTH_SHORT)
+            .show()
+    }
+
     override fun onResume() {
         super.onResume()
+
+        if (isFinishing || isDestroyed) return
+
+        val selectedDateMillis = intent.getLongExtra("selectedDate", -1L)
+        selectedDate = if (selectedDateMillis != -1L) {
+            Calendar.getInstance().apply { timeInMillis = selectedDateMillis }
+        } else {
+            null
+        }
+
+        showMenstrualHistoryShimmer()
+        // Observe menstrual history
+        menstrualHistoryViewModel.getMensHistory(userId ?: "")
+
         symptomsActivitiesQ.clear()
-        val listOfCategories = resources.getStringArray(dev.adriele.language.R.array.categories).toList()
 
-        cycleLogViewModel.getLogByDate(userId ?: "", dateFormatted ?: Utility.getCurrentCycleDate()).observe(this) { existingLog ->
-            sexDrives.clear()
-            moods.clear()
-            symptoms.clear()
+        val listOfCategories = SymptomCategory.entries
 
-            if (existingLog == null) {
-                val cycleLog = CycleLogEntity(
-                    userId = userId ?: "",
-                    cycleDay = cycleDay ?: 0,
-                    date = dateFormatted ?: Utility.getCurrentCycleDate(),
-                    notes = binding.tvRemarks.text.toString()
-                )
-                saveCycleDays(cycleLog)
-            } else {
-                val hasSexDrive = !existingLog.sexActivity.isNullOrEmpty()
-                val hasMood = !existingLog.mood.isNullOrEmpty()
-                val hasSymptom = !existingLog.symptoms.isNullOrEmpty()
+        cycleLogViewModel.getLogByDate(userId ?: "", dateFormatted ?: Utility.getCurrentCycleDate())
+            .observe(this) { existingLog ->
+                sexDrives.clear()
+                moods.clear()
+                symptoms.clear()
+                vaginalDischarge.clear()
+                digestionStool.clear()
+                pregnancyTest.clear()
+                physicalActivity.clear()
 
-                val sexDriveOptions = existingLog.sexActivity ?: emptyList()
-                val moodOptions = existingLog.mood ?: emptyList()
-                val symptomOptions = existingLog.symptoms ?: emptyList()
+                if (existingLog == null) {
+                    val cycleLog = CycleLogEntity(
+                        userId = userId ?: "",
+                        cycleDay = cycleDay ?: 0,
+                        date = dateFormatted ?: Utility.getCurrentCycleDate(),
+                        notes = binding.tvRemarks.text.toString()
+                    )
+                    saveCycleDays(cycleLog)
+                } else {
+                    val selectedMap = mutableMapOf<String, List<String>>()
 
-                listOfCategories.forEach { category ->
-                    when(category) {
-                        getString(dev.adriele.language.R.string.sex_drive) -> {
-                            val symptomsActivitiesQData = SymptomsActivitiesQ(
-                                category = category,
-                                choices = sexDriveOptions
-                            )
-                            if(hasSexDrive) {
-                                symptomsActivitiesQ.add(symptomsActivitiesQData)
-                            } else {
-                                symptomsActivitiesQ.remove(symptomsActivitiesQData)
-                            }
+                    listOfCategories.forEach { categoryEnum ->
+                        val (hasData, options) = when (categoryEnum) {
+                            SymptomCategory.SEX_DRIVE -> existingLog.sexActivity?.let { true to it }
+                                ?: (false to emptyList())
+
+                            SymptomCategory.MOOD -> existingLog.mood?.let { true to it }
+                                ?: (false to emptyList())
+
+                            SymptomCategory.SYMPTOMS -> existingLog.symptoms?.let { true to it }
+                                ?: (false to emptyList())
+
+                            SymptomCategory.VAGINAL_DISCHARGE -> existingLog.vaginalDischarge?.let { true to it }
+                                ?: (false to emptyList())
+
+                            SymptomCategory.DIGESTION_AND_STOOL -> existingLog.digestionAndStool?.let { true to it }
+                                ?: (false to emptyList())
+
+                            SymptomCategory.PREGNANCY_TEST -> existingLog.pregnancyTestResult?.let { true to it }
+                                ?: (false to emptyList())
+
+                            SymptomCategory.PHYSICAL_ACTIVITY -> existingLog.physicalActivity?.let { true to it }
+                                ?: (false to emptyList())
                         }
-                        getString(dev.adriele.language.R.string.mood) -> {
-                            val symptomsActivitiesQData = SymptomsActivitiesQ(
-                                category = category,
-                                choices = moodOptions
-                            )
-                            if(hasMood) {
-                                symptomsActivitiesQ.add(symptomsActivitiesQData)
-                            } else {
-                                symptomsActivitiesQ.remove(symptomsActivitiesQData)
-                            }
+
+                        if (hasData) {
+                            selectedMap[categoryEnum.name] = options
                         }
-                        getString(dev.adriele.language.R.string.symptoms_category) -> {
-                            val symptomsActivitiesQData = SymptomsActivitiesQ(
-                                category = category,
-                                choices = symptomOptions
-                            )
-                            if(hasSymptom) {
-                                symptomsActivitiesQ.add(symptomsActivitiesQData)
-                            } else {
-                                symptomsActivitiesQ.remove(symptomsActivitiesQData)
-                            }
+
+                        Log.e("SELECTED_OPTIONS", Gson().toJson(options))
+
+                        handleCategory(hasData, categoryEnum, options)
+
+                        val labelToEnumListMap = mapOf(
+                            SymptomCategory.SEX_DRIVE to sexDrives,
+                            SymptomCategory.MOOD to moods,
+                            SymptomCategory.SYMPTOMS to symptoms,
+                            SymptomCategory.VAGINAL_DISCHARGE to vaginalDischarge,
+                            SymptomCategory.DIGESTION_AND_STOOL to digestionStool,
+                            SymptomCategory.PREGNANCY_TEST to pregnancyTest,
+                            SymptomCategory.PHYSICAL_ACTIVITY to physicalActivity
+                        )
+
+                        val isEnumNames = options.all { opt ->
+                            categoryEnum.options.any { it.name == opt }
                         }
+
+                        val valuesToAdd = if (isEnumNames) {
+                            options
+                        } else {
+                            mapLabelsToEnumNames(
+                                options,
+                                categoryEnum.options
+                            ) { getString(it.resId) }
+                        }
+
+                        Log.d("VALUES_TO_ADD", "Category: $categoryEnum, Converted: $valuesToAdd")
+
+                        labelToEnumListMap[categoryEnum]?.addAll(valuesToAdd)
                     }
+
+                    Log.d(
+                        "SYMPTOMS_RECYCLER",
+                        "Calling setupSymptomsRecyclerView with ${symptomsActivitiesQ.size} items"
+                    )
+                    setupSymptomsRecyclerView(selectedMap)
+
+                    val showLL =
+                        sexDrives.isNotEmpty() || moods.isNotEmpty() || symptoms.isNotEmpty() ||
+                                vaginalDischarge.isNotEmpty() || digestionStool.isNotEmpty() ||
+                                pregnancyTest.isNotEmpty() || physicalActivity.isNotEmpty()
+
+                    Log.d("IS_SHOW", showLL.toString())
+
+                    binding.rvSelectedSymptoms.visibility = if (showLL) View.VISIBLE else View.GONE
+
+                    getInsights(
+                        sexDrives = sexDrives,
+                        moods = moods,
+                        symptoms = symptoms,
+                        vaginalDischarge = vaginalDischarge,
+                        digestionAndStool = digestionStool,
+                        pregnancyTest = pregnancyTest,
+                        physicalActivity = physicalActivity,
+                        isNeedInsight = showLL
+                    )
                 }
-
-                val selectedMap = mutableMapOf<String, List<String>>()
-                selectedMap[getString(dev.adriele.language.R.string.sex_drive)] = sexDriveOptions
-                selectedMap[getString(dev.adriele.language.R.string.mood)] = moodOptions
-                selectedMap[getString(dev.adriele.language.R.string.symptoms_category)] = symptomOptions
-
-                setupSymptomsRecyclerView(selectedMap)
-
-                sexDrives.addAll(sexDriveOptions)
-                moods.addAll(moodOptions)
-                symptoms.addAll(symptomOptions)
-
-                val showLL = hasSexDrive || hasMood || hasSymptom
-
-                // 👇 Show or hide the layout depending on data
-                binding.rvSelectedSymptoms.visibility = if (showLL) View.VISIBLE else View.GONE
-
-                getInsights(sexDrives, moods, showLL)
+                hideShimmer()
             }
-            hideShimmer()
+    }
+
+    private fun handleCategory(
+        hasData: Boolean,
+        category: SymptomCategory,
+        choices: List<String>
+    ) {
+        if (hasData && choices.isNotEmpty()) {
+            val data = SymptomsActivitiesQ(category.name, choices)
+
+            Log.e("CATEGORY_SELECTED", Gson().toJson(data))
+
+            symptomsActivitiesQ.add(data)
+        }
+    }
+
+    private fun mapLabelsToEnumNames(
+        labels: List<String>,
+        options: List<SymptomOption>,
+        labelResolver: (SymptomOption) -> String
+    ): List<String> {
+        return labels.mapNotNull { label ->
+            options.find { label.equals(labelResolver(it), ignoreCase = true) }?.name
         }
     }
 
     private fun setupSymptomsRecyclerView(preselected: Map<String, List<String>>) {
-        val adapter = SymptomsActivitiesAdapter(symptomsActivitiesQ, preselected, true) { category, selected ->
+        // Decide which items to show
+        val visibleItems = if (isShowingAll) {
+            symptomsActivitiesQ
+        } else {
+            symptomsActivitiesQ.take(2)
+        }
+
+        val adapter = SymptomsActivitiesAdapter(
+            visibleItems,
+            preselected,
+            true
+        ) { category, selected ->
 
         }
 
         binding.rvSelectedSymptoms.adapter = adapter
         binding.rvSelectedSymptoms.layoutManager = LinearLayoutManager(this)
+
+        // Animate RecyclerView height
+        binding.rvSelectedSymptoms.post {
+            val startHeight = binding.rvSelectedSymptoms.height
+
+            binding.rvSelectedSymptoms.measure(
+                View.MeasureSpec.makeMeasureSpec(binding.rvSelectedSymptoms.width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.UNSPECIFIED
+            )
+            val targetHeight = binding.rvSelectedSymptoms.measuredHeight
+
+            val animator = ValueAnimator.ofInt(startHeight, targetHeight).apply {
+                duration = 300
+                addUpdateListener {
+                    val value = it.animatedValue as Int
+                    binding.rvSelectedSymptoms.layoutParams.height = value
+                    binding.rvSelectedSymptoms.requestLayout()
+                }
+            }
+            animator.start()
+        }
+
+        // Show/hide or toggle the button text
+        if (symptomsActivitiesQ.size > 2) {
+            binding.tvLoadMore.visibility = View.VISIBLE
+            binding.tvLoadMore.text = if (isShowingAll) "Show less..." else "Show more..."
+
+            binding.tvLoadMore.setOnClickListener {
+                isShowingAll = !isShowingAll
+                setupSymptomsRecyclerView(preselected)
+            }
+        } else {
+            binding.tvLoadMore.visibility = View.GONE
+        }
+    }
+
+    private fun editLogPeriod() {
+        binding.btnEditPeriodDate.setOnClickListener {
+            Utility.showDatePicker(this, supportFragmentManager, this)
+        }
+    }
+
+    override fun onDatePicked(formattedDate: String) {
+        lifecycleScope.launch {
+            val existing = menstrualHistoryViewModel.getMensHistoryNow(userId ?: "")
+            if (existing != null) {
+                val updated = existing.copy(
+                    lastPeriodStart = formattedDate
+                )
+
+                menstrualHistoryViewModel.updateMenstrualHistory(updated)
+            } else {
+                // If no existing record, you may want to insert instead
+                val newEntry = MenstrualHistoryEntity(
+                    userId = userId ?: "",
+                    firstPeriodReported = false,
+                    lastPeriodStart = formattedDate,
+                    periodDurationDays = 4,
+                    cycleIntervalWeeks = 3
+                )
+
+                menstrualHistoryViewModel.insertMenstrualHistory(newEntry)
+            }
+        }
+
+        menstrualHistoryViewModel.updateStatus.observe(this) { (isUpdated, message) ->
+            if(isUpdated) {
+                showMenstrualHistoryShimmer()
+                menstrualHistoryViewModel.getMensHistory(userId ?: "")
+                Snackbar.make(binding.main, message, Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showMenstrualHistoryShimmer() {
+        binding.shimmerLayout.startShimmer()
+        binding.shimmerLlCalendar.startShimmer()
+        binding.shimmerLlCalendar.visibility = View.VISIBLE
+        binding.calendarCard.visibility = View.GONE
     }
 }

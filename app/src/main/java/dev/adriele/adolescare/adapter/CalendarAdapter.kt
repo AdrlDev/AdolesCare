@@ -18,10 +18,15 @@ import java.util.Locale
 class CalendarAdapter(
     private val context: Context,
     private val year: Int,
-    private val periodDates: List<Calendar>
+    private val periodDates: List<Calendar>,
+    private val iCalendar: ICalendar
 ) : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>() {
 
     private val months = (0..11).toList() // Jan to Dec
+
+    interface ICalendar {
+        fun onCalendarClick(date: Calendar)
+    }
 
     inner class CalendarViewHolder(val binding: MyCalendarViewBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -42,7 +47,7 @@ class CalendarAdapter(
             set(Calendar.DAY_OF_MONTH, 1)
         }
 
-        val monthName = SimpleDateFormat("MMMM", Locale.getDefault()).format(calendar.time)
+        val monthName = SimpleDateFormat("MMMM", Locale.ENGLISH).format(calendar.time)
         holder.binding.tvMonthTitle.text = monthName
 
         holder.binding.gridDays.removeAllViews()
@@ -94,9 +99,9 @@ class CalendarAdapter(
                             it.get(Calendar.DAY_OF_MONTH) == dayCalendar.get(Calendar.DAY_OF_MONTH)
                 }
 
-                val isToday = thisDay.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                        thisDay.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
-                        thisDay.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH)
+                val isToday = thisDay[Calendar.YEAR] == today[Calendar.YEAR] &&
+                        thisDay[Calendar.MONTH] == today[Calendar.MONTH] &&
+                        thisDay[Calendar.DAY_OF_MONTH] == today[Calendar.DAY_OF_MONTH]
 
                 if (isPeriodDate) {
                     dayTextView.setBackgroundResource(R.drawable.day_selected_background)
@@ -121,6 +126,10 @@ class CalendarAdapter(
             }
 
             holder.binding.gridDays.addView(dayTextView)
+        }
+
+        holder.itemView.setOnClickListener {
+            iCalendar.onCalendarClick(calendar)
         }
     }
 }

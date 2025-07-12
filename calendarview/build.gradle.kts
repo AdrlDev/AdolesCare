@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "dev.adriele.calendarview"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 24
@@ -28,6 +28,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
+        @Suppress("DEPRECATION")
         jvmTarget = "11"
     }
 }

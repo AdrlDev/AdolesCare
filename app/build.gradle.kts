@@ -6,14 +6,15 @@ plugins {
 
 android {
     namespace = "dev.adriele.adolescare"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "dev.adriele.adolescare"
         minSdk = 24
+        //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -35,7 +36,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "11"
+        compileOptions {
+            @Suppress("DEPRECATION")
+            jvmTarget = "11"
+        }
     }
     buildFeatures {
         viewBinding = true
@@ -91,7 +95,11 @@ dependencies {
 
     implementation(libs.jbcrypt)
 
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.work.testing)
+
     implementation(project(":language"))
     implementation(project(":calendarview"))
     implementation(project(":adolescal"))
+    implementation(project(":settings:themes"))
 }

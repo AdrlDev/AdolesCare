@@ -10,6 +10,8 @@ interface CycleLogRepository {
 
     suspend fun getLogByDate(userId: String, date: String): CycleLogEntity?
 
+    suspend fun getMenstrualCycle(userId: String, date: String, lmp: String): MenstrualCycle?
+
     suspend fun updateListsByUserIdAndDate(
         userId: String,
         date: String,

@@ -1,7 +1,7 @@
 package dev.adriele.adolescare
 
 import android.annotation.SuppressLint
-import android.content.Context
+import android.app.ActivityOptions
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -13,20 +13,20 @@ import android.provider.Settings
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.platform.MaterialSharedAxis
 import dev.adriele.adolescare.authentication.LoginActivity
 import dev.adriele.adolescare.authentication.SignUpActivity
 import dev.adriele.adolescare.databinding.ActivitySplashBinding
 import dev.adriele.adolescare.helpers.Utility.animateTypingWithCursor
 import dev.adriele.language.LanguageManager
 import dev.adriele.language.LanguageSelectorDialog
-import dev.adriele.language.LocaleHelper
 
 @SuppressLint("CustomSplashScreen")
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : BaseActivity() {
     private lateinit var binding: ActivitySplashBinding
 
     private var savedLang : String? = null
@@ -45,6 +45,27 @@ class SplashActivity : AppCompatActivity() {
         }
     }
 
+    private val requestVibratePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Snackbar.make(
+                binding.root,
+                "Vibration permission is required for alerts.",
+                Snackbar.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Snackbar.make(binding.root, "Notification permission is required to receive health alerts.",
+                Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
     private val requestLegacyPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -53,13 +74,11 @@ class SplashActivity : AppCompatActivity() {
         }
     }
 
-    override fun attachBaseContext(newBase: Context) {
-        val savedLang = LanguageManager.getSavedLanguage(newBase)
-        val updatedContext = LocaleHelper.setLocale(newBase, savedLang)
-        super.attachBaseContext(updatedContext)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        window.enterTransition = sharedAxis
+        window.exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -75,11 +94,10 @@ class SplashActivity : AppCompatActivity() {
         savedLang = LanguageManager.getSavedLanguage(this)
 
         binding.tvSplashMessage.animateTypingWithCursor(
-            getString(dev.adriele.language.R.string.splash_message),
-            onTypingComplete = {
-
-            }
+            getString(dev.adriele.language.R.string.splash_message)
         )
+
+        requestNotificationPermission()
 
         simulateLoading()
     }
@@ -94,7 +112,31 @@ class SplashActivity : AppCompatActivity() {
                     recreate()
                     hideProgress()
                 }
-            })
+            }, false)
+        }
+    }
+
+    private fun requestVibratePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.VIBRATE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestVibratePermissionLauncher.launch(android.Manifest.permission.VIBRATE)
+            }
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestNotificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
@@ -137,6 +179,7 @@ class SplashActivity : AppCompatActivity() {
     private fun onLoadingFinished() {
         // Continue your splash logic here, e.g., request permission or show language dialog
         handler.postDelayed({
+            requestVibratePermission()
             requestStoragePermission()
             hideProgress()
         }, 500) // Delay ensures ActivityResultLauncher is ready
@@ -147,11 +190,13 @@ class SplashActivity : AppCompatActivity() {
         binding.buttonsContainer.visibility = View.VISIBLE
 
         binding.btnSignup.setOnClickListener {
-            startActivity(Intent(this, SignUpActivity::class.java))
+            val bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
+            startActivity(Intent(this, SignUpActivity::class.java), bundle)
         }
 
         binding.btnLogin.setOnClickListener {
-            startActivity(Intent(this, LoginActivity::class.java))
+            val bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
+            startActivity(Intent(this, LoginActivity::class.java), bundle)
         }
     }
 }

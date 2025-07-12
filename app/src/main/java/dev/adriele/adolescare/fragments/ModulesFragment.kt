@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.material.transition.MaterialFadeThrough
+import com.google.android.material.transition.MaterialSharedAxis
 import com.google.gson.Gson
 import dev.adriele.adolescare.ui.PdfViewerActivity
 import dev.adriele.adolescare.helpers.enums.ModuleContentType
@@ -47,6 +49,7 @@ class ModulesFragment : Fragment(), IModules.PDF {
         arguments?.let {
             userId = it.getString(USER_ID)
         }
+        enterTransition = MaterialFadeThrough()
     }
 
     override fun onCreateView(

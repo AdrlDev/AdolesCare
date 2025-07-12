@@ -8,8 +8,10 @@ interface IChatBot {
     fun onResult(result: String, source: List<Sources>? = null)
     interface Tips {
         fun onResult(result: TipResponse)
+        fun onError(message: String)
     }
     interface Insight {
         fun onResult(result: InsightsResponse)
+        fun onError(message: String)
     }
 }

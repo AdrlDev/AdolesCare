@@ -2,6 +2,7 @@ package dev.adriele.themes
 
 import android.app.AlertDialog
 import android.content.Context
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class ThemeSelectorDialog {
 
@@ -10,12 +11,13 @@ class ThemeSelectorDialog {
     }
 
     fun showThemeSelectorDialog(context: Context, themeSelectionCallback: ThemeSelectionCallback) {
-        val items = arrayOf("Light", "Dark", "System Default")
+        val items = arrayOf("Off", "On", "System Default")
         val modes = arrayOf(ThemeManager.MODE_LIGHT, ThemeManager.MODE_DARK, ThemeManager.MODE_SYSTEM)
 
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
             .setTitle("Select Theme")
             .setItems(items) { _, which ->
+                ThemeManager.saveTheme(context, modes[which]) // Save to SharedPreferences
                 themeSelectionCallback.onThemeSelected(modes[which])
             }
             .show()

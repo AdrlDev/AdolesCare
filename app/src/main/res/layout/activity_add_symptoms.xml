@@ -1,91 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     android:orientation="vertical"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
+    android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
     tools:context=".ui.AddSymptomsActivity">
 
-    <RelativeLayout
+    <com.google.android.material.appbar.AppBarLayout
+        android:background="@color/background"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="18dp">
+        android:layout_height="wrap_content">
 
-        <ImageView
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:id="@+id/btn_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/round_arrow_back_ios_new_20"
-            app:tint="@color/buttonTextColor" />
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:fitsSystemWindows="true"
+            style="?attr/collapsingToolbarLayoutMediumStyle"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+            android:layout_width="match_parent"
+            app:titleCollapseMode="fade"
+            app:contentScrim="@color/background"
+            app:expandedTitleMarginStart="16dp"
+            app:expandedTitleMarginEnd="64dp"
+            app:collapsedTitleTextAppearance="@style/ToolbarCollapsedTitle"
+            app:expandedTitleTextAppearance="@style/ToolbarExpandedTitle"
+            android:layout_height="?attr/collapsingToolbarLayoutMediumSize">
 
-    </RelativeLayout>
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/topAppBar"
+                app:layout_collapseMode="pin"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:titleTextColor="@color/textColor"
+                android:elevation="0dp"
+                app:navigationIcon="@drawable/round_arrow_back_ios_new_24"
+                android:background="@android:color/transparent"
+                app:title="Settings" />
 
-    <LinearLayout
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/margin_medium"
-        >
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:scrollbars="none">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/today"
-            android:fontFamily="@font/roboto_bold"
-            android:textSize="18sp"
-            android:textColor="@color/textColor"
-            />
-
-        <TextView
-            android:id="@+id/tv_day_cycle"
-            android:layout_marginVertical="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/today"
-            android:fontFamily="@font/roboto_medium"
-            android:textSize="19sp"
-            android:textColor="@color/textColor"
-            />
-
-        <TextView
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:text="@string/what_are_you_feeling"
-            android:fontFamily="@font/roboto_medium"
-            android:textSize="16sp"
-            android:textColor="@color/textColor"
-            />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:text="@string/categories"
-            android:fontFamily="@font/roboto_medium"
-            android:textSize="18sp"
-            android:textColor="@color/textColor"
-            android:layout_marginBottom="12dp"
-            />
-
-        <androidx.recyclerview.widget.RecyclerView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/rv_symptoms"
-            />
+            android:orientation="vertical"
+            android:padding="@dimen/margin_medium"
+            >
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/tv_day_cycle"
+                android:layout_marginBottom="@dimen/margin_large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/today"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="@dimen/font_large"
+                android:textColor="@color/buttonColor1"
+                />
 
-</LinearLayout>
+            <TextView
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="@string/what_are_you_feeling"
+                android:fontFamily="@font/roboto"
+                android:textSize="@dimen/font_small"
+                android:textColor="@color/textColor"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="@string/categories"
+                android:fontFamily="@font/roboto_medium"
+                android:textSize="@dimen/font_medium"
+                android:textColor="@color/textColor"
+                android:layout_marginBottom="@dimen/margin_large"
+                />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/rv_symptoms"
+                />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

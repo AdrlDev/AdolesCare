@@ -1,25 +1,33 @@
 package dev.adriele.adolescare.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.transition.platform.MaterialSharedAxis
+import dev.adriele.adolescare.BaseActivity
 import dev.adriele.adolescare.adapter.SymptomsActivitiesAdapter
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.repositories.implementation.CycleLogRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityAddSymptomsBinding
+import dev.adriele.adolescare.helpers.Utility
+import dev.adriele.adolescare.helpers.enums.SymptomCategory
 import dev.adriele.adolescare.model.SymptomsActivitiesQ
 import dev.adriele.adolescare.viewmodel.CycleLogViewModel
 import dev.adriele.adolescare.viewmodel.factory.CycleLogViewModelFactory
+import dev.adriele.language.R
 import kotlinx.coroutines.launch
 
-class AddSymptomsActivity : AppCompatActivity() {
+class AddSymptomsActivity : BaseActivity() {
     private lateinit var binding: ActivityAddSymptomsBinding
-
     private lateinit var cycleLogViewModel: CycleLogViewModel
 
     private var userId: String? = null
@@ -29,6 +37,10 @@ class AddSymptomsActivity : AppCompatActivity() {
     private var symptomsActivitiesQ: MutableList<SymptomsActivitiesQ> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        window.enterTransition = sharedAxis
+        window.exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityAddSymptomsBinding.inflate(layoutInflater)
@@ -44,59 +56,99 @@ class AddSymptomsActivity : AppCompatActivity() {
         extractIntentExtras()
         initializeViewModel()
         loadAndPrefillCycleData()
+
+        setSupportActionBar(binding.topAppBar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.topAppBar.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
     }
 
     private fun addSymptomsActivity() {
         symptomsActivitiesQ.clear()
-        val listOfCategories = resources.getStringArray(dev.adriele.language.R.array.categories).toList()
+        SymptomCategory.entries.forEach { category ->
+            val options = category.options.map { getString(it.resId) }
 
-        listOfCategories.forEach { category ->
-            when(category) {
-                getString(dev.adriele.language.R.string.sex_drive) -> {
-                    val listOfSexDrives = resources.getStringArray(dev.adriele.language.R.array.sex_and_drive_options).toList()
-                    val symptomsActivitiesQData = SymptomsActivitiesQ(
-                        category = category,
-                        listOfSexDrives
-                    )
-                    symptomsActivitiesQ.add(symptomsActivitiesQData)
-                }
-                getString(dev.adriele.language.R.string.mood) -> {
-                    val listOfSexDrives = resources.getStringArray(dev.adriele.language.R.array.mood_options).toList()
-                    val symptomsActivitiesQData = SymptomsActivitiesQ(
-                        category = category,
-                        listOfSexDrives
-                    )
-                    symptomsActivitiesQ.add(symptomsActivitiesQData)
-                }
-                getString(dev.adriele.language.R.string.symptoms_category) -> {
-                    val listOfSymptoms = resources.getStringArray(dev.adriele.language.R.array.symptoms_list).toList()
-                    val symptomsActivitiesQData = SymptomsActivitiesQ(
-                        category = category,
-                        listOfSymptoms
-                    )
-                    symptomsActivitiesQ.add(symptomsActivitiesQData)
-                }
-            }
+            val symptomsActivitiesQData = SymptomsActivitiesQ(
+                category = category.name,
+                choices = options
+            )
+
+            symptomsActivitiesQ.add(symptomsActivitiesQData)
         }
     }
 
     private fun setupSymptomsRecyclerView(preselected: Map<String, List<String>>) {
+        Log.d("SYMPTOMS_SIZE", "symptomsActivitiesQ size: ${symptomsActivitiesQ.size}")
+
         val adapter = SymptomsActivitiesAdapter(symptomsActivitiesQ, preselected, false) { category, selected ->
             when(category) {
-                getString(dev.adriele.language.R.string.sex_drive) -> {
+                SymptomCategory.SEX_DRIVE.name -> {
                     updateCycleLog(sexActivity = selected)
                 }
-                getString(dev.adriele.language.R.string.mood) -> {
+                SymptomCategory.MOOD.name -> {
                     updateCycleLog(mood = selected)
                 }
-                getString(dev.adriele.language.R.string.symptoms_category) -> {
+                SymptomCategory.SYMPTOMS.name -> {
                     updateCycleLog(symptoms = selected)
+                }
+                SymptomCategory.VAGINAL_DISCHARGE.name -> {
+                    updateCycleLog(vaginalDischarge = selected)
+                }
+                SymptomCategory.DIGESTION_AND_STOOL.name -> {
+                    updateCycleLog(digestionStool = selected)
+                }
+                SymptomCategory.PREGNANCY_TEST.name -> {
+                    updateCycleLog(pregnancyTest = selected)
+                }
+                SymptomCategory.PHYSICAL_ACTIVITY.name -> {
+                    updateCycleLog(physicalActivity = selected)
                 }
             }
         }
 
+        val layoutManager = object : LinearLayoutManager(this) {
+            override fun onMeasure(
+                recycler: RecyclerView.Recycler,
+                state: RecyclerView.State,
+                widthSpec: Int,
+                heightSpec: Int
+            ) {
+                var totalHeight = 0
+                val width = View.MeasureSpec.getSize(widthSpec)
+
+                if (itemCount > 0) {
+                    for (i in 0 until itemCount) {
+                        try {
+                            val view = recycler.getViewForPosition(i)
+                            val layoutParams = view.layoutParams as RecyclerView.LayoutParams
+
+                            val childWidthSpec = ViewGroup.getChildMeasureSpec(
+                                widthSpec,
+                                paddingLeft + paddingRight,
+                                layoutParams.width
+                            )
+                            val childHeightSpec = ViewGroup.getChildMeasureSpec(
+                                heightSpec,
+                                paddingTop + paddingBottom,
+                                layoutParams.height
+                            )
+
+                            view.measure(childWidthSpec, childHeightSpec)
+                            totalHeight += view.measuredHeight + layoutParams.topMargin + layoutParams.bottomMargin
+                        } catch (_: IndexOutOfBoundsException) {
+                            // Adapter data not ready yet
+                            break
+                        }
+                    }
+                }
+
+                setMeasuredDimension(width, totalHeight)
+            }
+        }
+        binding.rvSymptoms.isNestedScrollingEnabled = false
         binding.rvSymptoms.adapter = adapter
-        binding.rvSymptoms.layoutManager = LinearLayoutManager(this)
+        binding.rvSymptoms.layoutManager = layoutManager
     }
 
     private fun initializeViewModel() {
@@ -107,36 +159,51 @@ class AddSymptomsActivity : AppCompatActivity() {
         cycleLogViewModel = ViewModelProvider(this, cycleViewModelFactory)[CycleLogViewModel::class]
     }
 
+    @SuppressLint("SetTextI18n")
     private fun extractIntentExtras() {
         binding.tvDayCycle.text = intent.getStringExtra("cycle")
         userId = intent.getStringExtra("userId")
         dateCycle = intent.getStringExtra("dateCycle")
         cycleDay = intent.getIntExtra("cycleDay", 0)
+
+        val now = Utility.getCurrentCycleDate()
+        binding.topAppBar.title = getString(R.string.today) + "($now)"
     }
 
     private fun updateCycleLog(
         sexActivity: List<String>? = null,
         mood: List<String>? = null,
-        symptoms: List<String>? = null
+        symptoms: List<String>? = null,
+        vaginalDischarge: List<String>? = null,
+        digestionStool: List<String>? = null,
+        pregnancyTest: List<String>? = null,
+        physicalActivity: List<String>? = null
     ) {
         userId?.let { uid ->
             dateCycle?.let { cycleDate ->
                 lifecycleScope.launch {
-                    cycleLogViewModel.getLogByDate(uid, cycleDate).observe(this@AddSymptomsActivity) { cycleLogs ->
-                        // Keep existing values if not being updated
-                        val updatedSexActivity = sexActivity ?: cycleLogs?.sexActivity
-                        val updatedMood = mood ?: cycleLogs?.mood
-                        val updatedSymptom = symptoms ?: cycleLogs?.symptoms
+                    val existingLog = cycleLogViewModel.getLogByDateNow(uid, cycleDate)
 
-                        cycleLogViewModel.updateListsByUserIdAndDate(
-                            userId = uid,
-                            date = cycleDate,
-                            dayCycle = cycleDay,
-                            sexActivity = updatedSexActivity,
-                            mood = updatedMood,
-                            symptoms = updatedSymptom
-                        )
-                    }
+                    val updatedSexActivity = sexActivity ?: existingLog?.sexActivity
+                    val updatedMood = mood ?: existingLog?.mood
+                    val updatedSymptom = symptoms ?: existingLog?.symptoms
+                    val vaginalDischarge = vaginalDischarge ?: existingLog?.vaginalDischarge
+                    val digestionStool = digestionStool ?: existingLog?.digestionAndStool
+                    val pregnancyTest = pregnancyTest ?: existingLog?.pregnancyTestResult
+                    val physicalActivity = physicalActivity ?: existingLog?.physicalActivity
+
+                    cycleLogViewModel.updateListsByUserIdAndDate(
+                        userId = uid,
+                        date = cycleDate,
+                        dayCycle = cycleDay,
+                        sexActivity = updatedSexActivity,
+                        mood = updatedMood,
+                        symptoms = updatedSymptom,
+                        vaginalDischarge = vaginalDischarge,
+                        digestionAndStool = digestionStool,
+                        pregnancyTestResult = pregnancyTest,
+                        physicalActivity = physicalActivity
+                    )
                 }
             }
         }
@@ -145,17 +212,19 @@ class AddSymptomsActivity : AppCompatActivity() {
     private fun loadAndPrefillCycleData() {
         userId?.let { uid ->
             dateCycle?.let { cycleDate ->
-                lifecycleScope.launch {
-                    cycleLogViewModel.getLogByDate(uid, cycleDate).observe(this@AddSymptomsActivity) { logCycle ->
-                        logCycle?.let {
-                            cycleDay = it.cycleDay
-                            val selectedMap = mutableMapOf<String, List<String>>()
-                            selectedMap[getString(dev.adriele.language.R.string.sex_drive)] = it.sexActivity ?: emptyList()
-                            selectedMap[getString(dev.adriele.language.R.string.mood)] = it.mood ?: emptyList()
-                            selectedMap[getString(dev.adriele.language.R.string.symptoms_category)] = it.symptoms ?: emptyList()
+                cycleLogViewModel.getLogByDate(uid, cycleDate).observe(this@AddSymptomsActivity) { logCycle ->
+                    logCycle?.let {
+                        cycleDay = it.cycleDay
+                        val selectedMap = mutableMapOf<String, List<String>>()
+                        selectedMap[SymptomCategory.SEX_DRIVE.name] = it.sexActivity ?: emptyList()
+                        selectedMap[SymptomCategory.MOOD.name] = it.mood ?: emptyList()
+                        selectedMap[SymptomCategory.SYMPTOMS.name] = it.symptoms ?: emptyList()
+                        selectedMap[SymptomCategory.VAGINAL_DISCHARGE.name] = it.vaginalDischarge ?: emptyList()
+                        selectedMap[SymptomCategory.DIGESTION_AND_STOOL.name] = it.digestionAndStool ?: emptyList()
+                        selectedMap[SymptomCategory.PREGNANCY_TEST.name] = it.pregnancyTestResult ?: emptyList()
+                        selectedMap[SymptomCategory.PHYSICAL_ACTIVITY.name] = it.physicalActivity ?: emptyList()
 
-                            setupSymptomsRecyclerView(selectedMap)
-                        }
+                        setupSymptomsRecyclerView(selectedMap)
                     }
                 }
             }

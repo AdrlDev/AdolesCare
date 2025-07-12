@@ -13,6 +13,7 @@ import dev.adriele.adolescare.database.repositories.ChatBotRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.SocketTimeoutException
 
 class ChatBotViewModel(
     private val repository: ChatBotRepository,
@@ -62,11 +63,14 @@ class ChatBotViewModel(
                         response.body()?.let {
                             iChatBot.onResult(it)
                         }
+                    } else {
+                        iChatBot.onError("Failed to get todays tips.")
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("AdolesCare Tip Error", e.message ?: "Unknown error", e)
+                    iChatBot.onError("AdolesCare Tip Error: ${e.message ?: "Unknown error"}")
                 }
             }
         }
@@ -81,11 +85,19 @@ class ChatBotViewModel(
                         response.body()?.let {
                             iChatBot.onResult(it)
                         }
+                    } else {
+                        iChatBot.onError("Failed to get insight.")
                     }
+                }
+            } catch (e: SocketTimeoutException) {
+                withContext(Dispatchers.Main) {
+                    Log.e("AdolesCare Insight Error:", e.message, e)
+                    iChatBot.onError("Request timed out. Please try again.")
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("AdolesCare Insight Error:", e.message, e)
+                    iChatBot.onError("AdolesCare Insight Error: ${e.message}")
                 }
             }
         }

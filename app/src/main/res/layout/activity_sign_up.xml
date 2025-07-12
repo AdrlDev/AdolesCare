@@ -17,10 +17,12 @@
         >
 
         <TextView
+            android:layout_marginTop="@dimen/margin_large"
+            android:layout_marginBottom="@dimen/margin_small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/register"
-            android:textSize="42sp"
+            android:textSize="@dimen/font_large"
             android:textAlignment="center"
             android:fontFamily="@font/roboto_bold"
             android:layout_gravity="center"
@@ -32,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/signup_text_sign_up"
-            android:textSize="16sp"
+            android:textSize="@dimen/font_medium"
             android:textAlignment="center"
             android:fontFamily="@font/roboto"
             android:layout_gravity="center"
@@ -66,6 +68,7 @@
                     android:fontFamily="@font/roboto"
                     android:textColor="@color/textColor"
                     android:id="@+id/et_first_name"
+                    android:textSize="@dimen/font_small"
                     />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -87,6 +90,7 @@
                     android:fontFamily="@font/roboto"
                     android:textColor="@color/textColor"
                     android:id="@+id/et_last_name"
+                    android:textSize="@dimen/font_small"
                     />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -107,6 +111,7 @@
                     android:textColor="@color/textColor"
                     android:maxLength="2"
                     android:id="@+id/et_mi"
+                    android:textSize="@dimen/font_small"
                     />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -143,6 +148,7 @@
                     android:inputType="none"
                     android:clickable="true"
                     android:longClickable="false"
+                    android:textSize="@dimen/font_small"
                     android:drawableTint="@color/buttonColor"
                     android:drawableEnd="@drawable/round_calendar_month_24"
                     android:id="@+id/et_birthday"
@@ -166,6 +172,7 @@
                     android:textColor="@color/textColor"
                     android:enabled="false"
                     android:id="@+id/et_age"
+                    android:textSize="@dimen/font_small"
                     />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -188,6 +195,7 @@
                 android:fontFamily="@font/roboto"
                 android:textColor="@color/textColor"
                 android:id="@+id/et_username"
+                android:textSize="@dimen/font_small"
                 />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -210,6 +218,7 @@
                 android:textColor="@color/textColor"
                 android:inputType="textPassword"
                 android:id="@+id/et_password"
+                android:textSize="@dimen/font_small"
                 />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -232,6 +241,7 @@
                 android:textColor="@color/textColor"
                 android:inputType="textPassword"
                 android:id="@+id/et_confirm_password"
+                android:textSize="@dimen/font_small"
                 />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -248,6 +258,7 @@
             android:clickable="true"
             android:focusable="true"
             android:linksClickable="true"
+            android:textSize="@dimen/font_small"
             android:textColorLink="@color/textColorLink"
             />
 
@@ -255,12 +266,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/signup_text"
-            android:textSize="16sp"
+            android:textSize="@dimen/font_small"
             android:fontFamily="@font/roboto_medium"
             android:paddingVertical="16dp"
+            android:textColor="@color/buttonTextColor"
             app:backgroundTint="@color/buttonColor"
-            android:layout_marginTop="28dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginTop="@dimen/margin_large"
+            android:layout_marginBottom="@dimen/margin_small"
             android:id="@+id/btn_signup"/>
 
         <TextView
@@ -273,6 +285,7 @@
             android:layout_gravity="center"
             android:clickable="true"
             android:focusable="true"
+            android:textSize="@dimen/font_small"
             android:linksClickable="true"
             android:textColorLink="@color/textColorLink"
             />

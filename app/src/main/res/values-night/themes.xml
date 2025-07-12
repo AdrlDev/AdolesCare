@@ -4,5 +4,20 @@
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
         <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowActivityTransitions">true</item>
+    </style>
+
+    <style name="ToolbarCollapsedTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:fontFamily">@font/roboto</item> <!-- your font -->
+        <item name="android:textColor">@color/textColor</item>
+        <item name="android:textSize">@dimen/font_small</item>
+    </style>
+
+    <style name="ToolbarExpandedTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:fontFamily">@font/roboto_medium</item> <!-- different font optional -->
+        <item name="android:textColor">@color/textColor</item>
+        <item name="android:textSize">@dimen/font_medium</item>
+        <item name="android:textAlignment">center</item>
     </style>
 </resources>

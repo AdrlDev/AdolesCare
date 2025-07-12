@@ -13,6 +13,10 @@ class UserRepositoryImpl(private val userDao: UserDao) : UserRepository {
         return userDao.getUserByUsername(username = username)
     }
 
+    override suspend fun getUserByUID(uid: String): User? {
+        return userDao.getUserByUID(uid = uid)
+    }
+
     override suspend fun updatePasswordByUsername(
         username: String,
         newPassword: String

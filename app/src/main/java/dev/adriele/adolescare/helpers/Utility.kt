@@ -41,8 +41,6 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputEditText
-import com.tom_roush.pdfbox.pdmodel.PDDocument
-import com.tom_roush.pdfbox.text.PDFTextStripper
 import dev.adriele.adolescare.helpers.enums.ModuleContentType
 import dev.adriele.adolescare.helpers.enums.PDFModulesCategory
 import dev.adriele.adolescare.R
@@ -63,6 +61,9 @@ import java.util.Date
 import java.util.Locale
 import java.util.UUID
 import androidx.core.graphics.createBitmap
+import androidx.fragment.app.FragmentManager
+import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.reflect.TypeToken
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -87,6 +88,10 @@ object Utility {
 
     interface OnDatePickedCallback {
         fun onDatePicked(formattedDate: String, computedResult: String)
+    }
+
+    interface DatePickedCallback {
+        fun onDatePicked(formattedDate: String)
     }
 
     object SecurityUtils {
@@ -133,25 +138,17 @@ object Utility {
         return UUID.randomUUID().toString()
     }
 
-    fun setupTermOfUseText(tv: TextView, listener: TermsPrivacyClickListener) {
+    fun setupTermOfUseText(context: Context, tv: TextView, listener: TermsPrivacyClickListener) {
         val text = tv.text.toString()
         val spannable = SpannableString(text)
 
-        // Tagalog equivalents (update if needed)
-        val tagalogTerms = "Mga Tuntunin ng Paggamit"
-        val tagalogPrivacy = "Patakaran sa Privacy"
+        val termsStart = text.indexOf(context.getString(dev.adriele.language.R.string.term_of_use))
+        val termsEnd = termsStart + context.getString(dev.adriele.language.R.string.term_of_use).length
 
-        fun isTagalogPhrase(phrase: String): Boolean {
-            return phrase == tagalogTerms || phrase == tagalogPrivacy
-        }
+        val privacyStart = text.indexOf(context.getString(dev.adriele.language.R.string.privacy_policy))
+        val privacyEnd = privacyStart + context.getString(dev.adriele.language.R.string.privacy_policy).length
 
-        val termsStart = text.indexOf("Terms of use")
-        val termsEnd = termsStart + "Terms of use".length
-
-        val privacyStart = text.indexOf("Privacy Policy")
-        val privacyEnd = privacyStart + "Privacy Policy".length
-
-        if (termsStart != -1 && !isTagalogPhrase("Terms of use")) {
+        if (termsStart != -1) {
             // Terms of use clickable span
             val termsClickable = object : ClickableSpan() {
                 override fun onClick(widget: View) {
@@ -164,7 +161,7 @@ object Utility {
             spannable.setSpan(UnderlineSpan(), termsStart, termsEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
 
-        if (privacyStart != -1 && !isTagalogPhrase("Privacy Policy")) {
+        if (privacyStart != -1) {
             // Privacy Policy clickable span
             val privacyClickable = object : ClickableSpan() {
                 override fun onClick(widget: View) {
@@ -182,21 +179,14 @@ object Utility {
         tv.highlightColor = Color.TRANSPARENT // optional
     }
 
-    fun setupAlreadyHaveAccountText(tv: TextView, listener: LoginHereClickListener) {
+    fun setupAlreadyHaveAccountText(context: Context, tv: TextView, listener: LoginHereClickListener) {
         val text = tv.text.toString()
         val spannable = SpannableString(text)
 
-        // Tagalog equivalents (update if needed)
-        val tagalogTerms = "Mag-log in dito"
+        val loginStart = text.indexOf(context.getString(dev.adriele.language.R.string.login_here))
+        val loginEnd = loginStart + context.getString(dev.adriele.language.R.string.login_here).length
 
-        fun isTagalogPhrase(phrase: String): Boolean {
-            return phrase == tagalogTerms
-        }
-
-        val loginStart = text.indexOf("Log in here")
-        val loginEnd = loginStart + "Log in here".length
-
-        if (loginStart != -1 && !isTagalogPhrase("Log in here")) {
+        if (loginStart != -1) {
             // Terms of use clickable span
             val termsClickable = object : ClickableSpan() {
                 override fun onClick(widget: View) {
@@ -214,21 +204,14 @@ object Utility {
         tv.highlightColor = Color.TRANSPARENT // optional
     }
 
-    fun setupDonatHaveAccountText(tv: TextView, listener: SignUpHereClickListener) {
+    fun setupDonatHaveAccountText(context: Context, tv: TextView, listener: SignUpHereClickListener) {
         val text = tv.text.toString()
         val spannable = SpannableString(text)
 
-        // Tagalog equivalents (update if needed)
-        val tagalogTerms = "Mag-sign up dito"
+        val loginStart = text.indexOf(context.getString(dev.adriele.language.R.string.signup_here))
+        val loginEnd = loginStart + context.getString(dev.adriele.language.R.string.signup_here).length
 
-        fun isTagalogPhrase(phrase: String): Boolean {
-            return phrase == tagalogTerms
-        }
-
-        val loginStart = text.indexOf("Sign up here")
-        val loginEnd = loginStart + "Sign up here".length
-
-        if (loginStart != -1 && !isTagalogPhrase("Sign up here")) {
+        if (loginStart != -1) {
             // Terms of use clickable span
             val termsClickable = object : ClickableSpan() {
                 override fun onClick(widget: View) {
@@ -246,14 +229,14 @@ object Utility {
         tv.highlightColor = Color.TRANSPARENT // optional
     }
 
-    fun setupDatePicker(editText: TextInputEditText, fragmentActivity: FragmentActivity, callback: OnDatePickedCallback) {
+    fun setupDatePicker(context: Context, editText: TextInputEditText, fragmentActivity: FragmentActivity, callback: OnDatePickedCallback) {
         editText.setOnClickListener {
             val constraints = CalendarConstraints.Builder()
                 .setValidator(DateValidatorPointBackward.now()) // only allow past dates
                 .build()
 
             val picker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Select your birthday")
+                .setTitleText(context.getString(dev.adriele.language.R.string.select_birthday))
                 .setCalendarConstraints(constraints)
                 .build()
 
@@ -261,10 +244,29 @@ object Utility {
 
             picker.addOnPositiveButtonClickListener { selection ->
                 val date = Date(selection)
-                val formatted = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(date)
+                val formatted = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH).format(date)
                 val age = computeAgeFromDate(date)
                 callback.onDatePicked(formatted, age.toString())
             }
+        }
+    }
+
+    fun showDatePicker(context: Context, fragmentManager: FragmentManager, callback: DatePickedCallback) {
+        val constraints = CalendarConstraints.Builder()
+            .setValidator(DateValidatorPointBackward.now()) // only allow past dates
+            .build()
+
+        val picker = MaterialDatePicker.Builder.datePicker()
+            .setTitleText(context.getString(dev.adriele.language.R.string.select_last_period_date))
+            .setCalendarConstraints(constraints)
+            .build()
+
+        picker.show(fragmentManager, "DATE_PICKER")
+
+        picker.addOnPositiveButtonClickListener { selection ->
+            val date = Date(selection)
+            val formatted = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH).format(date)
+            callback.onDatePicked(formatted)
         }
     }
 
@@ -298,7 +300,7 @@ object Utility {
 
             picker.addOnPositiveButtonClickListener { selection ->
                 val date = Date(selection)
-                val formatted = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(date)
+                val formatted = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH).format(date)
                 callback.onDatePicked(formatted, "")
             }
         }
@@ -320,11 +322,11 @@ object Utility {
         val usernameInput = dialogView.findViewById<TextInputEditText>(R.id.et_username)
         val newPasswordInput = dialogView.findViewById<TextInputEditText>(R.id.et_new_password)
 
-        val dialog = AlertDialog.Builder(context)
-            .setTitle("Change Password")
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setTitle(context.getString(dev.adriele.language.R.string.change_password))
             .setView(dialogView)
-            .setPositiveButton("Confirm", null) // Will override later for validation
-            .setNegativeButton("Cancel", null)
+            .setPositiveButton(context.getString(dev.adriele.language.R.string.confirm), null) // Will override later for validation
+            .setNegativeButton(context.getString(dev.adriele.language.R.string.cancel), null)
             .create()
 
         dialog.setOnShowListener {
@@ -334,7 +336,7 @@ object Utility {
                 val newPassword = newPasswordInput.text.toString()
 
                 if (username.isBlank() || newPassword.isBlank()) {
-                    Toast.makeText(context, "Please fill out all fields.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(dev.adriele.language.R.string.fill_all_fields), Toast.LENGTH_SHORT).show()
                 } else {
                     onConfirm(username, newPassword)
                     dialog.dismiss()
@@ -436,27 +438,27 @@ object Utility {
 
     fun getCurrentTime(): String {
         // Return current formatted date/time string, e.g. "10:45 AM"
-        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+        val sdf = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
         return sdf.format(Date())
     }
 
     fun getCurrentDate(): String {
-        val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+        val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
         return sdf.format(Date())
     }
 
     fun getCurrentCycleDate(): String {
-        val sdf = SimpleDateFormat("MMM d", Locale.getDefault())
+        val sdf = SimpleDateFormat("MMM d", Locale.ENGLISH)
         return sdf.format(Date())
     }
 
     fun getCurrentDateOnly(): String {
-        val sdf = SimpleDateFormat("MMMM dd", Locale.getDefault())
+        val sdf = SimpleDateFormat("MMM dd", Locale.ENGLISH)
         return sdf.format(Date())
     }
 
     fun getCurrentDateTime(): String {
-        val sdf = SimpleDateFormat("MMMM dd, yyyy hh:mm a", Locale.getDefault())
+        val sdf = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.ENGLISH)
         return sdf.format(Date())
     }
 
@@ -500,7 +502,7 @@ object Utility {
         calendar.add(Calendar.DAY_OF_YEAR, -14) // Subtract 14 days
         val twoWeeksAgo = calendar.time
 
-        val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        val formatter = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
         return formatter.format(twoWeeksAgo)
     }
 
@@ -649,7 +651,7 @@ object Utility {
             val image = InputImage.fromBitmap(bitmap, 0)
             val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
-            val result = suspendCancellableCoroutine<String> { cont ->
+            val result = suspendCancellableCoroutine { cont ->
                 recognizer.process(image)
                     .addOnSuccessListener { cont.resume(it.text, null) }
                     .addOnFailureListener { cont.resumeWith(Result.success("")) }
@@ -744,6 +746,54 @@ object Utility {
             e.printStackTrace()
             0
         }
+    }
+
+    fun animateTextViewHeight(view: TextView, from: Int, to: Int) {
+        val animator = ValueAnimator.ofInt(from, to)
+        animator.duration = 300
+        animator.addUpdateListener { animation ->
+            val value = animation.animatedValue as Int
+            view.layoutParams.height = value
+            view.requestLayout()
+        }
+        animator.start()
+    }
+
+    interface IUtility {
+        fun onAccept(accepted: Boolean)
+    }
+
+    fun showDialog(context: Context, title: String, supportingText: String, callback: IUtility) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_terms_checkbox, null)
+        val messageTextView = dialogView.findViewById<TextView>(R.id.tvSupportingText)
+        val checkbox = dialogView.findViewById<MaterialCheckBox>(R.id.cbAgree)
+
+        messageTextView.text = supportingText
+
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setTitle(title)
+            .setView(dialogView)
+            .setCancelable(false)
+            .setNeutralButton(context.getString(dev.adriele.language.R.string.cancel), null)
+            .setNegativeButton(context.getString(dev.adriele.language.R.string.decline), null)
+            .setPositiveButton(context.getString(dev.adriele.language.R.string.accept), null)
+            .create()
+
+        dialog.setOnShowListener {
+            val positiveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveBtn.isEnabled = checkbox.isChecked
+
+            checkbox.setOnCheckedChangeListener { _, isChecked ->
+                positiveBtn.isEnabled = isChecked
+            }
+
+            positiveBtn.setOnClickListener {
+                dialog.dismiss()
+                callback.onAccept(checkbox.isChecked)
+            }
+        }
+
+        dialog.show()
     }
 
 }

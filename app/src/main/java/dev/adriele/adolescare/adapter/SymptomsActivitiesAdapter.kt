@@ -1,5 +1,6 @@
 package dev.adriele.adolescare.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,14 +10,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.gson.Gson
 import dev.adriele.adolescare.R
+import dev.adriele.adolescare.helpers.enums.SymptomCategory
 import dev.adriele.adolescare.model.SymptomsActivitiesQ
 
 class SymptomsActivitiesAdapter(
     private val items: List<SymptomsActivitiesQ>,
     private val selectedOptions: Map<String, List<String>>, // preselected items
-    private val isDisplayOnly: Boolean,
-    private val onChipChecked: (category: String, selectedChips: List<String>) -> Unit
+    private val isViewOnly: Boolean,
+    private val listener: (category: String, selectedChips: List<String>) -> Unit
 ) : RecyclerView.Adapter<SymptomsActivitiesAdapter.SymptomsViewHolder>() {
 
     private val selectedItemsMap = mutableMapOf<String, MutableList<String>>()
@@ -34,31 +37,48 @@ class SymptomsActivitiesAdapter(
     }
 
     override fun onBindViewHolder(holder: SymptomsViewHolder, position: Int) {
-        val item = items[position]
-        val preselected = selectedOptions[item.category] ?: emptyList()
-        val selectedChips = mutableListOf<String>().apply { addAll(preselected) }
-        selectedItemsMap[item.category] = selectedChips
+        val context = holder.itemView.context
 
-        holder.tvCategory.text = item.category
+        val item = items[position]
+        val categoryEnum = SymptomCategory.valueOf(item.category)
+        val displayCategory = context.getString(categoryEnum.labelRes)
+
+        val preselected = selectedOptions[categoryEnum.name] ?: emptyList()
+        val selectedChips = mutableListOf<String>().apply { addAll(preselected) }
+        selectedItemsMap[categoryEnum.name] = selectedChips
+
+        holder.tvCategory.text = displayCategory
         holder.chipGroup.removeAllViews()
 
-        if(isDisplayOnly) {
+        if (isViewOnly) {
             holder.main.cardElevation = 0f
+            holder.tvCategory.textSize = 12f
         }
 
-        item.choices.forEach { option ->
-            val chip = Chip(holder.chipGroup.context).apply {
-                text = option
-                isCheckable = true
-                isChecked = preselected.contains(option)
-                isEnabled = !isDisplayOnly
-                isClickable = !isDisplayOnly
+        Log.e("PRE_SELECTED_LIST", Gson().toJson(preselected))
 
-                // Setup the icon when checked
+        categoryEnum.options.forEach { optionEnum ->
+            val optionKey = optionEnum.name
+            val optionLabel = context.getString(optionEnum.resId)
+            val isSelected = preselected.contains(optionKey)
+
+            if (isViewOnly && !isSelected) {
+                Log.w("CHIP_SKIPPED", "Skipping $optionKey in view-only mode")
+                return@forEach
+            }
+
+            val chip = Chip(holder.chipGroup.context).apply {
+                text = optionLabel
+                isCheckable = true
+                isChecked = isSelected
+                isEnabled = !isViewOnly
+                isClickable = !isViewOnly
+                textSize = if(isViewOnly) 12f else 14f
+
                 chipIcon = ContextCompat.getDrawable(context, R.drawable.round_check_20)
                 chipIconTint = holder.itemView.context.getColorStateList(R.color.buttonTextColor)
-                isChipIconVisible = isChecked // show if checked, hide if not
-                setTextColor(resources.getColor(R.color.buttonTextColor, null)) // optional
+                isChipIconVisible = isChecked
+                setTextColor(resources.getColor(R.color.buttonTextColor, null))
                 chipBackgroundColor = holder.itemView.context.getColorStateList(android.R.color.transparent)
                 chipStrokeColor = holder.itemView.context.getColorStateList(R.color.buttonColor)
             }
@@ -70,19 +90,16 @@ class SymptomsActivitiesAdapter(
 
             chip.shapeAppearanceModel = shapeAppearanceModel
 
-            chip.setOnCheckedChangeListener { buttonView, isChecked ->
+            chip.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    selectedChips.add(option)
-                    chip.chipIcon =
-                        ContextCompat.getDrawable(holder.itemView.context, R.drawable.round_check_20)
-                    chip.isChipIconVisible = true
+                    selectedChips.add(optionKey)
+                    chip.chipIcon = ContextCompat.getDrawable(context, R.drawable.round_check_20)
                 } else {
-                    selectedChips.remove(option)
+                    selectedChips.remove(optionKey)
                     chip.chipIcon = null
-                    chip.isChipIconVisible = false
                 }
-
-                onChipChecked(item.category, selectedChips)
+                chip.isChipIconVisible = isChecked
+                listener(categoryEnum.name, selectedChips)
             }
 
             holder.chipGroup.addView(chip)

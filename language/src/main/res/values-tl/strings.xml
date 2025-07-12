@@ -12,6 +12,14 @@
     <string name="login_text">Mag log in</string>
     <string name="signup_text">Gumawa ng Account</string>
 
+    <string name="signup_here">Mag-sign up dito</string>
+    <string name="login_here">Mag-log in dito</string>
+
+    <string name="term_of_use">Mga Tuntunin ng Paggamit</string>
+    <string name="privacy_policy">Patakaran sa Privacy</string>
+
+    <string name="term_privacy">Tuntunin ng Paggamit at Patakaran sa Privacy</string>
+
     <string name="register">Magrehistro</string>
     <string name="login_text_sign_up">Mag-login sa iyong account</string>
     <string name="signup_text_sign_up">Gumawa ng iyong account</string>
@@ -37,7 +45,7 @@
 
     <string name="helper_required">Required*</string>
 
-    <string name="finish_set_up">Finish Set-Up</string>
+    <string name="finish_set_up">Tapusin ang pag set-up</string>
     <string name="step">Step</string>
     <string name="next">Next</string>
 
@@ -146,62 +154,218 @@
     <string name="vaginal_itching">Pangangati ng ari</string>
     <string name="vaginal_dryness">Pagkatuyo ng ari</string>
 
+    <!-- Vaginal Discharge -->
+    <string name="no_discharge">Walang paglabas</string>
+    <string name="creamy">Malapot na puti</string>
+    <string name="watery">Tubig-tubig</string>
+    <string name="sticky">Malagkit</string>
+    <string name="egg_white">Gaya ng puti ng itlog</string>
+    <string name="spotting">May bahid ng dugo</string>
+    <string name="unusual">Hindi pangkaraniwan</string>
+    <string name="clumpy_white">Namumuong puti</string>
+    <string name="gray">Kulay abo</string>
+
+    <!-- Digestion and Stool -->
+    <string name="nausea">Pagkahilo</string>
+    <string name="bloating">Kabag</string>
+    <string name="diarrhea">Pagtatae</string>
+    <string name="constipation">Pagtitibi</string>
+
+    <!-- Pregnancy Test -->
+    <string name="didnt_take_test">Hindi kumuha ng pagsusuri</string>
+    <string name="positive">Positibo</string>
+    <string name="negative">Negatibo</string>
+    <string name="faint_line">Malabong guhit</string>
+
+    <!-- Physical Activity -->
+    <string name="didnt_exercise">Walang ehersisyo</string>
+    <string name="yoga">Yoga</string>
+    <string name="gym">Gym</string>
+    <string name="aerobics_dancing">Aerobics at pagsayaw</string>
+    <string name="swimming">Paglangoy</string>
+    <string name="running">Pagtakbo</string>
+    <string name="cycling">Pagbibisikleta</string>
+    <string name="walking">Paglalakad</string>
+
+    <string name="vaginal_discharge">Paglabas mula sa ari</string>
+    <string name="digestion_and_stool">Pagtunaw at dumi</string>
+    <string name="pregnancy_test">Pagsusuri sa pagbubuntis</string>
+    <string name="physical_activity">Pisikal na aktibidad</string>
+
+    <string name="low_fertility">Mababang tsansa ng pagbubuntis</string>
+    <string name="chance_increasing">Tumataas ang tsansa</string>
+    <string name="high_fertility">Mataas ang tsansa ng pagbubuntis</string>
+    <string name="fertility_declining">Bumababa ang tsansa</string>
+    <string name="cycle_day_out_of_range">Labas sa saklaw ng siklo</string>
+
+    <string name="menstrual_phase">Yugto ng regla</string>
+    <string name="follicular_phase">Yugto ng follicular</string>
+    <string name="ovulation_phase">Yugto ng obulasyon</string>
+    <string name="luteal_phase">Yugto ng luteal</string>
+    <string name="unknown_phase">Hindi tiyak</string>
+
+    <string name="unable_to_calculate_ovulation">Hindi makalkula ang impormasyon sa obulasyon.</string>
+    <string name="low_chance_pregnancy">Mababang posibilidad na mabuntis</string>
+    <string name="high_chance_pregnancy">Mataas na posibilidad na mabuntis</string>
+
+    <string name="yearly_preview">Taunang Pagsilip</string>
+    <string name="year">Taon</string>
+
+    <string name="select_last_period_date">Piliin ang huling petsa ng iyong regla</string>
+    <string name="select_birthday">Piliin ang iyong kaarawan</string>
+
+    <string name="login_failed_user_not_found">Nabigo ang pag-login, hindi nahanap ang user.</string>
+    <string name="login_failed_incorrect_password">Nabigo ang pag-login, maling password.</string>
+    <string name="password_updated_successfully">Matagumpay na na-update ang password</string>
+    <string name="failed_to_update_password">Nabigong i-update ang password</string>
+    <string name="logging_in_please_wait">Nagla-login, pakihintay…</string>
+    <string name="please_enter_username">Pakilagay ang username.</string>
+    <string name="please_enter_password">Pakilagay ang password.</string>
+    <string name="updating_password_please_wait">Ina-update ang password, pakihintay…</string>
+
+    <string name="failed_to_insert_user">Nabigong i-save ang user</string>
+    <string name="saving_please_wait">Nagsa-save, pakihintay…</string>
+    <string name="please_enter_first_name">Pakilagay ang iyong unang pangalan.</string>
+    <string name="please_enter_last_name">Pakilagay ang iyong apelyido.</string>
+    <string name="please_enter_birthday">Pakilagay ang iyong kaarawan.</string>
+    <string name="password_not_match">Hindi magkatugma ang password. Subukang muli.</string>
+    <string name="username_already_exists">Umiiral na ang username. Pumili ng iba.</string>
+
+    <string name="decline">Tanggihan</string>
+    <string name="accept">Tanggapin</string>
+
+    <string name="agree_terms">Sumasang-ayon ako sa Mga Tuntunin ng Paggamit at Patakaran sa Privacy</string>
+
+    <string name="change_settings">Baguhin ang mga setting</string>
+    <string name="settings">Mga Setting</string>
+    <string name="language">Wika</string>
+    <string name="reset_password">I-reset ang Password</string>
+    <string name="archive">Archive</string>
+    <string name="theme">Dark Mode</string>
+
+    <string name="title_home">Home</string>
+    <string name="title_module">Modyul</string>
+    <string name="title_calendar">Tagasubaybay ng Regla</string>
+    <string name="title_video">Bidyo</string>
+    <string name="title_chat_bot">Chat-Bot</string>
+
+    <string name="menu_profile">Profile</string> <!-- Often left untranslated -->
+    <string name="menu_my_account">Aking Account</string>
+    <string name="menu_logout">Mag-logout</string>
+
+    <string name="menu_other">Iba pa</string>
+    <string name="menu_settings">Mga Setting</string>
+    <string name="menu_notifications">Mga Abiso</string>
+    <string name="menu_about_us">Tungkol sa Amin</string>
+
+    <string name="terms_privacy_policy_text">
+        Ang Teenage Pregnancy Awareness App ay idinisenyo upang magbigay ng edukasyonal na impormasyon tungkol sa pagbubuntis ng mga kabataan at kalusugang reproduktibo. Sa paggamit ng App, sumasang-ayon ka:\n\n
+        1. Na maaari naming kolektahin ang mga pangunahing personal na impormasyon tulad ng iyong pangalan, edad, kasarian, at lokasyon upang mapabuti ang aming serbisyo. Ang lahat ng datos ay ligtas na iniimbak at ginagamit lamang para sa layuning pang-edukasyon at pananaliksik. Hindi namin ibinabahagi ang iyong impormasyon sa ibang partido nang walang iyong pahintulot, maliban kung kinakailangan ng batas.\n\n
+        2. Inaasahan ang mga gumagamit na kumilos nang may respeto at pananagutan. Ang App na ito ay para lamang sa edukasyonal na gamit at hindi kapalit ng propesyonal na medikal na payo.\n\n
+        Sa pagpapatuloy ng paggamit ng App, tinatanggap mo ang mga terminong ito sa pamamagitan ng pag-click sa kumpirma sa ibaba.
+    </string>
+
+    <string name="change_password">Palitan ang Password</string>
+    <string name="confirm">Kumpirmahin</string>
+    <string name="fill_all_fields">Pakiusap, punan ang lahat ng mga patlang.</string>
+
     <string-array name="categories">
-        <item>Kasarian at pagnanasa sa pakikipagtalik</item>
-        <item>Kalagayan ng damdamin</item>
-        <item>Mga sintomas</item>
-        <item>Paglabas sa ari</item>
-        <item>Pagtunaw ng pagkain at pagdumi</item>
-        <item>Pagsusuri sa pagbubuntis</item>
-        <item>Pisikal na aktibidad</item>
+        <item>@string/sex_drive</item>
+        <item>@string/mood</item>
+        <item>@string/symptoms_category</item>
+        <item>@string/vaginal_discharge</item>
+        <item>@string/digestion_and_stool</item>
+        <item>@string/pregnancy_test</item>
+        <item>@string/physical_activity</item>
     </string-array>
 
     <string-array name="sex_and_drive_options">
-        <item>Hindi nakipagtalik</item>
-        <item>Ligtas na pakikipagtalik</item>
-        <item>Walang proteksiyong pakikipagtalik</item>
-        <item>Oral na pakikipagtalik</item>
-        <item>Anal na pakikipagtalik</item>
-        <item>Pagsasarili</item>
-        <item>Senswal na haplos</item>
-        <item>Sex toys</item>
-        <item>Orgasmo</item>
-        <item>Mataas ang pagnanasa sa sex</item>
-        <item>Neutral na pagnanasa sa sex</item>
-        <item>Mababa ang pagnanasa sa sex</item>
+        <item>@string/no_sex</item>
+        <item>@string/protected_sex</item>
+        <item>@string/unprotected_sex</item>
+        <item>@string/oral_sex</item>
+        <item>@string/anal_sex</item>
+        <item>@string/masturbation</item>
+        <item>@string/sensual_touch</item>
+        <item>@string/sex_toys</item>
+        <item>@string/orgasm</item>
+        <item>@string/high_sex_drive</item>
+        <item>@string/neutral_sex_drive</item>
+        <item>@string/low_sex_drive</item>
     </string-array>
 
     <string-array name="mood_options">
-        <item>Kalma</item>
-        <item>Masaya</item>
-        <item>Masigla</item>
-        <item>Malandi</item>
-        <item>Pagbabago-bago ng damdamin</item>
-        <item>Inis</item>
-        <item>Malungkot</item>
-        <item>Nababahala</item>
-        <item>Depresyon</item>
-        <item>May pagkakonsensya</item>
-        <item>Mapilit na mga iniisip</item>
-        <item>Mababa ang enerhiya</item>
-        <item>Walang gana</item>
-        <item>Litong-lito</item>
-        <item>Sobrang mapanuri sa sarili</item>
+        <item>@string/calm</item>
+        <item>@string/happy</item>
+        <item>@string/energetic</item>
+        <item>@string/frisky</item>
+        <item>@string/mood_swings</item>
+        <item>@string/irritated</item>
+        <item>@string/sad</item>
+        <item>@string/anxious</item>
+        <item>@string/depressed</item>
+        <item>@string/feeling_guilty</item>
+        <item>@string/obsessive_thoughts</item>
+        <item>@string/low_energy</item>
+        <item>@string/apathetic</item>
+        <item>@string/confused</item>
+        <item>@string/very_self_critical</item>
     </string-array>
 
     <string-array name="symptoms_list">
-        <item>Ayos lang</item>
-        <item>Pananakit ng puson</item>
-        <item>Sakit ng ulo</item>
-        <item>Masakit ang dibdib</item>
-        <item>Sakit ng likod</item>
-        <item>Tigyawat</item>
-        <item>Pagkapagod</item>
-        <item>Pagkahilig sa pagkain</item>
-        <item>Hindi makatulog</item>
-        <item>Sakit ng tiyan</item>
-        <item>Pangangati ng ari</item>
-        <item>Pagkatuyo ng ari</item>
+        <item>@string/everything_fine</item>
+        <item>@string/cramps</item>
+        <item>@string/headache</item>
+        <item>@string/tender_breast</item>
+        <item>@string/backache</item>
+        <item>@string/acne</item>
+        <item>@string/fatigue</item>
+        <item>@string/cravings</item>
+        <item>@string/insomnia</item>
+        <item>@string/abdominal_pain</item>
+        <item>@string/vaginal_itching</item>
+        <item>@string/vaginal_dryness</item>
+    </string-array>
+
+    <!-- Vaginal Discharge -->
+    <string-array name="vaginal_discharge_options">
+        <item>@string/no_discharge</item>
+        <item>@string/creamy</item>
+        <item>@string/watery</item>
+        <item>@string/sticky</item>
+        <item>@string/egg_white</item>
+        <item>@string/spotting</item>
+        <item>@string/unusual</item>
+        <item>@string/clumpy_white</item>
+        <item>@string/gray</item>
+    </string-array>
+
+    <!-- Digestion and Stool -->
+    <string-array name="digestion_stool_options">
+        <item>@string/nausea</item>
+        <item>@string/bloating</item>
+        <item>@string/diarrhea</item>
+        <item>@string/constipation</item>
+    </string-array>
+
+    <!-- Pregnancy Test -->
+    <string-array name="pregnancy_test_options">
+        <item>@string/didnt_take_test</item>
+        <item>@string/positive</item>
+        <item>@string/negative</item>
+        <item>@string/faint_line</item>
+    </string-array>
+
+    <!-- Physical Activity -->
+    <string-array name="physical_activity_options">
+        <item>@string/didnt_exercise</item>
+        <item>@string/yoga</item>
+        <item>@string/gym</item>
+        <item>@string/aerobics_dancing</item>
+        <item>@string/swimming</item>
+        <item>@string/running</item>
+        <item>@string/cycling</item>
+        <item>@string/walking</item>
     </string-array>
 
 </resources>

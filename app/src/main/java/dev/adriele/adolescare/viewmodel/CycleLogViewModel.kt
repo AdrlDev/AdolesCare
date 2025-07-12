@@ -39,6 +39,14 @@ class CycleLogViewModel(private val repository: CycleLogRepository) : ViewModel(
         emit(repository.getLogByDate(userId, date))
     }
 
+    suspend fun getMenstrualCycle(userId: String, date: String, lmp: String): MenstrualCycle? {
+        return repository.getMenstrualCycle(userId = userId, date = date, lmp = lmp)
+    }
+
+    suspend fun getLogByDateNow(userId: String, date: String): CycleLogEntity? {
+        return repository.getLogByDate(userId, date)
+    }
+
     fun updateListsByUserIdAndDate(
         userId: String,
         date: String,

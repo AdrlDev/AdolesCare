@@ -1,15 +1,49 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="160dp" android:padding="16dp"
-    android:background="@color/buttonColor">
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/buttonColor"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="@dimen/margin_small">
 
-    <TextView
-        android:id="@+id/tv_username"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="22sp"
-        android:fontFamily="@font/roboto_medium"
-        android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-        android:textColor="@color/buttonTextColor" />
+        android:orientation="vertical"
+        android:padding="@dimen/margin_large"
+        >
 
-</LinearLayout>
+        <ImageView
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:src="@drawable/adoloscare_logo"
+            android:contentDescription="@string/app_name"
+            />
+
+        <TextView
+            android:id="@+id/tv_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textSize="@dimen/font_large"
+            android:fontFamily="@font/roboto_medium"
+            android:letterSpacing=".05"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+            android:textColor="@color/buttonTextColor" />
+
+        <TextView
+            android:layout_marginVertical="@dimen/margin_small"
+            android:id="@+id/tv_sub_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/welcome_message"
+            android:textSize="@dimen/font_small"
+            android:fontFamily="@font/roboto_medium"
+            android:letterSpacing=".05"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+            android:textColor="@color/buttonTextColor" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

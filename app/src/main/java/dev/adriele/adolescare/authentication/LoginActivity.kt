@@ -1,37 +1,49 @@
 package dev.adriele.adolescare.authentication
 
+import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
-import android.widget.CompoundButton
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.platform.MaterialSharedAxis
+import dev.adriele.adolescare.BaseActivity
 import dev.adriele.adolescare.ui.DashboardActivity
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.helpers.Utility.PreferenceManager
 import dev.adriele.adolescare.helpers.Utility.SecurityUtils
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.dao.UserDao
+import dev.adriele.adolescare.database.repositories.implementation.ReminderRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.UserRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityLoginBinding
 import dev.adriele.adolescare.dialogs.MyLoadingDialog
+import dev.adriele.adolescare.viewmodel.ReminderViewModel
 import dev.adriele.adolescare.viewmodel.UserViewModel
+import dev.adriele.adolescare.viewmodel.factory.ReminderViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.UserViewModelFactory
+import dev.adriele.language.R
 
-class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
+class LoginActivity : BaseActivity(), Utility.SignUpHereClickListener {
     private lateinit var binding: ActivityLoginBinding
 
     private lateinit var userRepositoryImpl: UserRepositoryImpl
     private lateinit var userDao: UserDao
 
     private lateinit var userViewModel: UserViewModel
+    private lateinit var reminderViewModel: ReminderViewModel
 
     private lateinit var loadingDialog: MyLoadingDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        window.enterTransition = sharedAxis
+        window.exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityLoginBinding.inflate(layoutInflater)
@@ -50,20 +62,27 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
         userViewModel.user.observe(this) { user ->
             if (user == null) {
                 loadingDialog.dismiss()
-                Snackbar.make(binding.root, "Login failed, user not found.", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding.root, getString(R.string.login_failed_user_not_found), Snackbar.LENGTH_LONG).show()
                 return@observe
             }
 
             if (binding.etPassword.text.toString().isNotEmpty()) {
                 if (SecurityUtils.checkPassword(binding.etPassword.text.toString(), user.password)) {
-                    loadingDialog.dismiss()
-                    startActivity(Intent(this, DashboardActivity::class.java)
-                        .putExtra("userId", user.userId)
-                        .putExtra("userName", user.username))
-                    finish()
+                    // ✅ Schedule Worker AFTER successful login
+                    reminderViewModel.scheduleDailyDelayedPeriodWorker(this,user.userId)
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        loadingDialog.dismiss()
+                        val intent = Intent(this, DashboardActivity::class.java).apply {
+                            putExtra("userId", user.userId)
+                            putExtra("userName", user.username)
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        }
+                        startActivity(intent)
+                    }, 1500)
                 } else {
                     loadingDialog.dismiss()
-                    Snackbar.make(binding.root, "Login failed, incorrect password.", Snackbar.LENGTH_LONG).show()
+                    Snackbar.make(binding.root, getString(R.string.login_failed_incorrect_password), Snackbar.LENGTH_LONG).show()
                 }
             }
         }
@@ -71,26 +90,26 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
         userViewModel.updatePasswordStatus.observe(this) { status ->
             if(status) {
                 loadingDialog.dismiss()
-                Snackbar.make(binding.root, "password updated successfully", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding.root, getString(R.string.password_updated_successfully), Snackbar.LENGTH_LONG).show()
             } else {
                 loadingDialog.dismiss()
-                Snackbar.make(binding.root, "Failed to update password", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding.root, getString(R.string.failed_to_update_password), Snackbar.LENGTH_LONG).show()
             }
         }
 
         binding.btnLogin.setOnClickListener {
-            loadingDialog.show("Logging In, please wait...")
+            loadingDialog.show(getString(R.string.logging_in_please_wait))
 
             val username = binding.etUsername.text.toString()
             val password = binding.etPassword.text.toString()
 
             if(username.isEmpty()) {
-                binding.llUsername.error = "Please enter username."
+                binding.llUsername.error = getString(R.string.please_enter_username)
                 binding.etUsername.requestFocus()
                 loadingDialog.dismiss()
                 return@setOnClickListener
             } else if(password.isEmpty()) {
-                binding.llPassword.error = "Please enter password."
+                binding.llPassword.error = getString(R.string.please_enter_password)
                 binding.etPassword.requestFocus()
                 loadingDialog.dismiss()
                 return@setOnClickListener
@@ -99,29 +118,27 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
             }
         }
 
-        binding.cbRemember.setOnCheckedChangeListener(object : CompoundButton.OnCheckedChangeListener {
-            override fun onCheckedChanged(p0: CompoundButton?, p1: Boolean) {
-                val username = binding.etUsername.text.toString()
-                val password = binding.etPassword.text.toString()
+        binding.cbRemember.setOnCheckedChangeListener { p0, p1 ->
+            val username = binding.etUsername.text.toString()
+            val password = binding.etPassword.text.toString()
 
-                if(p1 && username.isNotEmpty() && password.isNotEmpty()) {
-                    PreferenceManager.saveLoginInfo(this@LoginActivity, username, password, true)
-                } else {
-                    PreferenceManager.clearLoginInfo(this@LoginActivity)
-                }
+            if (p1 && username.isNotEmpty() && password.isNotEmpty()) {
+                PreferenceManager.saveLoginInfo(this@LoginActivity, username, password, true)
+            } else {
+                PreferenceManager.clearLoginInfo(this@LoginActivity)
             }
-        })
+        }
 
         binding.tvForget.setOnClickListener {
             Utility.showChangePasswordDialog(this) { username, newPassword ->
-                loadingDialog.show("Updating password, please wait...")
+                loadingDialog.show(getString(R.string.updating_password_please_wait))
                 userViewModel.updatePasswordByUsername(username, SecurityUtils.hashPasswordBcrypt(newPassword))
             }
         }
     }
 
     private fun init() {
-        Utility.setupDonatHaveAccountText(binding.tvDoNotHaveAccount, this)
+        Utility.setupDonatHaveAccountText(this,binding.tvDoNotHaveAccount, this)
 
         loadingDialog = MyLoadingDialog(this)
 
@@ -131,6 +148,11 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
         // Create the ViewModel using the factory
         val factory = UserViewModelFactory(userRepositoryImpl)
         userViewModel = ViewModelProvider(this, factory)[UserViewModel::class.java]
+
+        val reminderDao = AppDatabaseProvider.getDatabase(this).reminderDao()
+        val reminderRepository = ReminderRepositoryImpl(reminderDao)
+        val reminderFactory = ReminderViewModelFactory(reminderRepository)
+        reminderViewModel = ViewModelProvider(this, reminderFactory)[ReminderViewModel::class]
 
         val (savedUsername, savedPassword, isRemembered) = PreferenceManager.getSavedLoginInfo(this)
 
@@ -142,7 +164,10 @@ class LoginActivity : AppCompatActivity(), Utility.SignUpHereClickListener {
     }
 
     override fun onSignUpClicked() {
-        startActivity(Intent(this, SignUpActivity::class.java))
-        finish()
+        val bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
+        val intent = Intent(this, SignUpActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+        startActivity(intent, bundle)
     }
 }

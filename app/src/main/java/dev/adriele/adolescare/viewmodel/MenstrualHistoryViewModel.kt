@@ -5,7 +5,6 @@ import android.graphics.Typeface
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.StyleSpan
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,6 +13,7 @@ import dev.adriele.adolescal.OvulationCalculator
 import dev.adriele.adolescal.model.OvulationInfo
 import dev.adriele.adolescare.database.entities.MenstrualHistoryEntity
 import dev.adriele.adolescare.database.repositories.MenstrualHistoryRepository
+import dev.adriele.adolescare.helpers.Utility
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,6 +21,8 @@ import kotlinx.coroutines.withContext
 class MenstrualHistoryViewModel(private val repository: MenstrualHistoryRepository) : ViewModel() {
     private val _insertStatus = MutableLiveData<Pair<Boolean, Boolean>>()
     val insertStatus: LiveData<Pair<Boolean, Boolean>> = _insertStatus
+    private val _updateStatus = MutableLiveData<Pair<Boolean, String>>()
+    val updateStatus: LiveData<Pair<Boolean, String>> = _updateStatus
 
     private val _ovulationInfo = MutableLiveData<OvulationInfo?>()
     val ovulationInfo: LiveData<OvulationInfo?> = _ovulationInfo
@@ -33,9 +35,19 @@ class MenstrualHistoryViewModel(private val repository: MenstrualHistoryReposito
             try {
                 repository.insertMenstrualHistory(history)
                 _insertStatus.value = Pair(true, history.firstPeriodReported)
-            } catch (e: Exception) {
-                Log.e("UserViewModel", "Error inserting menstrual history", e)
+            } catch (_: Exception) {
                 _insertStatus.value = Pair(false, history.firstPeriodReported)
+            }
+        }
+    }
+
+    fun updateMenstrualHistory(history: MenstrualHistoryEntity) {
+        viewModelScope.launch {
+            try {
+                repository.updateMenstrualHistory(history)
+                _updateStatus.value = Pair(true, "Log period updated successfully")
+            } catch (_: Exception) {
+                _updateStatus.value = Pair(false, "Error updating log period")
             }
         }
     }
@@ -47,7 +59,7 @@ class MenstrualHistoryViewModel(private val repository: MenstrualHistoryReposito
             }
 
             val result = history?.let {
-                val calculator = OvulationCalculator(it.lastPeriodStart!!, it.periodDurationDays!!, it.cycleIntervalWeeks!!, context)
+                val calculator = OvulationCalculator(it.lastPeriodStart ?: Utility.getTwoWeeksAgo(), it.periodDurationDays ?: 3, it.cycleIntervalWeeks ?: 3, context)
 
                 val ovulationInfo = calculator.calculate()
                 val pregnancyInfo = calculator.checkPregnancy()
@@ -82,6 +94,10 @@ class MenstrualHistoryViewModel(private val repository: MenstrualHistoryReposito
             }
             _mensHistory.value = result
         }
+    }
+
+    suspend fun getMensHistoryNow(userId: String): MenstrualHistoryEntity? {
+        return repository.getMenstrualHistoryById(userId)
     }
 
 }

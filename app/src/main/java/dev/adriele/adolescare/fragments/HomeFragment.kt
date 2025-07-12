@@ -11,6 +11,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialFadeThrough
 import dev.adriele.adolescal.model.OvulationInfo
 import dev.adriele.adolescare.ui.LogPeriodActivity
 import dev.adriele.adolescare.ui.PdfViewerActivity
@@ -25,6 +27,7 @@ import dev.adriele.adolescare.database.repositories.implementation.ChatBotReposi
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.ModuleRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.RecentReadWatchRepositoryImpl
+import dev.adriele.adolescare.database.repositories.implementation.ReminderRepositoryImpl
 import dev.adriele.adolescare.databinding.FragmentHomeBinding
 import dev.adriele.adolescare.helpers.contracts.IRecentReadAndWatch
 import dev.adriele.adolescare.helpers.enums.ModuleContentType
@@ -32,15 +35,18 @@ import dev.adriele.adolescare.viewmodel.ChatBotViewModel
 import dev.adriele.adolescare.viewmodel.MenstrualHistoryViewModel
 import dev.adriele.adolescare.viewmodel.ModuleViewModel
 import dev.adriele.adolescare.viewmodel.RecentReadWatchViewModel
+import dev.adriele.adolescare.viewmodel.ReminderViewModel
 import dev.adriele.adolescare.viewmodel.factory.ChatBotViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.MenstrualHistoryViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.RecentReadWatchViewModelFactory
+import dev.adriele.adolescare.viewmodel.factory.ReminderViewModelFactory
+import dev.adriele.language.R
 
 private const val USER_ID = "userID"
 private const val USER_NAME = "userName"
 
-class HomeFragment : Fragment(), IRecentReadAndWatch {
+class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
     // TODO: Rename and change types of parameters
     private var userId: String? = null
     private var userName: String? = null
@@ -54,6 +60,7 @@ class HomeFragment : Fragment(), IRecentReadAndWatch {
     private lateinit var menstrualHistoryViewModel: MenstrualHistoryViewModel
     private lateinit var menstrualHistoryViewModelFactory: MenstrualHistoryViewModelFactory
     private lateinit var recentReadWatchViewModel: RecentReadWatchViewModel
+    private lateinit var reminderViewModel: ReminderViewModel
 
     private lateinit var moduleViewModel: ModuleViewModel
 
@@ -63,6 +70,8 @@ class HomeFragment : Fragment(), IRecentReadAndWatch {
             userId = it.getString(USER_ID)
             userName = it.getString(USER_NAME)
         }
+
+        exitTransition = MaterialFadeThrough()
     }
 
     override fun onCreateView(
@@ -90,6 +99,11 @@ class HomeFragment : Fragment(), IRecentReadAndWatch {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        menstrualHistoryViewModel.loadLatestHistory(userId!!, requireContext())
+    }
+
     private fun initializeViewModel() {
         val conversationDao = AppDatabaseProvider.getDatabase(requireActivity()).conversationDao()
         val chatbotRepo = ChatBotRepositoryImpl(conversationDao)
@@ -110,6 +124,11 @@ class HomeFragment : Fragment(), IRecentReadAndWatch {
         val recentReadWatchRepository = RecentReadWatchRepositoryImpl(recentReadWatchDao)
         val recentReadWatchViewModelFactory = RecentReadWatchViewModelFactory(recentReadWatchRepository)
         recentReadWatchViewModel = ViewModelProvider(this, recentReadWatchViewModelFactory)[RecentReadWatchViewModel::class]
+
+        val reminderDao = AppDatabaseProvider.getDatabase(requireActivity()).reminderDao()
+        val reminderRepository = ReminderRepositoryImpl(reminderDao)
+        val reminderFactory = ReminderViewModelFactory(reminderRepository)
+        reminderViewModel = ViewModelProvider(this, reminderFactory)[ReminderViewModel::class]
     }
 
     @SuppressLint("SetTextI18n", "NotifyDataSetChanged")
@@ -117,33 +136,21 @@ class HomeFragment : Fragment(), IRecentReadAndWatch {
         binding.llTips.visibility = View.GONE
         binding.shimmerLayout.startShimmer()
 
-        chatBotViewModel.getTodayTips(object : IChatBot.Tips {
-            override fun onResult(result: TipResponse) {
-                binding.shimmerLayout.stopShimmer()
-                binding.shimmerLayout.visibility = View.GONE
-                binding.llTips.visibility = View.VISIBLE
-
-                binding.tvDate.text = result.date
-                binding.tvTitle.text = result.title
-                binding.tvTips.text = result.tip
-            }
-        })
+        chatBotViewModel.getTodayTips(this)
 
         val dateNow = Utility.getCurrentDate()
         binding.tvDateNow.text = dateNow
-
-        menstrualHistoryViewModel.loadLatestHistory(userId!!, requireContext())
 
         menstrualHistoryViewModel.ovulationInfo.observe(viewLifecycleOwner) { ovulationInfo ->
             if (ovulationInfo != null) {
                 displayOvulationInfo(ovulationInfo)
             } else {
-                binding.tvRemarks.text = "❗ Unable to calculate ovulation info."
+                binding.tvRemarks.text = "❗ ${R.string.unable_to_calculate_ovulation}"
             }
         }
 
         binding.btnLogPeriod.setOnClickListener {
-            startActivity(Intent(requireContext(), LogPeriodActivity::class.java)
+            startActivity(Intent(requireActivity(), LogPeriodActivity::class.java)
                 .putExtra("userId", userId))
         }
 
@@ -168,7 +175,6 @@ class HomeFragment : Fragment(), IRecentReadAndWatch {
         }
 
         recentReadWatchViewModel.getRecentReadAndWatch()
-
     }
 
     private fun showNoRecent() {
@@ -205,7 +211,6 @@ class HomeFragment : Fragment(), IRecentReadAndWatch {
         recent: RecentReadAndWatch,
         path: String
     ) {
-
         when(moduleType) {
             ModuleContentType.PDF -> {
                 val intent = Intent(context, PdfViewerActivity::class.java).apply {
@@ -221,6 +226,24 @@ class HomeFragment : Fragment(), IRecentReadAndWatch {
                 startActivity(intent)
             }
         }
+    }
+
+    override fun onResult(result: TipResponse) {
+        binding.shimmerLayout.stopShimmer()
+        binding.shimmerLayout.visibility = View.GONE
+        binding.llTips.visibility = View.VISIBLE
+
+        binding.tvDate.text = result.date
+        binding.tvTitle.text = result.title
+        binding.tvTips.text = result.tip
+    }
+
+    override fun onError(message: String) {
+        binding.shimmerLayout.stopShimmer()
+        binding.shimmerLayout.visibility = View.GONE
+        binding.llTips.visibility = View.VISIBLE
+
+        Snackbar.make(binding.root, "Failed to get todays tips: $message", Snackbar.LENGTH_SHORT).show()
     }
 
     companion object {

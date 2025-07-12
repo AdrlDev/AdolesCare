@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:text="@string/log_period"
             android:fontFamily="@font/roboto"
-            android:textSize="16sp"
+            android:textSize="@dimen/font_small"
             android:textColor="@color/buttonTextColor"
             android:layout_marginHorizontal="16dp"
             />
@@ -69,34 +69,64 @@
             android:paddingHorizontal="32dp"
             >
 
-            <com.google.android.material.card.MaterialCardView
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/background"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="8dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"
-                android:layout_marginHorizontal="8dp"
-                style="?attr/materialCardViewFilledStyle"
                 >
 
-                <com.applandeo.materialcalendarview.CalendarView
-                    android:id="@+id/calendarView"
-                    app:eventsEnabled="true"
-                    android:showDividers="none"
-                    app:abbreviationsBarColor="@color/buttonColor"
-                    app:abbreviationsLabelsColor="@color/buttonTextColor"
-                    app:pagesColor="@color/background"
-                    app:highlightedDaysLabelsColor="@color/buttonColor"
-                    app:daysLabelsColor="@color/textColor"
-                    app:selectionLabelColor="@color/buttonColor"
-                    app:headerLabelColor="@color/buttonTextColor"
-                    app:headerColor="@color/buttonColor"
+                <com.facebook.shimmer.ShimmerFrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    android:id="@+id/shimmer_ll_calendar"
+                    app:shimmer_direction="top_to_bottom"
+                    app:shimmer_repeat_mode="restart"
+                    app:shimmer_shape="linear"
+                    app:shimmer_auto_start="true"
+                    app:shimmer_duration="1500"
+                    android:layout_centerInParent="true"
+                    >
 
-            </com.google.android.material.card.MaterialCardView>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="450dp"
+                        android:background="@drawable/shimmer_placeholder"
+                        />
+
+                </com.facebook.shimmer.ShimmerFrameLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/calendar_card"
+                    android:visibility="gone"
+                    android:layout_centerInParent="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/background"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="8dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginHorizontal="8dp"
+                    style="?attr/materialCardViewFilledStyle"
+                    >
+
+                    <com.applandeo.materialcalendarview.CalendarView
+                        android:id="@+id/calendarView"
+                        app:eventsEnabled="true"
+                        android:showDividers="none"
+                        app:abbreviationsBarColor="@color/buttonColor"
+                        app:abbreviationsLabelsColor="@color/buttonTextColor"
+                        app:pagesColor="@color/background"
+                        app:highlightedDaysLabelsColor="@color/buttonColor"
+                        app:daysLabelsColor="@color/textColor"
+                        app:selectionLabelColor="@color/buttonColor"
+                        app:headerLabelColor="@color/buttonTextColor"
+                        app:headerColor="@color/buttonColor"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </RelativeLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_edit_period_date"
@@ -111,6 +141,7 @@
                 app:icon="@drawable/round_edit_calendar_20"
                 app:iconGravity="textStart"
                 app:iconPadding="12dp"
+                android:textSize="@dimen/font_small"
                 app:iconTint="@color/buttonTextColor"
                 style="?attr/materialButtonStyle"
                 />
@@ -161,7 +192,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Date cycle"
-                    android:textSize="18sp"
+                    android:textSize="@dimen/font_medium"
                     android:fontFamily="@font/roboto_medium"
                     android:textColor="@color/textColor"
                     android:id="@+id/tv_date_cycle"
@@ -171,7 +202,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Remarks"
-                    android:textSize="14sp"
+                    android:textSize="@dimen/font_small"
                     android:fontFamily="@font/roboto"
                     android:textColor="@color/textColor"
                     android:id="@+id/tv_remarks"
@@ -184,7 +215,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/symptoms"
-                android:textSize="16sp"
+                android:textSize="@dimen/font_medium"
                 android:fontFamily="@font/roboto_bold"
                 android:textColor="@color/textColor"
                 />
@@ -218,6 +249,7 @@
                         android:layout_alignParentStart="true"
                         android:paddingEnd="8dp"
                         android:paddingStart="0dp"
+                        android:textSize="@dimen/font_small"
                         />
 
                     <com.google.android.material.button.MaterialButton
@@ -241,6 +273,17 @@
                         android:layout_marginVertical="12dp"
                         />
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tv_load_more"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="@dimen/font_small"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignEnd="@id/rv_selected_symptoms"
+                        android:layout_below="@id/rv_selected_symptoms"
+                        />
+
                 </RelativeLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -251,7 +294,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/insight"
-                android:textSize="16sp"
+                android:textSize="@dimen/font_medium"
                 android:fontFamily="@font/roboto_bold"
                 android:textColor="@color/textColor"
                 />

@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.util.FitPolicy
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialFadeThrough
 import dev.adriele.adolescare.databinding.FragmentPreviewPdfBinding
 import dev.adriele.adolescare.dialogs.MyLoadingDialog
 import dev.adriele.adolescare.helpers.Utility
@@ -38,6 +39,7 @@ class PreviewPdfFragment : Fragment() {
         arguments?.let {
             pdfUri = it.getString(PDF_URI)
         }
+        enterTransition = MaterialFadeThrough()
     }
 
     override fun onCreateView(

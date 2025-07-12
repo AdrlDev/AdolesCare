@@ -68,18 +68,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
+            android:paddingHorizontal="@dimen/margin_large"
             >
 
             <com.google.android.material.tabs.TabLayout
                 android:background="@color/background"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:tabIndicatorFullWidth="true"
+                app:tabIndicatorAnimationMode="elastic"
                 android:id="@+id/tab_ll"
                 />
 
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.viewpager2.widget.ViewPager2
+            android:layout_marginTop="@dimen/margin_medium"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/app_bar"

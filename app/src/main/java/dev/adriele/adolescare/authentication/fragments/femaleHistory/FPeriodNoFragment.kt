@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.android.material.transition.MaterialFadeThrough
 import dev.adriele.adolescare.helpers.Utility.animateTypingWithCursor
 import dev.adriele.adolescare.databinding.FragmentFPeriodNoBinding
 import kotlinx.coroutines.Job
@@ -14,6 +15,11 @@ class FPeriodNoFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var typingJob: Job? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enterTransition = MaterialFadeThrough()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

@@ -8,7 +8,6 @@ import android.text.TextWatcher
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -19,7 +18,9 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.android.material.transition.platform.MaterialSharedAxis
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
+import dev.adriele.adolescare.BaseActivity
 import dev.adriele.adolescare.adapter.PdfViewerPagerAdapter
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.repositories.implementation.ModuleRepositoryImpl
@@ -37,7 +38,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class PdfViewerActivity : AppCompatActivity() {
+class PdfViewerActivity : BaseActivity() {
     private lateinit var binding: ActivityPdfViewerBinding
     private var pdfRenderer: PdfRenderer? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
@@ -61,6 +62,10 @@ class PdfViewerActivity : AppCompatActivity() {
     private val pdfSearchViewModel by viewModels<PdfSearchViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        window.enterTransition = sharedAxis
+        window.exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityPdfViewerBinding.inflate(layoutInflater)

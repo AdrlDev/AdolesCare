@@ -9,5 +9,6 @@ data class MenstrualCycle(
     val userId: String,
     val lastPeriodStart: String,
     val periodDurationDays: Int,
-    val cycleLengthWeeks: Int
+    val cycleLengthWeeks: Int,
+    val createdAt: String
 )

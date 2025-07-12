@@ -14,6 +14,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.transition.MaterialFadeThrough
+import com.google.android.material.transition.MaterialSharedAxis
 import dev.adriele.adolescare.api.response.Sources
 import dev.adriele.adolescare.helpers.Utility.getCurrentTime
 import dev.adriele.adolescare.chatbot.ResponseType
@@ -51,6 +53,7 @@ class ChatBotFragment : Fragment() {
             userId = it.getString(USER_ID)
             userName = it.getString(USER_NAME)
         }
+        enterTransition = MaterialFadeThrough()
     }
 
     override fun onCreateView(

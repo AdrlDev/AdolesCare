@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:scrollbars="none"
     tools:context=".fragments.MenstrualTrackerFragment">
 
     <LinearLayout
@@ -27,7 +28,7 @@
                 android:layout_centerVertical="true"
                 android:id="@+id/tvGreeting"
                 android:text="Good Day User!"
-                android:textSize="18sp"
+                android:textSize="@dimen/font_medium"
                 android:textStyle="bold"
                 android:textColor="@color/textColor"
                 android:layout_width="wrap_content"
@@ -49,7 +50,7 @@
             android:layout_gravity="center"
             android:id="@+id/tvToday"
             android:text="March 7"
-            android:textSize="16sp"
+            android:textSize="@dimen/font_medium"
             android:fontFamily="@font/roboto_medium"
             android:textColor="@color/textColor"
             android:layout_marginBottom="8dp"
@@ -70,7 +71,7 @@
             android:text="Ovulation in"
             android:fontFamily="@font/roboto"
             android:layout_gravity="center"
-            android:textSize="14sp"
+            android:textSize="@dimen/font_small"
             android:layout_marginVertical="12dp"
             android:textColor="@color/textColor"
             />
@@ -92,7 +93,7 @@
             android:text="Remarks"
             android:fontFamily="@font/roboto"
             android:layout_gravity="center"
-            android:textSize="14sp"
+            android:textSize="@dimen/font_small"
             android:textAlignment="center"
             android:layout_marginVertical="12dp"
             android:textColor="@color/textColor"
@@ -104,14 +105,90 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginVertical="16dp"
-            android:text="Log period"
+            android:text="@string/log_period"
             android:fontFamily="@font/roboto_medium"
-            android:textSize="12sp"
+            android:textSize="@dimen/font_small"
             android:backgroundTint="@color/buttonColor"
             android:textColor="@color/buttonTextColor"
             android:id="@+id/btn_log_period"
             />
 
+        <TextView
+            android:id="@+id/tv_lbl_insight"
+            android:layout_marginVertical="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/insight"
+            android:textSize="@dimen/font_medium"
+            android:fontFamily="@font/roboto_bold"
+            android:textColor="@color/textColor"
+            />
+
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmer_insight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:shimmer_direction="top_to_bottom"
+            app:shimmer_repeat_mode="restart"
+            app:shimmer_shape="linear"
+            app:shimmer_auto_start="true"
+            app:shimmer_duration="1500"
+            android:layout_marginHorizontal="5dp"
+            android:layout_marginVertical="8dp"
+            >
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:background="@drawable/shimmer_placeholder"
+                />
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/buttonColor"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="5dp"
+            android:visibility="gone"
+            android:id="@+id/card_insight"
+            android:layout_marginHorizontal="5dp"
+            android:layout_marginVertical="8dp">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:padding="22dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+
+                <TextView
+                    android:id="@+id/tv_insight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/insight"
+                    android:fontFamily="@font/roboto"
+                    android:textColor="@color/buttonTextColor"
+                    android:gravity="start"
+                    android:maxLines="10"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tv_read_more"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Read more..."
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"
+                    android:layout_gravity="end"
+                    android:textColor="@color/textColorLink"
+                    android:paddingTop="8dp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
     </LinearLayout>
 
-</FrameLayout>
+</ScrollView>

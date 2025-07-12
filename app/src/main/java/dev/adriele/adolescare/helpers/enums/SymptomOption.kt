@@ -1,0 +1,77 @@
+package dev.adriele.adolescare.helpers.enums
+
+import androidx.annotation.StringRes
+import dev.adriele.language.R
+
+enum class SymptomOption(@StringRes val resId: Int) {
+    NO_SEX(R.string.no_sex),
+    PROTECTED_SEX(R.string.protected_sex),
+    UNPROTECTED_SEX(R.string.unprotected_sex),
+    ORAL_SEX(R.string.oral_sex),
+    ANAL_SEX(R.string.anal_sex),
+    MASTURBATION(R.string.masturbation),
+    SENSUAL_TOUCH(R.string.sensual_touch),
+    SEX_TOYS(R.string.sex_toys),
+    ORGASM(R.string.orgasm),
+    HIGH_SEX_DRIVE(R.string.high_sex_drive),
+    NEUTRAL_SEX_DRIVE(R.string.neutral_sex_drive),
+    LOW_SEX_DRIVE(R.string.low_sex_drive),
+
+    CALM(R.string.calm),
+    HAPPY(R.string.happy),
+    ENERGETIC(R.string.energetic),
+    FRISKY(R.string.frisky),
+    MOOD_SWINGS(R.string.mood_swings),
+    IRRITATED(R.string.irritated),
+    SAD(R.string.sad),
+    ANXIOUS(R.string.anxious),
+    DEPRESSED(R.string.depressed),
+    FEELING_GUILTY(R.string.feeling_guilty),
+    OBSESSIVE_THOUGHTS(R.string.obsessive_thoughts),
+    LOW_ENERGY(R.string.low_energy),
+    APATHETIC(R.string.apathetic),
+    CONFUSED(R.string.confused),
+    VERY_SELF_CRITICAL(R.string.very_self_critical),
+
+    EVERYTHING_FINE(R.string.everything_fine),
+    CRAMP(R.string.cramps),
+    HEADACHE(R.string.headache),
+    TENDER_BREAST(R.string.tender_breast),
+    BACKACHE(R.string.backache),
+    ACNE(R.string.acne),
+    FATIGUE(R.string.fatigue),
+    CRAVINGS(R.string.cravings),
+    INSOMNIA(R.string.insomnia),
+    ABDOMINAL_PAIN(R.string.abdominal_pain),
+    VAGINAL_ITCHING(R.string.vaginal_itching),
+    VAGINAL_DRYNESS(R.string.vaginal_dryness),
+
+    NO_DISCHARGE(R.string.no_discharge),
+    CREAMY(R.string.creamy),
+    WATERY(R.string.watery),
+    STICKY(R.string.sticky),
+    EGG_WHITE(R.string.egg_white),
+    SPOTTING(R.string.spotting),
+    UNUSUAL(R.string.unusual),
+    CLUMPY_WHITE(R.string.clumpy_white),
+    GRAY(R.string.gray),
+
+    NAUSEA(R.string.nausea),
+    BLOATING(R.string.bloating),
+    DIARRHEA(R.string.diarrhea),
+    CONSTIPATION(R.string.constipation),
+
+    DIDNT_TAKE_TEST(R.string.didnt_take_test),
+    POSITIVE(R.string.positive),
+    NEGATIVE(R.string.negative),
+    FAINT_LINE(R.string.faint_line),
+
+    DIDNT_EXERCISE(R.string.didnt_exercise),
+    YOGA(R.string.yoga),
+    GYM(R.string.gym),
+    AEROBICS_DANCING(R.string.aerobics_dancing),
+    SWIMMING(R.string.swimming),
+    RUNNING(R.string.running),
+    CYCLING(R.string.cycling),
+    WALKING(R.string.walking)
+}

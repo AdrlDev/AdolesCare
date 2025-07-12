@@ -11,6 +11,6 @@ interface CycleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(cycle: MenstrualCycle)
 
-    @Query("SELECT * FROM cycles WHERE userId = :userId ORDER BY id DESC LIMIT 1")
-    suspend fun getLatestCycle(userId: String): MenstrualCycle?
+    @Query("SELECT * FROM cycles WHERE userId = :userId AND createdAt = :createdAt AND lastPeriodStart = :lmp ORDER BY id DESC LIMIT 1")
+    suspend fun getLatestCycle(userId: String, createdAt: String, lmp: String): MenstrualCycle?
 }

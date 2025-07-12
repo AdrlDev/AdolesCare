@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialFadeThrough
 import dev.adriele.adolescare.ui.VideoPlayerActivity
 import dev.adriele.adolescare.helpers.enums.ModuleContentType
 import dev.adriele.adolescare.adapter.VideoThumbnailAdapter
@@ -47,6 +48,7 @@ class VideosFragment : Fragment(), IModules.VIDEO {
         arguments?.let {
             userId = it.getString(USER_ID)
         }
+        enterTransition = MaterialFadeThrough()
     }
 
     override fun onCreateView(
@@ -125,7 +127,7 @@ class VideosFragment : Fragment(), IModules.VIDEO {
         }
     }
 
-    override fun onVideoClick(position: Int, videoFile: String) {
+    override fun onVideoClick(position: Int, path: String) {
         loadingDialog.show("Please wait...")
         videoPosition = position
         recentReadWatchViewModel.addRecent(RecentReadAndWatch(

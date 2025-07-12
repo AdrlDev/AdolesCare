@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.transition.MaterialFadeThrough
 import dev.adriele.adolescare.ui.PdfViewerActivity
 import dev.adriele.adolescare.adapter.ModuleItemAdapter
 import dev.adriele.adolescare.database.AppDatabaseProvider
@@ -43,6 +44,7 @@ class PdfChaptersFragment : Fragment(), IModules.PDF {
         arguments?.let {
             pdfCategory = it.getString(PDF_CATEGORY)
         }
+        enterTransition = MaterialFadeThrough()
     }
 
     override fun onCreateView(

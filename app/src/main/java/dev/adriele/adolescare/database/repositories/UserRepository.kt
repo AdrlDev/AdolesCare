@@ -6,6 +6,7 @@ interface UserRepository {
     suspend fun insertUser(user: User)
 
     suspend fun getUserByUsername(username: String): User?
+    suspend fun getUserByUID(uid: String): User?
 
     suspend fun updatePasswordByUsername(username: String, newPassword: String)
 

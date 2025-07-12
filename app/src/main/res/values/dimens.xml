@@ -9,4 +9,8 @@
     <dimen name="margin_medium">18dp</dimen>
     <dimen name="margin_large">24dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="font_small">14sp</dimen>
+    <dimen name="font_medium">18sp</dimen>
+    <dimen name="font_large">28sp</dimen>
 </resources>

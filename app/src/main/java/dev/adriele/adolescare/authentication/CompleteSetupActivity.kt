@@ -1,17 +1,21 @@
 package dev.adriele.adolescare.authentication
 
+import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.LinearLayout
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.platform.MaterialFadeThrough
+import com.google.android.material.transition.platform.MaterialSharedAxis
+import dev.adriele.adolescare.BaseActivity
+import dev.adriele.adolescare.R
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.authentication.adapter.PagerAdapter
 import dev.adriele.adolescare.authentication.contracts.FragmentDataListener
@@ -24,7 +28,7 @@ import dev.adriele.adolescare.dialogs.MyLoadingDialog
 import dev.adriele.adolescare.viewmodel.UserViewModel
 import dev.adriele.adolescare.viewmodel.factory.UserViewModelFactory
 
-class CompleteSetupActivity : AppCompatActivity(), FragmentDataListener {
+class CompleteSetupActivity : BaseActivity(), FragmentDataListener {
     private lateinit var binding: ActivityCompleteSetupBinding
 
     private lateinit var vp: ViewPager2
@@ -44,6 +48,10 @@ class CompleteSetupActivity : AppCompatActivity(), FragmentDataListener {
     private var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        window.enterTransition = sharedAxis
+        window.exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityCompleteSetupBinding.inflate(layoutInflater)
@@ -105,12 +113,14 @@ class CompleteSetupActivity : AppCompatActivity(), FragmentDataListener {
         userViewModel.updateSexBarangay.observe(this) { (success, selectedSex) ->
             if(success) {
                 loadingDialog.dismiss()
+                val bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
                 startActivity(
                     Intent(this, MenstrualHistoryQuestionActivity::class.java)
+                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                         .putExtra("userSex", selectedSex)
-                        .putExtra("userId", userId)
+                        .putExtra("userId", userId),
+                    bundle
                 )
-                finish()
             } else {
                 loadingDialog.dismiss()
                 Snackbar.make(binding.root, "Failed to update user", Snackbar.LENGTH_SHORT).show()

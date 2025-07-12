@@ -1,8 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/nav_account" android:title="My Account" android:icon="@drawable/round_manage_accounts_24"/>
-    <item android:id="@+id/nav_setting" android:title="Settings" android:icon="@drawable/round_settings_24"/>
-    <item android:id="@+id/nav_notification" android:title="Notifications" android:icon="@drawable/round_notifications_24"/>
-    <item android:id="@+id/nav_about" android:title="About Us" android:icon="@drawable/round_contact_page_24"/>
-    <item android:id="@+id/nav_logout" android:title="Log Out" android:icon="@drawable/round_logout_24"/>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/main_item"
+        android:title="@string/menu_profile">
+        <menu>
+            <item
+                android:id="@+id/nav_account"
+                android:title="@string/menu_my_account"
+                android:icon="@drawable/round_manage_accounts_24"
+                android:checkable="true"
+                app:showAsAction="ifRoom"/>
+            <item
+                android:id="@+id/nav_logout"
+                android:title="@string/menu_logout"
+                android:icon="@drawable/round_logout_24"
+                android:checkable="true"
+                app:showAsAction="ifRoom"/>
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/other_item"
+        android:title="@string/menu_other">
+        <menu>
+            <item
+                android:id="@+id/nav_setting"
+                android:title="@string/menu_settings"
+                android:icon="@drawable/round_settings_24"
+                android:checkable="true"
+                app:showAsAction="ifRoom"/>
+            <item
+                android:id="@+id/nav_notification"
+                android:title="@string/menu_notifications"
+                android:icon="@drawable/round_notifications_24"
+                android:checkable="true"
+                app:showAsAction="ifRoom"
+                />
+            <item
+                android:id="@+id/nav_about"
+                android:title="@string/menu_about_us"
+                android:icon="@drawable/round_contact_page_24"
+                android:checkable="true"
+                app:showAsAction="ifRoom"
+                />
+        </menu>
+    </item>
 </menu>

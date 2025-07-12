@@ -34,7 +34,7 @@ import dev.adriele.adolescare.database.entities.User
         CycleLogEntity::class,
         RecentReadAndWatch::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 

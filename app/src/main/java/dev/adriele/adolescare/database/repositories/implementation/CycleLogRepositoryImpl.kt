@@ -25,6 +25,14 @@ class CycleLogRepositoryImpl(
         return cycleLogDao.getByDate(userId, date)
     }
 
+    override suspend fun getMenstrualCycle(
+        userId: String,
+        date: String,
+        lmp: String
+    ): MenstrualCycle? {
+        return cycleDao.getLatestCycle(userId = userId, createdAt = date, lmp = lmp)
+    }
+
     override suspend fun updateListsByUserIdAndDate(
         userId: String,
         date: String,

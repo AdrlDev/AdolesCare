@@ -7,7 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
-    private const val BASE_URL = "https://adrldev.up.railway.app" // Or your LAN IP
+    private const val RAILWAY_BASE_URL = "https://adrldev.up.railway.app" // Or your LAN IP
+    private const val RENDER_BASE_USER = "https://adolescare-api.onrender.com"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -15,12 +16,13 @@ object RetrofitInstance {
 
     private val client = OkHttpClient.Builder()
         .addInterceptor(logging)
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL) // Replace with your PC IP address
+        .baseUrl(RENDER_BASE_USER) // Replace with your PC IP address
         .addConverterFactory(GsonConverterFactory.create())
         .client(client)
         .build()

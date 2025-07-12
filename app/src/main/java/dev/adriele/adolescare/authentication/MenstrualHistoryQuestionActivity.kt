@@ -1,5 +1,6 @@
 package dev.adriele.adolescare.authentication
 
+import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,13 +8,16 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.platform.MaterialFadeThrough
+import com.google.android.material.transition.platform.MaterialSharedAxis
+import dev.adriele.adolescare.BaseActivity
+import dev.adriele.adolescare.R
 import dev.adriele.adolescare.ui.DashboardActivity
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.authentication.adapter.PagerAdapter
@@ -42,7 +46,7 @@ import dev.adriele.adolescare.dialogs.MyLoadingDialog
 import dev.adriele.adolescare.viewmodel.MenstrualHistoryViewModel
 import dev.adriele.adolescare.viewmodel.factory.MenstrualHistoryViewModelFactory
 
-class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListener {
+class MenstrualHistoryQuestionActivity : BaseActivity(), FragmentDataListener {
     private lateinit var binding: ActivityMenstrualHistoryQuestionBinding
 
     private lateinit var vp: ViewPager2
@@ -61,6 +65,10 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
     private var userSex: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
+        window.enterTransition = sharedAxis
+        window.exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityMenstrualHistoryQuestionBinding.inflate(layoutInflater)
@@ -121,9 +129,12 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
         menstrualHistoryViewModel.insertStatus.observe(this) { (success, _) ->
             loadingDialog.dismiss()
             if (success) {
+                val bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
                 startActivity(Intent(this, DashboardActivity::class.java)
-                    .putExtra("userId", userId))
-                finish()
+                    .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    .putExtra("userId", userId),
+                    bundle
+                )
             } else {
                 Snackbar.make(binding.main, "Failed to save menstrual history...", Snackbar.LENGTH_LONG).show()
             }
@@ -208,12 +219,12 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
             pages.add(FPeriodYes2Fragment())
         }
 
-        if (lastPeriodLasted != null && lastPeriodLasted == true && !map.containsKey(FemaleMenstrualHistory.LAST_PERIOD_LASTED_DAYS.name)) {
+        if (lastPeriodLasted != null && lastPeriodLasted && !map.containsKey(FemaleMenstrualHistory.LAST_PERIOD_LASTED_DAYS.name)) {
             pages.clear()
             pages.add(LPLSelectDaysFragment())
         }
 
-        if (lastPeriodLasted != null && lastPeriodLasted == false && !map.containsKey(FemaleMenstrualHistory.LAST_PERIOD_LASTED_NO.name)) {
+        if (lastPeriodLasted != null && !lastPeriodLasted && !map.containsKey(FemaleMenstrualHistory.LAST_PERIOD_LASTED_NO.name)) {
             //if user select no in last period lasted
             pages.clear()
             pages.add(FP2NoMessageFragment())
@@ -233,12 +244,12 @@ class MenstrualHistoryQuestionActivity : AppCompatActivity(), FragmentDataListen
             pages.add(FPeriodYes3Fragment())
         }
 
-        if(numberOfWeeks != null && numberOfWeeks == true && !map.containsKey(FemaleMenstrualHistory.NUMBER_OF_WEEKS_SELECTED.name)) {
+        if(numberOfWeeks != null && numberOfWeeks && !map.containsKey(FemaleMenstrualHistory.NUMBER_OF_WEEKS_SELECTED.name)) {
             pages.clear()
             pages.add(SelectNumberOfWeeksFragment())
         }
 
-        if(numberOfWeeks != null && numberOfWeeks == false && !map.containsKey(FemaleMenstrualHistory.NUMBER_OF_WEEKS_NO.name)) {
+        if(numberOfWeeks != null && !numberOfWeeks && !map.containsKey(FemaleMenstrualHistory.NUMBER_OF_WEEKS_NO.name)) {
             pages.clear()
             pages.add(FP3NoMessageFragment())
         }

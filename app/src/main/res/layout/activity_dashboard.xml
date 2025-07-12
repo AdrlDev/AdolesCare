@@ -10,8 +10,268 @@
     android:layout_height="match_parent"
     tools:context=".ui.DashboardActivity">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:fitsSystemWindows="true"
+        android:id="@+id/container_htu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#B52B2B2B"
+        android:translationZ="1dp"
+        >
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".2"
+            />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_4"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".4"
+            />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_6"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".6"
+            />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_8"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent=".8"
+            />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_hr_2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent=".2"
+            />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_hr_4"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent=".4"
+            />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_hr_6"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent=".6"
+            />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_hr_8"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent=".8"
+            />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Skip"
+            android:fontFamily="@font/roboto"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/font_medium"
+            android:layout_marginTop="@dimen/margin_medium"
+            android:id="@+id/btn_skip_htu"/>
+
+        <TextView
+            android:id="@+id/tv_module_htu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Click here to browse modules with different topic."
+            android:textColor="@android:color/white"
+            android:fontFamily="@font/roboto"
+            android:textSize="@dimen/font_medium"
+            android:padding="@dimen/margin_large"
+            android:background="@drawable/how_to_use_bg"
+            app:layout_constraintBottom_toBottomOf="@id/gl_hr_8"
+            app:layout_constraintStart_toStartOf="@id/gl_2"
+            app:layout_constraintEnd_toEndOf="@id/gl_8"
+            />
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/tv_calendar_htu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Click here to view and log your cycle."
+            android:textColor="@android:color/white"
+            android:fontFamily="@font/roboto"
+            android:textSize="@dimen/font_medium"
+            android:padding="@dimen/margin_large"
+            android:background="@drawable/how_to_use_bg"
+            app:layout_constraintBottom_toBottomOf="@id/gl_hr_8"
+            app:layout_constraintStart_toStartOf="@id/gl_2"
+            app:layout_constraintEnd_toEndOf="@id/gl_8"
+            />
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/tv_video_htu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Click here to watch videos."
+            android:textColor="@android:color/white"
+            android:fontFamily="@font/roboto"
+            android:textSize="@dimen/font_medium"
+            android:padding="@dimen/margin_large"
+            android:background="@drawable/how_to_use_bg"
+            app:layout_constraintBottom_toBottomOf="@id/gl_hr_8"
+            app:layout_constraintStart_toStartOf="@id/gl_2"
+            app:layout_constraintEnd_toEndOf="@id/gl_8"
+            />
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/tv_chat_htu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Tap the Chatbot icon to talk with the ARS system."
+            android:textColor="@android:color/white"
+            android:fontFamily="@font/roboto"
+            android:textSize="@dimen/font_medium"
+            android:padding="@dimen/margin_large"
+            android:background="@drawable/how_to_use_bg"
+            app:layout_constraintBottom_toBottomOf="@id/gl_hr_8"
+            app:layout_constraintStart_toStartOf="@id/gl_2"
+            app:layout_constraintEnd_toEndOf="@id/gl_8"
+            />
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/tv_menu_htu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Tap here to customize your profile, view settings, view and adjust settings. "
+            android:textColor="@android:color/white"
+            android:fontFamily="@font/roboto"
+            android:textSize="@dimen/font_medium"
+            android:padding="@dimen/margin_large"
+            android:background="@drawable/how_to_use_bg"
+            app:layout_constraintTop_toTopOf="@id/gl_hr_2"
+            app:layout_constraintStart_toStartOf="@id/gl_2"
+            app:layout_constraintEnd_toEndOf="@id/gl_8"
+            />
+
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/tv_log_period_htu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Tap here to enter details like:\n\n✅ Start and end date of your period.\n✅ Symptoms (cramps, headaches, fatigue, etc.).\n✅ Mood and activities for better tracking.\n\nTap Save to update your cycle data."
+            android:textColor="@android:color/white"
+            android:fontFamily="@font/roboto"
+            android:textSize="@dimen/font_medium"
+            android:padding="@dimen/margin_large"
+            android:background="@drawable/how_to_use_bg"
+            app:layout_constraintTop_toTopOf="@id/gl_hr_2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginHorizontal="42dp"
+            />
+
+        <!--circle-->
+        <View
+            android:visibility="gone"
+            android:id="@+id/view_log_period"
+            android:layout_marginBottom="@dimen/margin_medium"
+            app:layout_constraintBottom_toBottomOf="@id/gl_hr_8"
+            app:layout_constraintStart_toStartOf="@id/gl_2"
+            app:layout_constraintEnd_toEndOf="@id/gl_8"
+            android:layout_marginTop="6dp"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_marginHorizontal="@dimen/margin_large"
+            android:background="@drawable/htu_bg_selected"
+            android:layout_alignParentBottom="true"
+            />
+
+        <View
+            android:visibility="gone"
+            android:id="@+id/view_menu"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="6dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/htu_bg_selected"
+            android:layout_alignParentBottom="true"
+            />
+
+        <View
+            android:id="@+id/view_module"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/gl_4"
+            app:layout_constraintStart_toStartOf="@id/gl_2"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:background="@drawable/htu_bg_selected"
+            android:layout_alignParentBottom="true"
+            />
+
+        <View
+            android:visibility="gone"
+            android:id="@+id/view_calendar"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/gl_6"
+            app:layout_constraintStart_toStartOf="@id/gl_4"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:background="@drawable/htu_bg_selected"
+            android:layout_alignParentBottom="true"
+            />
+
+        <View
+            android:visibility="gone"
+            android:id="@+id/view_video"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/gl_8"
+            app:layout_constraintStart_toStartOf="@id/gl_6"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:background="@drawable/htu_bg_selected"
+            android:layout_alignParentBottom="true"
+            />
+
+        <View
+            android:visibility="gone"
+            android:id="@+id/view_chat"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/gl_8"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:background="@drawable/htu_bg_selected"
+            android:layout_alignParentBottom="true"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <!-- Main screen -->
     <LinearLayout
+        android:id="@+id/main_container"
         android:fitsSystemWindows="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -61,7 +321,7 @@
             app:itemIconSize="28dp"
             app:itemTextColor="@color/buttonTextColor"
             app:itemIconTint="@color/bottom_nav_icon_selector"
-            app:labelVisibilityMode="unlabeled"
+            app:labelVisibilityMode="auto"
             app:menu="@menu/bottom_app_bar_menu" />
     </LinearLayout>
 
@@ -73,6 +333,11 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:headerLayout="@layout/drawer_header"
+        android:elevation="1dp"
+        android:background="@color/background"
+        app:itemVerticalPadding="@dimen/margin_medium"
+        app:itemTextColor="@color/textColor"
+        app:itemIconTint="@color/textColor"
         app:menu="@menu/drawer_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.android.material.transition.MaterialFadeThrough
 import dev.adriele.adolescare.databinding.FragmentResultBinding
 
 class ResultFragment : Fragment() {
@@ -26,6 +27,8 @@ class ResultFragment : Fragment() {
             numberOfDays = it.getInt(FemaleMenstrualHistory.LAST_PERIOD_LASTED_DAYS.name, 0)
             numberOfWeeks = it.getInt(FemaleMenstrualHistory.NUMBER_OF_WEEKS_SELECTED.name, 0)
         }
+
+        enterTransition = MaterialFadeThrough()
     }
 
     @SuppressLint("SetTextI18n")

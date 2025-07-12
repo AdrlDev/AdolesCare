@@ -10,8 +10,8 @@
     tools:context=".SplashActivity">
 
     <ImageView
-        android:layout_width="140dp"
-        android:layout_height="140dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:src="@drawable/adoloscare_logo"
         android:layout_marginBottom="22dp"
         app:layout_constraintBottom_toTopOf="@id/tv_splash_message"
@@ -24,10 +24,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/roboto"
-        style="@style/TextAppearance.Material3.TitleLarge"
+        style="@style/TextAppearance.Material3.TitleMedium"
         android:textStyle="italic"
         android:text="@string/splash_message"
-        android:paddingHorizontal="32dp"
+        android:paddingHorizontal="42dp"
         android:textAlignment="center"
         android:textColor="@color/textColor"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -63,6 +63,41 @@
             android:backgroundTint="@color/buttonColor"
             />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="@dimen/margin_small"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/margin_large"
+            >
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:dividerColor="@color/textColor"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="or"
+                android:textColor="@color/textColor"
+                android:fontFamily="@font/roboto"
+                android:textSize="@dimen/font_small"
+                android:layout_marginHorizontal="@dimen/margin_medium"
+                />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:dividerColor="@color/textColor"
+                />
+
+        </LinearLayout>
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_signup"
             android:layout_width="match_parent"
@@ -83,15 +118,13 @@
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:indeterminate="true"
-        android:max="100"
-        android:progress="0"
+        app:indicatorColor="@color/buttonColor1"
+        app:trackColor="@color/buttonColor"
+        android:layout_gravity="center_horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="42dp"
-        app:indicatorColor="@color/buttonColor1"
-        app:trackColor="@color/buttonColor"
-        />
+        android:indeterminate="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -24,7 +24,8 @@ class OvulationCalculator(
         Log.e("LMP", "LMP: $lastPeriodStart\nPERIOD_DURATION_IN_DAYS: $periodDurationDays\nCYCLE_INTERVAL_IN_WEEKS: $cycleIntervalWeeks")
 
         return try {
-            val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault()).apply { isLenient = false }
+
+            val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH).apply { isLenient = false }
             val lastPeriodDate = sdf.parse(lastPeriodStart) ?: return null
 
             val cycleDays = cycleIntervalWeeks * 7
@@ -89,19 +90,19 @@ class OvulationCalculator(
             } else ""
 
             val fertilityRemark = when (phase) {
-                MenstrualPhase.MENSTRUAL -> context.getString(R.string.remarks_3) + " (Low fertility)"
-                MenstrualPhase.FOLLICULAR -> "Chance increasing"
-                MenstrualPhase.OVULATION -> context.getString(R.string.remarks_1) + " (High fertility)"
-                MenstrualPhase.LUTEAL -> "Fertility declining"
-                MenstrualPhase.UNKNOWN -> "Cycle day out of range"
+                MenstrualPhase.MENSTRUAL -> context.getString(R.string.remarks_3) + " (${context.getString(R.string.low_fertility)})"
+                MenstrualPhase.FOLLICULAR -> context.getString(R.string.chance_increasing)
+                MenstrualPhase.OVULATION -> context.getString(R.string.remarks_1) + " (${context.getString(R.string.high_fertility)})"
+                MenstrualPhase.LUTEAL -> context.getString(R.string.fertility_declining)
+                MenstrualPhase.UNKNOWN -> context.getString(R.string.cycle_day_out_of_range)
             } + ovulationCountdownRemark
 
             val remarksText = when (phase) {
-                MenstrualPhase.MENSTRUAL -> "🔵 $fertilityRemark (Menstrual phase)"
-                MenstrualPhase.FOLLICULAR -> "🔵 $fertilityRemark (Follicular phase)"
-                MenstrualPhase.OVULATION -> "🟢 $fertilityRemark (Ovulation phase)"
-                MenstrualPhase.LUTEAL -> "🔵 $fertilityRemark (Luteal phase)"
-                MenstrualPhase.UNKNOWN -> "⚪ Unknown"
+                MenstrualPhase.MENSTRUAL -> "🔵 $fertilityRemark (${context.getString(R.string.menstrual_phase)})"
+                MenstrualPhase.FOLLICULAR -> "🔵 $fertilityRemark (${context.getString(R.string.follicular_phase)})"
+                MenstrualPhase.OVULATION -> "🟢 $fertilityRemark (${context.getString(R.string.ovulation_phase)})"
+                MenstrualPhase.LUTEAL -> "🔵 $fertilityRemark (${context.getString(R.string.luteal_phase)})"
+                MenstrualPhase.UNKNOWN -> "⚪ ${context.getString(R.string.unknown_phase)}"
             }
 
             val spannable = SpannableString(remarksText)
@@ -126,6 +127,19 @@ class OvulationCalculator(
                 add(Calendar.DAY_OF_YEAR, periodDurationDays)
             }
 
+            // Irregularity check
+            val expectedNextPeriod = Calendar.getInstance().apply {
+                time = lastPeriodDate
+                add(Calendar.DAY_OF_YEAR, cycleDays)
+            }
+
+            val graceDate = Calendar.getInstance().apply {
+                time = expectedNextPeriod.time
+                add(Calendar.DAY_OF_YEAR, 2)
+            }
+
+            val isDelayed = today.after(graceDate)
+
             OvulationInfo(
                 ovulationDate = sdf.format(ovulationDate),
                 fertileStart = sdf.format(fertileStart.time),
@@ -135,7 +149,8 @@ class OvulationCalculator(
                 remarks = spannable,
                 phase = phase,
                 nextMenstruationStart = sdf.format(nextMenstruationStart.time),
-                nextMenstruationEnd = sdf.format(nextMenstruationEnd.time)
+                nextMenstruationEnd = sdf.format(nextMenstruationEnd.time),
+                isDelayed = isDelayed
             )
         } catch (e: Exception) {
             Log.e("LMP", "Error: ${e.message}", e)
@@ -147,7 +162,7 @@ class OvulationCalculator(
         val lmpStr = lastPeriodStart
 
         return try {
-            val sdf = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+            val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
             val lmpDate = sdf.parse(lmpStr) ?: return PregnancyInfo(false, null, "Invalid LMP format")
 
             val today = Calendar.getInstance().time

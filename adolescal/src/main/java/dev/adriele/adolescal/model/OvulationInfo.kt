@@ -12,5 +12,6 @@ data class OvulationInfo(
     val phase: MenstrualPhase,
     val isPossiblyPregnant: Boolean = false,
     val nextMenstruationStart: String? = null,
-    val nextMenstruationEnd: String? = null
+    val nextMenstruationEnd: String? = null,
+    val isDelayed: Boolean = false
 )

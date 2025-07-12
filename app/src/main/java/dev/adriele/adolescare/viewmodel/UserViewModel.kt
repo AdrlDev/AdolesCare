@@ -45,6 +45,17 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         }
     }
 
+    fun getUserByUID(uid: String) {
+        viewModelScope.launch {
+            try {
+                _user.value = repository.getUserByUID(uid = uid)
+            } catch (e: Exception) {
+                Log.e("UserViewModel", "Error getting user", e)
+                _user.value = null
+            }
+        }
+    }
+
     fun updatePasswordByUsername(username: String, newPassword: String) {
         viewModelScope.launch {
             try {
