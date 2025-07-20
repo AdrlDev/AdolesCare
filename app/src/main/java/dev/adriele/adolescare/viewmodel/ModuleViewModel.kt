@@ -54,7 +54,7 @@ class ModuleViewModel(private val repository: ModuleRepository) : ViewModel() {
         }
     }
 
-    fun searchModule(moduleContentType: ModuleContentType, category: String, query: String) {
+    fun searchModule(category: String, query: String) {
         viewModelScope.launch {
             val modules = repository.searchModule(ModuleContentType.PDF, category, "%$query%")
             _modules.postValue(modules)
@@ -63,6 +63,10 @@ class ModuleViewModel(private val repository: ModuleRepository) : ViewModel() {
 
     fun getModuleByIdLive(moduleId: String): LiveData<LearningModule?> = liveData {
         emit(repository.getModuleById(moduleId))
+    }
+
+    suspend fun moduleExistsNow(id: String): Boolean {
+        return repository.isModuleExist(id) > 0
     }
 
 }

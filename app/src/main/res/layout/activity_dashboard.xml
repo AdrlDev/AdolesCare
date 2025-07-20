@@ -96,6 +96,19 @@
             android:layout_marginTop="@dimen/margin_medium"
             android:id="@+id/btn_skip_htu"/>
 
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Do not show this again"
+            android:textColor="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@id/btn_skip_htu"
+            app:layout_constraintEnd_toEndOf="@id/btn_skip_htu"
+            android:layout_marginEnd="@dimen/margin_large"
+            android:fontFamily="@font/roboto"
+            android:buttonTint="@android:color/white"
+            android:id="@+id/cb_do_not_show"
+            />
+
         <TextView
             android:id="@+id/tv_module_htu"
             android:layout_width="0dp"

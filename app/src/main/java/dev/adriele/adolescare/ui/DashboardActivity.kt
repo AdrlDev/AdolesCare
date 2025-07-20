@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.transition.TransitionManager
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -20,16 +19,17 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.transition.platform.MaterialFade
 import com.google.android.material.transition.platform.MaterialSharedAxis
-import com.google.gson.Gson
 import dev.adriele.adolescare.BaseActivity
 import dev.adriele.adolescare.R
 import dev.adriele.adolescare.authentication.LoginActivity
 import dev.adriele.adolescare.database.AppDatabaseProvider
+import dev.adriele.adolescare.database.entities.LearningModule
 import dev.adriele.adolescare.database.repositories.implementation.ModuleRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityDashboardBinding
 import dev.adriele.adolescare.dialogs.MyLoadingDialog
@@ -42,6 +42,7 @@ import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.viewmodel.ModuleViewModel
 import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
 import dev.adriele.language.LanguageManager
+import kotlinx.coroutines.launch
 
 class DashboardActivity : BaseActivity() {
     private lateinit var binding: ActivityDashboardBinding
@@ -102,8 +103,10 @@ class DashboardActivity : BaseActivity() {
 
         settingsLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
-                val languageChanged = result.data?.getBooleanExtra("LANGUAGE_CHANGED", false) ?: false
-                if (languageChanged) {
+                val data = result.data
+                val languageChanged = data?.getBooleanExtra("LANGUAGE_CHANGED", false) ?: false
+                val themeChanged = data?.getBooleanExtra("THEME_CHANGED", false) ?: false
+                if (languageChanged || themeChanged) {
                     recreate() // This will trigger BaseActivity's attachBaseContext again
                 }
             }
@@ -113,17 +116,28 @@ class DashboardActivity : BaseActivity() {
         initializeViewModel()
         afterInit()
 
-        binding.root.isClickable = isHTUDone
-        binding.root.isEnabled = isHTUDone
+        if(Utility.PreferenceManager.isHtuDoNotShow(this)) {
+            binding.root.isClickable = true
+            binding.root.isEnabled = true
 
-        binding.containerHtu.visibility = View.VISIBLE
+            binding.containerHtu.visibility = View.GONE
+        } else {
+            binding.root.isClickable = false
+            binding.root.isEnabled = false
 
-        setUpHTU()
+            binding.containerHtu.visibility = View.VISIBLE
+
+            setUpHTU()
+        }
     }
 
     private fun setUpHTU() {
         binding.btnSkipHtu.setOnClickListener {
             finishHtu()
+        }
+
+        binding.cbDoNotShow.setOnCheckedChangeListener {  _, isChecked ->
+            Utility.PreferenceManager.saveHtuDoNotShow(this, isChecked)
         }
 
         binding.containerHtu.setOnClickListener {
@@ -299,7 +313,7 @@ class DashboardActivity : BaseActivity() {
             when (item.itemId) {
                 R.id.nav_account -> gotoAccount()
                 R.id.nav_setting -> gotoSettings()
-                R.id.nav_notification -> {}
+                R.id.nav_notification -> gotoNotification()
                 R.id.nav_about -> {}
                 R.id.nav_logout -> logout()
             }
@@ -325,6 +339,13 @@ class DashboardActivity : BaseActivity() {
             putExtra("userId", userId)
         }
         settingsLauncher.launch(intent)
+    }
+
+    private fun gotoNotification() {
+        val intent = Intent(this, NotificationActivity::class.java).apply {
+            putExtra("userId", userId)
+        }
+        startActivity(intent)
     }
 
     private fun gotoAccount() {
@@ -375,15 +396,22 @@ class DashboardActivity : BaseActivity() {
     }
 
     private fun insertModules() {
-        val chapters = Utility.loadLearningModules(this).toMutableList()
+        val chapters = Utility.loadLearningModulesNew(this).toMutableList()
         val videos = Utility.loadLearningVideos(this).toMutableList()
 
-        Log.e("VIDEOS_MODULE", Gson().toJson(videos))
+        lifecycleScope.launch {
+            val filteredModules = mutableListOf<LearningModule>()
 
-        for(video in videos) {
-            chapters.add(video)
+            (chapters + videos).forEach { module ->
+                val exists = moduleViewModel.moduleExistsNow(module.id) // This should be a suspend function
+                if (!exists) {
+                    filteredModules.add(module)
+                }
+            }
+
+            if (filteredModules.isNotEmpty()) {
+                moduleViewModel.insertModules(filteredModules)
+            }
         }
-
-        moduleViewModel.insertModules(chapters)
     }
 }

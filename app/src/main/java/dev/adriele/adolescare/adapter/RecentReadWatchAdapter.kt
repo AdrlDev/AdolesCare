@@ -48,7 +48,7 @@ class RecentReadWatchAdapter(
     inner class RecentViewHolder(private val binding: ItemRecentBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: RecentReadAndWatch) {
             moduleViewModel.getModuleByIdLive(item.moduleId).observe(lifecycleOwner) { module ->
-                if (module != null) {
+                module?.let {
                     val type = module.contentType
 
                     when (type) {

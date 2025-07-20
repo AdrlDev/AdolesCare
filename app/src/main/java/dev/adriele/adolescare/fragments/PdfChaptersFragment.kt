@@ -83,7 +83,7 @@ class PdfChaptersFragment : Fragment(), IModules.PDF {
             }
         }
 
-        moduleViewModel.getAllModulesByCategory(ModuleContentType.PDF, pdfCategory!!)
+        moduleViewModel.getAllModulesByCategory(ModuleContentType.PDF, pdfCategory ?: "")
     }
 
     private fun initialize() {
@@ -101,7 +101,7 @@ class PdfChaptersFragment : Fragment(), IModules.PDF {
         searchViewModel.searchQuery.observe(viewLifecycleOwner) { query ->
             if (!query.isEmpty()) {
                 loadingDialog.show("Searching...")
-                moduleViewModel.searchModule(ModuleContentType.PDF, pdfCategory!!, query)
+                moduleViewModel.searchModule(pdfCategory!!, query)
             } else {
                 // If query is cleared, show original chapter list
                 moduleViewModel.getAllModulesByCategory(ModuleContentType.PDF, pdfCategory!!)

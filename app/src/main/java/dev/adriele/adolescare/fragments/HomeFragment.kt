@@ -142,10 +142,12 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
         binding.tvDateNow.text = dateNow
 
         menstrualHistoryViewModel.ovulationInfo.observe(viewLifecycleOwner) { ovulationInfo ->
-            if (ovulationInfo != null) {
-                displayOvulationInfo(ovulationInfo)
-            } else {
-                binding.tvRemarks.text = "❗ ${R.string.unable_to_calculate_ovulation}"
+            _binding?.let {
+                if (ovulationInfo != null) {
+                    displayOvulationInfo(ovulationInfo, it)
+                } else {
+                    it.tvRemarks.text = "❗ ${R.string.unable_to_calculate_ovulation}"
+                }
             }
         }
 
@@ -166,8 +168,6 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
                 binding.rvRecent.adapter = RecentReadWatchAdapter(recentList, moduleViewModel, viewLifecycleOwner,
                     this)
                 binding.rvRecent.adapter?.notifyDataSetChanged()
-                binding.rvRecent.smoothScrollToPosition(0)
-
             } else {
                 stopShimmer()
                 showNoRecent()
@@ -194,11 +194,11 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun displayOvulationInfo(info: OvulationInfo) {
+    private fun displayOvulationInfo(info: OvulationInfo, view: FragmentHomeBinding) {
         val day = if(info.daysUntilOvulation > 1) "Days" else "Day"
 
-        binding.tvOvulationDays.text = "${info.daysUntilOvulation} $day"
-        binding.tvRemarks.text = info.remarks
+        view.tvOvulationDays.text = "${info.daysUntilOvulation} $day"
+        view.tvRemarks.text = info.remarks
     }
 
     override fun onDestroyView() {

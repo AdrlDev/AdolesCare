@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialFadeThrough
@@ -25,6 +26,7 @@ import dev.adriele.adolescare.viewmodel.ModuleViewModel
 import dev.adriele.adolescare.viewmodel.RecentReadWatchViewModel
 import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.RecentReadWatchViewModelFactory
+import kotlinx.coroutines.launch
 
 private const val USER_ID = "userID"
 
@@ -62,7 +64,6 @@ class VideosFragment : Fragment(), IModules.VIDEO {
 
         initializeViewModel()
         initializeVideos()
-        afterInitialize()
 
         return binding.root
     }
@@ -110,30 +111,31 @@ class VideosFragment : Fragment(), IModules.VIDEO {
         recentReadWatchViewModel = ViewModelProvider(this, recentReadWatchViewModelFactory)[RecentReadWatchViewModel::class]
     }
 
-    private fun afterInitialize() {
-        recentReadWatchViewModel.addRecentStatus.observe(viewLifecycleOwner) { (isSuccess, moduleId) ->
-            if (isSuccess) {
-                moduleViewModel.getModuleByIdLive(moduleId).observe(viewLifecycleOwner) { module ->
-                    if (module != null) {
-                        loadingDialog.dismiss()
-                        val intent = Intent(requireContext(), VideoPlayerActivity::class.java)
-                        intent.putExtra("path", module.contentUrl)
-                        startActivity(intent)
-                    } else {
-                        Snackbar.make(binding.root, "Module not found", Snackbar.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        }
-    }
-
     override fun onVideoClick(position: Int, path: String) {
         loadingDialog.show("Please wait...")
         videoPosition = position
-        recentReadWatchViewModel.addRecent(RecentReadAndWatch(
-            moduleId = videoList[position].id,
-            timestamp = System.currentTimeMillis()
-        ))
+
+        lifecycleScope.launch {
+            val isRecentExist = recentReadWatchViewModel.isRecentExist(videoList[position].id)
+
+            if(!isRecentExist) {
+                recentReadWatchViewModel.addRecent(RecentReadAndWatch(
+                    moduleId = videoList[position].id,
+                    timestamp = System.currentTimeMillis()
+                ))
+            }
+        }
+
+        moduleViewModel.getModuleByIdLive(videoList[position].id).observe(viewLifecycleOwner) { module ->
+            if (module != null) {
+                loadingDialog.dismiss()
+                val intent = Intent(requireContext(), VideoPlayerActivity::class.java)
+                intent.putExtra("path", module.contentUrl)
+                startActivity(intent)
+            } else {
+                Snackbar.make(binding.root, "Module not found", Snackbar.LENGTH_SHORT).show()
+            }
+        }
     }
 
     companion object {

@@ -8,7 +8,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.transition.platform.MaterialSharedAxis
 import dev.adriele.adolescare.BaseActivity
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.repositories.implementation.UserRepositoryImpl
@@ -31,10 +30,6 @@ class SettingsActivity : BaseActivity(), Utility.IUtility {
     private lateinit var userViewModel: UserViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
-        window.enterTransition = sharedAxis
-        window.exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
-
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivitySettingsBinding.inflate(layoutInflater)
@@ -110,7 +105,9 @@ class SettingsActivity : BaseActivity(), Utility.IUtility {
                 binding.btnTheme -> {
                     ThemeSelectorDialog().showThemeSelectorDialog(this, object : ThemeSelectorDialog.ThemeSelectionCallback {
                         override fun onThemeSelected(selectedTheme: String) {
-                            recreate() // restart activity to apply theme
+                            val resultIntent = Intent()
+                            resultIntent.putExtra("THEME_CHANGED", true)
+                            setResult(RESULT_OK, resultIntent)
                         }
                     })
                 }

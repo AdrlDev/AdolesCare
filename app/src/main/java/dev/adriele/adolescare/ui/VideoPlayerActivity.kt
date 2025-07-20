@@ -1,14 +1,16 @@
 package dev.adriele.adolescare.ui
 
-import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
 import com.google.android.material.transition.platform.MaterialSharedAxis
 import dev.adriele.adolescare.BaseActivity
 import dev.adriele.adolescare.databinding.ActivityVideoPlayerBinding
@@ -36,6 +38,8 @@ class VideoPlayerActivity : BaseActivity() {
             insets
         }
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         Utility.enableFullscreen(window)
         path = intent.getStringExtra("path")
     }
@@ -58,23 +62,28 @@ class VideoPlayerActivity : BaseActivity() {
         val file = Utility.copyAssetToCache(this, assetPath)
         val uri = Uri.fromFile(file)
 
-        val mediaItem = MediaItem.fromUri(uri)
+        val mediaItem = MediaItem.Builder()
+            .setUri(uri)
+            .setMimeType(MimeTypes.VIDEO_MP4)
+            .build()
+
         player.setMediaItem(mediaItem)
         player.prepare()
         player.playWhenReady = true
+
+        // 🔽 Show/hide back button based on controller visibility
+        binding.playerView.setControllerVisibilityListener(
+            PlayerView.ControllerVisibilityListener { visibility -> binding.btnBack.visibility = if (visibility == View.VISIBLE) View.VISIBLE else View.GONE }
+        )
+
+        binding.btnBack.setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        // Adjust fullscreen behavior on rotation
-        Utility.enableFullscreen(window)
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            supportActionBar?.hide()
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-        } else {
-            supportActionBar?.show()
-            WindowCompat.setDecorFitsSystemWindows(window, true)
-        }
+    override fun onPause() {
+        super.onPause()
+        player.playWhenReady = false
     }
 
     override fun onStop() {

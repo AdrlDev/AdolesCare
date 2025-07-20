@@ -63,6 +63,7 @@
         </LinearLayout>
 
         <com.google.android.material.appbar.AppBarLayout
+            android:background="@color/background"
             android:layout_below="@id/ll_back"
             android:id="@+id/app_bar"
             android:layout_width="match_parent"

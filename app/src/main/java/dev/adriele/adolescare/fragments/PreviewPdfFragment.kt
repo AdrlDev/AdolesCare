@@ -1,5 +1,6 @@
 package dev.adriele.adolescare.fragments
 
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -16,6 +17,7 @@ import dev.adriele.adolescare.databinding.FragmentPreviewPdfBinding
 import dev.adriele.adolescare.dialogs.MyLoadingDialog
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.helpers.Utility.generateHighlightedBitmap
+import dev.adriele.adolescare.helpers.contracts.OnUserInteractionListener
 import dev.adriele.adolescare.viewmodel.PdfSearchViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,6 +35,7 @@ class PreviewPdfFragment : Fragment() {
     private lateinit var loadingDialog: MyLoadingDialog
     private lateinit var searchViewModel: PdfSearchViewModel
     private var currentHighlightedPage = -1
+    private var interactionListener: OnUserInteractionListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,6 +124,10 @@ class PreviewPdfFragment : Fragment() {
                         binding.highlightOverlay.visibility = View.GONE
                     }
                 }
+                .onTap {
+                    interactionListener?.onUserInteraction()
+                    true
+                }
                 .onError {
                     loadingDialog.dismiss()
                     Snackbar.make(binding.root, "Failed to load PDF", Snackbar.LENGTH_LONG).show()
@@ -136,14 +143,23 @@ class PreviewPdfFragment : Fragment() {
         return currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnUserInteractionListener) {
+            interactionListener = context
+        }
+    }
+
     companion object {
         // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(pdfUri: String) =
+        fun newInstance(pdfUri: String, onUserInteractionListener: OnUserInteractionListener) =
             PreviewPdfFragment().apply {
                 arguments = Bundle().apply {
                     putString(PDF_URI, pdfUri)
                 }
+
+                this.interactionListener = onUserInteractionListener
             }
     }
 }

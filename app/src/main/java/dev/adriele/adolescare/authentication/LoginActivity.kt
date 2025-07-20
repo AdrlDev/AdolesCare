@@ -33,7 +33,6 @@ class LoginActivity : BaseActivity(), Utility.SignUpHereClickListener {
 
     private lateinit var userRepositoryImpl: UserRepositoryImpl
     private lateinit var userDao: UserDao
-
     private lateinit var userViewModel: UserViewModel
     private lateinit var reminderViewModel: ReminderViewModel
 

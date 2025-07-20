@@ -12,6 +12,9 @@ interface ModuleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(modules: List<LearningModule>)
 
+    @Query("SELECT COUNT(*) FROM modules WHERE id = :moduleId")
+    suspend fun moduleExists(moduleId: String): Int
+
     @Query("SELECT * FROM modules WHERE contentType = :contentType AND LOWER(category) = :category AND orderBy = 0 LIMIT 1")
     suspend fun getAllModules(contentType: ModuleContentType, category: String): List<LearningModule>
 
@@ -25,5 +28,5 @@ interface ModuleDao {
     suspend fun searchModule(contentType: ModuleContentType, category: String, query: String): List<LearningModule>
 
     @Query("SELECT * FROM modules WHERE id = :moduleId LIMIT 1")
-    suspend fun getModuleById(moduleId: String): LearningModule
+    suspend fun getModuleById(moduleId: String): LearningModule?
 }

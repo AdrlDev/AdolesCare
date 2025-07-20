@@ -6,4 +6,5 @@ interface RecentReadWatchRepository {
     suspend fun addRecent(recent: RecentReadAndWatch)
 
     suspend fun getRecentReadAndWatch(): List<RecentReadAndWatch>
+    suspend fun getRecentReadAndWatch(id: String): Int
 }

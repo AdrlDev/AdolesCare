@@ -22,4 +22,8 @@ class ReminderRepositoryImpl(
             date = date
         )
     }
+
+    override suspend fun getAllReminders(userId: String): List<Reminder> {
+        return dao.getUserReminders(userId)
+    }
 }

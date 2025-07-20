@@ -1,11 +1,14 @@
 package dev.adriele.adolescare.ui
 
+import android.annotation.SuppressLint
 import android.graphics.pdf.PdfRenderer
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.MotionEvent
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.core.content.FileProvider
@@ -37,8 +40,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.core.view.isGone
+import dev.adriele.adolescare.helpers.contracts.OnUserInteractionListener
 
-class PdfViewerActivity : BaseActivity() {
+class PdfViewerActivity : BaseActivity(), OnUserInteractionListener {
     private lateinit var binding: ActivityPdfViewerBinding
     private var pdfRenderer: PdfRenderer? = null
     private var parcelFileDescriptor: ParcelFileDescriptor? = null
@@ -113,6 +118,23 @@ class PdfViewerActivity : BaseActivity() {
         }
     }
 
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        if (binding.tabLl.isGone) {
+            binding.tabLl.alpha = 0f
+            binding.tabLl.visibility = View.VISIBLE
+            binding.tabLl.animate().alpha(1f).setDuration(300).start()
+        }
+
+        // Auto hide after 3 seconds
+        binding.tabLl.postDelayed({
+            binding.tabLl.animate().alpha(0f).setDuration(300).withEndAction {
+                binding.tabLl.visibility = View.GONE
+            }.start()
+        }, 3000)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     private fun initializeViewPager(moduleUrl: String, moduleCategory: String) {
         val cachedFile = Utility.copyAssetToCache(this, moduleUrl)
 
@@ -123,12 +145,25 @@ class PdfViewerActivity : BaseActivity() {
         )
 
         initializeIndex(uri.toString())
-        vp.adapter = PdfViewerPagerAdapter(this, uri.toString(), moduleCategory)
+        vp.adapter = PdfViewerPagerAdapter(this, uri.toString(), moduleCategory, this)
         vp.offscreenPageLimit = 2
 
         TabLayoutMediator(tabLayout, vp) { tab, position ->
             tab.text = if (position == 0) "Preview" else "Chapter"
         }.attach()
+
+        tabLayout.visibility = View.GONE // 👈 Hide initially
+
+        vp.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                if (tabLayout.isGone) {
+                    tabLayout.alpha = 0f
+                    tabLayout.visibility = View.VISIBLE
+                    tabLayout.animate().alpha(1f).setDuration(300).start()
+                }
+            }
+            false
+        }
     }
 
     private fun initializeViews() {

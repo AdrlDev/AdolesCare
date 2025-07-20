@@ -2,6 +2,8 @@ package dev.adriele.adolescare.viewmodel
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Constraints
@@ -16,12 +18,27 @@ import dev.adriele.adolescare.helpers.worker.DelayedPeriodWorker
 import kotlinx.coroutines.launch
 
 class ReminderViewModel(private val repository: ReminderRepository) : ViewModel() {
+    private var _reminder: MutableLiveData<List<Reminder>> = MutableLiveData()
+    val reminder: LiveData<List<Reminder>> get() = _reminder
+
     fun insertReminder(reminder: Reminder) {
         viewModelScope.launch {
             try {
                 repository.insertReminder(reminder)
             } catch (e: Exception) {
                 Log.e("UserViewModel", "Error inserting notification", e)
+            }
+        }
+    }
+
+    fun getAllReminder(userId: String) {
+        viewModelScope.launch {
+            try {
+                val result = repository.getAllReminders(userId)
+                _reminder.postValue(result)
+            } catch (e: Exception) {
+                Log.e("UserViewModel", "Error getting notifications", e)
+                _reminder.postValue(emptyList())
             }
         }
     }

@@ -109,6 +109,21 @@ object Utility {
         private const val KEY_USERNAME = "username"
         private const val KEY_PASSWORD = "password"
         private const val KEY_REMEMBER_ME = "remember_me"
+        private const val HTU_NAME = "htu_do_not_show"
+        private const val KEY_HTU = "htu"
+
+        fun saveHtuDoNotShow(context: Context, doNotShow: Boolean) {
+            val prefs = context.getSharedPreferences(HTU_NAME, Context.MODE_PRIVATE)
+            prefs.edit().apply {
+                putBoolean(KEY_HTU, doNotShow)
+                apply()
+            }
+        }
+
+        fun isHtuDoNotShow(context: Context): Boolean {
+            val prefs = context.getSharedPreferences(HTU_NAME, Context.MODE_PRIVATE)
+            return prefs.getBoolean(KEY_HTU, false)
+        }
 
         fun saveLoginInfo(context: Context, username: String, password: String, remember: Boolean) {
             val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -579,6 +594,50 @@ object Utility {
                 modules.add(
                     LearningModule(
                         id = "${folder}_$index",
+                        title = title,
+                        category = enumCategory,
+                        contentType = ModuleContentType.PDF,
+                        contentUrl = "$basePath/$folder/$file",
+                        orderBy = orderBy
+                    )
+                )
+            }
+        }
+
+        return modules
+    }
+
+    fun loadLearningModulesNew(context: Context): List<LearningModule> {
+        val modules = mutableListOf<LearningModule>()
+        val assetManager = context.assets
+        val basePath = "modules/pdf"
+
+        val folders = assetManager.list(basePath) ?: return emptyList()
+
+        for (folder in folders) {
+            val files = assetManager.list("$basePath/$folder")?.filter { it.endsWith(".pdf") } ?: continue
+
+            for (file in files) {
+                // Extract orderBy from file name
+                val match = Regex("""^(\d+)_""").find(file)
+                val orderBy = match?.groupValues?.get(1)?.toIntOrNull() ?: 0
+
+                // Remove leading number and underscore (e.g. "1_module_1.pdf" → "module_1.pdf")
+                val cleanedFileName = file.replaceFirst(Regex("""^\d+_"""), "")
+
+                val title = cleanedFileName.removeSuffix(".pdf")
+                    .replace('_', ' ')
+                    .replaceFirstChar { it.uppercaseChar() }
+
+                val enumCategory = PDFModulesCategory.entries.find {
+                    it.name.equals(folder.uppercase().replace("-", "_"), ignoreCase = true)
+                }?.category ?: folder.replace('_', ' ')
+
+                Log.e("FILESSSS", "title: $title, category: $enumCategory, orderBy: $orderBy")
+
+                modules.add(
+                    LearningModule(
+                        id = "${folder}_${cleanedFileName.removeSuffix(".pdf")}",
                         title = title,
                         category = enumCategory,
                         contentType = ModuleContentType.PDF,

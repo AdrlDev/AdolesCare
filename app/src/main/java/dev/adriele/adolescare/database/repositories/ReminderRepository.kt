@@ -8,4 +8,6 @@ interface ReminderRepository {
 
     suspend fun getReminderByTitleAndDate(userId: String, title: String, date: String): Reminder?
 
+    suspend fun getAllReminders(userId: String): List<Reminder>
+
 }

@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.transition.MaterialFadeThrough
-import com.google.android.material.transition.MaterialSharedAxis
 import com.google.gson.Gson
 import dev.adriele.adolescare.ui.PdfViewerActivity
 import dev.adriele.adolescare.helpers.enums.ModuleContentType
@@ -62,7 +61,6 @@ class ModulesFragment : Fragment(), IModules.PDF {
         loadingDialog = MyLoadingDialog(requireContext())
         initializeViewModel()
         loadModules()
-        afterInitialize()
 
         return binding.root
     }
@@ -106,32 +104,32 @@ class ModulesFragment : Fragment(), IModules.PDF {
         recentReadWatchViewModel = ViewModelProvider(this, recentReadWatchViewModelFactory)[RecentReadWatchViewModel::class]
     }
 
-    private fun afterInitialize() {
-        recentReadWatchViewModel.addRecentStatus.observe(viewLifecycleOwner) { (isSuccess, moduleId) ->
-            if (isSuccess) {
-                lifecycleScope.launch {
-                    moduleViewModel.getModuleByIdLive(moduleId).observe(viewLifecycleOwner) { module ->
-                        if(module != null) {
-                            val intent = Intent(requireContext(), PdfViewerActivity::class.java).apply {
-                                putExtra("module_category", module.category)
-                                putExtra("module_url", module.contentUrl)
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
+    override fun onPdfClick(module: LearningModule) {
+        lifecycleScope.launch {
+            val isRecentExist = recentReadWatchViewModel.isRecentExist(module.id)
 
-                            loadingDialog.dismiss()
-                            startActivity(intent)
-                        }
+            if(!isRecentExist) {
+                recentReadWatchViewModel.addRecent(RecentReadAndWatch(
+                    moduleId = module.id,
+                    timestamp = System.currentTimeMillis()
+                ))
+            }
+        }
+
+        lifecycleScope.launch {
+            moduleViewModel.getModuleByIdLive(module.id).observe(viewLifecycleOwner) { module ->
+                if(module != null) {
+                    val intent = Intent(requireContext(), PdfViewerActivity::class.java).apply {
+                        putExtra("module_category", module.category)
+                        putExtra("module_url", module.contentUrl)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
+
+                    loadingDialog.dismiss()
+                    startActivity(intent)
                 }
             }
         }
-    }
-
-    override fun onPdfClick(module: LearningModule) {
-        recentReadWatchViewModel.addRecent(RecentReadAndWatch(
-            moduleId = module.id,
-            timestamp = System.currentTimeMillis()
-        ))
     }
 
     companion object {

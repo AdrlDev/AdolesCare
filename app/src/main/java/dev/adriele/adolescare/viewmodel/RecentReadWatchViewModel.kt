@@ -37,4 +37,8 @@ class RecentReadWatchViewModel(private val repository: RecentReadWatchRepository
         }
     }
 
+    suspend fun isRecentExist(id: String): Boolean {
+        val count = repository.getRecentReadAndWatch(id)
+        return count > 0
+    }
 }

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.11.0"
+agp = "8.11.1"
 kotlin = "2.2.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -13,7 +13,7 @@ room = "2.7.2" # ✅ Add this
 ksp = "2.2.0-2.0.2" # Match your Kotlin version
 lifecycle = "2.9.1"
 retrofit = "3.0.0"
-okhttp = "5.0.0"
+okhttp = "5.1.0"
 shimmer = "0.5.0"
 navigationFragmentKtx = "2.9.1"
 navigationUiKtx = "2.9.1"

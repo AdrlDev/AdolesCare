@@ -15,7 +15,7 @@ class ThemeSelectorDialog {
         val modes = arrayOf(ThemeManager.MODE_LIGHT, ThemeManager.MODE_DARK, ThemeManager.MODE_SYSTEM)
 
         MaterialAlertDialogBuilder(context)
-            .setTitle("Select Theme")
+            .setTitle("Dark Mode")
             .setItems(items) { _, which ->
                 ThemeManager.saveTheme(context, modes[which]) // Save to SharedPreferences
                 themeSelectionCallback.onThemeSelected(modes[which])

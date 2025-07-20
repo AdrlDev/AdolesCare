@@ -12,4 +12,8 @@ class RecentReadWatchRepositoryImpl(private val dao: RecentReadAndWatchDao): Rec
     override suspend fun getRecentReadAndWatch(): List<RecentReadAndWatch> {
         return dao.getAllRecentReadAndWatch()
     }
+
+    override suspend fun getRecentReadAndWatch(id: String): Int {
+        return dao.getRecentReadAndWatch(id)
+    }
 }
