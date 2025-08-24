@@ -121,8 +121,9 @@ class ChatBotAdapter: RecyclerView.Adapter<ChatBotAdapter.ViewHolder>() {
                             setPadding(0, 4, 0, 4)
                             setOnClickListener {
                                 val intent = Intent(context, PdfViewerActivity::class.java).apply {
-                                    putExtra("module_url", source.source)
-                                    putExtra("module_category", extractReadableModuleTitle(source.source).lowercase())
+                                    val modifiedSource = source.source
+                                    putExtra("module_url", modifiedSource)
+                                    putExtra("module_category", extractReadableModuleTitle(modifiedSource).lowercase())
                                 }
                                 context.startActivity(intent)
                             }

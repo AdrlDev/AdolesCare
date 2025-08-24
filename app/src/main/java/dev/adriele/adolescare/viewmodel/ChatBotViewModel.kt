@@ -6,6 +6,8 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import dev.adriele.adolescare.api.RetrofitInstance
 import dev.adriele.adolescare.api.request.InsightsRequest
+import dev.adriele.adolescare.api.websocket.WebSocketClient
+import dev.adriele.adolescare.api.websocket.contracts.IWebSocket
 import dev.adriele.adolescare.chatbot.ResponseType
 import dev.adriele.adolescare.contracts.IChatBot
 import dev.adriele.adolescare.database.entities.Conversations
@@ -76,17 +78,19 @@ class ChatBotViewModel(
         }
     }
 
-    fun getInsights(insightsRequest: InsightsRequest, iChatBot: IChatBot.Insight) {
+    fun getInsights(insightsRequest: InsightsRequest?, iChatBot: IChatBot.Insight) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val response = RetrofitInstance.api.getInsights(insightsRequest)
                 withContext(Dispatchers.Main) {
-                    if(response.isSuccessful) {
-                        response.body()?.let {
-                            iChatBot.onResult(it)
+                    response.let { response ->
+                        if(response.isSuccessful) {
+                            response.body()?.let {
+                                iChatBot.onResult(it)
+                            }
+                        } else {
+                            iChatBot.onError("Failed to get insight.")
                         }
-                    } else {
-                        iChatBot.onError("Failed to get insight.")
                     }
                 }
             } catch (e: SocketTimeoutException) {

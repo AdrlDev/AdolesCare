@@ -24,6 +24,9 @@
     <string name="login_text_sign_up">Mag-login sa iyong account</string>
     <string name="signup_text_sign_up">Gumawa ng iyong account</string>
 
+    <string name="archive_reminder">Na-archive na Paalala</string>
+    <string name="archive_recent_read_and_watch">Na-archive na Mga Binasa at Napanood</string>
+
     //user information
     <string name="first_name">Pangalan</string>
     <string name="last_name">Apelyido</string>

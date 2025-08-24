@@ -1,5 +1,6 @@
 package dev.adriele.adolescare.adapter
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.util.Log
@@ -7,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -30,13 +30,19 @@ import kotlin.text.lowercase
 class RecentReadWatchAdapter(
     private val recentList: List<RecentReadAndWatch>,
     private val moduleViewModel: ModuleViewModel,
-    private val lifecycleOwner: LifecycleOwner,
     private val iRecentReadAndWatch: IRecentReadAndWatch
 ) : RecyclerView.Adapter<RecentReadWatchAdapter.RecentViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecentViewHolder {
         val binding = ItemRecentBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return RecentViewHolder(binding)
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateList(newList: List<RecentReadAndWatch>) {
+        (recentList as MutableList).clear()
+        recentList.addAll(newList)
+        notifyDataSetChanged()
     }
 
     override fun onBindViewHolder(holder: RecentViewHolder, position: Int) {
@@ -47,15 +53,17 @@ class RecentReadWatchAdapter(
 
     inner class RecentViewHolder(private val binding: ItemRecentBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: RecentReadAndWatch) {
-            moduleViewModel.getModuleByIdLive(item.moduleId).observe(lifecycleOwner) { module ->
+            CoroutineScope(Dispatchers.Main).launch {
+                val module = moduleViewModel.getModuleById(item.moduleId)
+
                 module?.let {
-                    val type = module.contentType
+                    val type = it.contentType
 
                     when (type) {
                         ModuleContentType.PDF -> {
                             binding.cvVideo.visibility = View.GONE
 
-                            val safeTitle = module.category
+                            val safeTitle = it.category
                                 .lowercase()
                                 .replace(" ", "_")
 
@@ -96,10 +104,10 @@ class RecentReadWatchAdapter(
                                     })
                                     .into(binding.imgThumbnail)
                             } else {
-                                // File is null or doesn't exist — show default image
+                                // No image asset — generate from PDF
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
-                                        val file = Utility.copyAssetToCache(binding.root.context, module.contentUrl)
+                                        val file = Utility.copyAssetToCache(binding.root.context, it.contentUrl)
                                         val thumbnail = Utility.generatePdfThumbnail(file!!, 0)
 
                                         withContext(Dispatchers.Main) {
@@ -133,8 +141,7 @@ class RecentReadWatchAdapter(
                                                 })
                                                 .into(binding.imgThumbnail)
                                         }
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
+                                    } catch (_: Exception) {
                                         withContext(Dispatchers.Main) {
                                             binding.imgThumbnail.setImageResource(R.drawable.pdf_icon)
                                             binding.imgThumbnail.scaleType = ImageView.ScaleType.CENTER_INSIDE
@@ -143,15 +150,16 @@ class RecentReadWatchAdapter(
                                 }
                             }
                         }
+
                         ModuleContentType.VIDEO -> {
                             binding.cvPdf.visibility = View.GONE
 
-                            val cachedFile = Utility.copyAssetToCache(binding.root.context, module.contentUrl)
+                            val cachedFile = Utility.copyAssetToCache(binding.root.context, it.contentUrl)
 
                             Glide.with(binding.root.context)
                                 .asBitmap()
                                 .load(cachedFile)
-                                .frame(1_000_000) // 1st second
+                                .frame(1_000_000)
                                 .placeholder(R.drawable.video)
                                 .into(binding.imgThumbnailVideo)
                         }

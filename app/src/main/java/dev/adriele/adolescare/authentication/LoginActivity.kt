@@ -18,12 +18,15 @@ import dev.adriele.adolescare.helpers.Utility.PreferenceManager
 import dev.adriele.adolescare.helpers.Utility.SecurityUtils
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.dao.UserDao
+import dev.adriele.adolescare.database.repositories.implementation.ArchiveRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.ReminderRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.UserRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityLoginBinding
 import dev.adriele.adolescare.dialogs.MyLoadingDialog
+import dev.adriele.adolescare.viewmodel.ArchiveViewModel
 import dev.adriele.adolescare.viewmodel.ReminderViewModel
 import dev.adriele.adolescare.viewmodel.UserViewModel
+import dev.adriele.adolescare.viewmodel.factory.ArchiveViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.ReminderViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.UserViewModelFactory
 import dev.adriele.language.R
@@ -35,6 +38,7 @@ class LoginActivity : BaseActivity(), Utility.SignUpHereClickListener {
     private lateinit var userDao: UserDao
     private lateinit var userViewModel: UserViewModel
     private lateinit var reminderViewModel: ReminderViewModel
+    private lateinit var archiveViewModel: ArchiveViewModel
 
     private lateinit var loadingDialog: MyLoadingDialog
 
@@ -54,7 +58,27 @@ class LoginActivity : BaseActivity(), Utility.SignUpHereClickListener {
         }
 
         init()
+        initializeViewModel()
         afterInit()
+    }
+
+    private fun initializeViewModel() {
+        userDao = AppDatabaseProvider.getDatabase(this).userDao()
+        userRepositoryImpl = UserRepositoryImpl(userDao)
+
+        // Create the ViewModel using the factory
+        val factory = UserViewModelFactory(userRepositoryImpl)
+        userViewModel = ViewModelProvider(this, factory)[UserViewModel::class.java]
+
+        val reminderDao = AppDatabaseProvider.getDatabase(this).reminderDao()
+        val reminderRepository = ReminderRepositoryImpl(reminderDao)
+        val reminderFactory = ReminderViewModelFactory(reminderRepository)
+        reminderViewModel = ViewModelProvider(this, reminderFactory)[ReminderViewModel::class]
+
+        val archiveDao = AppDatabaseProvider.getDatabase(this).archiveDao()
+        val archiveRepository = ArchiveRepositoryImpl(archiveDao)
+        val archiveViewModelFactory = ArchiveViewModelFactory(archiveRepository)
+        archiveViewModel = ViewModelProvider(this, archiveViewModelFactory)[ArchiveViewModel::class.java]
     }
 
     private fun afterInit() {
@@ -69,6 +93,8 @@ class LoginActivity : BaseActivity(), Utility.SignUpHereClickListener {
                 if (SecurityUtils.checkPassword(binding.etPassword.text.toString(), user.password)) {
                     // ✅ Schedule Worker AFTER successful login
                     reminderViewModel.scheduleDailyDelayedPeriodWorker(this,user.userId)
+                    reminderViewModel.scheduleDailyPredictedDatesWorker(this, user.userId)
+                    archiveViewModel.scheduleReminderArchiverWorker(this)
 
                     Handler(Looper.getMainLooper()).postDelayed({
                         loadingDialog.dismiss()
@@ -140,18 +166,6 @@ class LoginActivity : BaseActivity(), Utility.SignUpHereClickListener {
         Utility.setupDonatHaveAccountText(this,binding.tvDoNotHaveAccount, this)
 
         loadingDialog = MyLoadingDialog(this)
-
-        userDao = AppDatabaseProvider.getDatabase(this).userDao()
-        userRepositoryImpl = UserRepositoryImpl(userDao)
-
-        // Create the ViewModel using the factory
-        val factory = UserViewModelFactory(userRepositoryImpl)
-        userViewModel = ViewModelProvider(this, factory)[UserViewModel::class.java]
-
-        val reminderDao = AppDatabaseProvider.getDatabase(this).reminderDao()
-        val reminderRepository = ReminderRepositoryImpl(reminderDao)
-        val reminderFactory = ReminderViewModelFactory(reminderRepository)
-        reminderViewModel = ViewModelProvider(this, reminderFactory)[ReminderViewModel::class]
 
         val (savedUsername, savedPassword, isRemembered) = PreferenceManager.getSavedLoginInfo(this)
 

@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import dev.adriele.adolescare.helpers.enums.ModuleContentType
 import dev.adriele.adolescare.database.entities.LearningModule
@@ -61,8 +60,8 @@ class ModuleViewModel(private val repository: ModuleRepository) : ViewModel() {
         }
     }
 
-    fun getModuleByIdLive(moduleId: String): LiveData<LearningModule?> = liveData {
-        emit(repository.getModuleById(moduleId))
+    suspend fun getModuleById(moduleId: String): LearningModule? {
+        return repository.getModuleById(moduleId)
     }
 
     suspend fun moduleExistsNow(id: String): Boolean {

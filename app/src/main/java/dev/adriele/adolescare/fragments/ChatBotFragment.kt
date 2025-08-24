@@ -2,8 +2,7 @@ package dev.adriele.adolescare.fragments
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -14,26 +13,29 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialFadeThrough
-import com.google.android.material.transition.MaterialSharedAxis
-import dev.adriele.adolescare.api.response.Sources
+import com.google.gson.Gson
+import dev.adriele.adolescare.api.response.OuterResponse
+import dev.adriele.adolescare.api.websocket.WebSocketClient
+import dev.adriele.adolescare.api.websocket.contracts.IWebSocket
 import dev.adriele.adolescare.helpers.Utility.getCurrentTime
 import dev.adriele.adolescare.chatbot.ResponseType
 import dev.adriele.adolescare.chatbot.adapter.ChatBotAdapter
-import dev.adriele.adolescare.contracts.IChatBot
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.Conversations
 import dev.adriele.adolescare.database.repositories.implementation.ChatBotRepositoryImpl
 import dev.adriele.adolescare.databinding.FragmentChatBotBinding
 import dev.adriele.adolescare.viewmodel.ChatBotViewModel
 import dev.adriele.adolescare.viewmodel.factory.ChatBotViewModelFactory
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 private const val USER_ID = "userID"
 private const val USER_NAME = "userName"
 
-class ChatBotFragment : Fragment() {
+class ChatBotFragment : Fragment(), IWebSocket {
     // TODO: Rename and change types of parameters
     private var userId: String? = null
     private var userName: String? = null
@@ -44,6 +46,8 @@ class ChatBotFragment : Fragment() {
     private lateinit var chatBotAdapter: ChatBotAdapter
     private lateinit var chatBotViewModel: ChatBotViewModel
     private lateinit var chatBotViewModelFactory: ChatBotViewModelFactory
+
+    private var webSocketClient: WebSocketClient? = null
 
     private val chats = mutableListOf<Conversations>()
 
@@ -75,6 +79,8 @@ class ChatBotFragment : Fragment() {
             insets
         }
 
+        webSocketClient = WebSocketClient("chat", this)
+
         init()
         afterInit()
 
@@ -83,6 +89,7 @@ class ChatBotFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        webSocketClient?.close()
         _binding = null
     }
 
@@ -146,6 +153,8 @@ class ChatBotFragment : Fragment() {
     }
 
     private fun init() {
+        webSocketClient?.connect()
+
         val dao = AppDatabaseProvider.getDatabase(requireActivity()).conversationDao()
         val repo = ChatBotRepositoryImpl(dao)
         chatBotViewModelFactory = ChatBotViewModelFactory(repo, userId!!)
@@ -183,31 +192,47 @@ class ChatBotFragment : Fragment() {
                 chatBotAdapter.notifyDataSetChanged()
                 binding.rvChats.scrollToPosition(chatBotAdapter.itemCount - 1)
 
-                chatBotViewModel.sendQueryToBot(message, object : IChatBot {
-                    override fun onResult(result: String, sources: List<Sources>?) {
-                        // Add bot response
-                        val botResponse = Conversations(
-                            userId = userId,
-                            resWith = ResponseType.BOT,
-                            message = result,
-                            receivedDate = getCurrentTime(),
-                            sources = sources
-                        )
-                        chats.add(botResponse)
-
-                        // Update UI
-                        chatBotAdapter.notifyDataSetChanged()
-                        binding.rvChats.scrollToPosition(chatBotAdapter.itemCount - 1)
-
-                        Handler(Looper.getMainLooper()).postDelayed({
-                            chatBotViewModel.deleteMessage(ResponseType.TYPING)
-                            chatBotViewModel.saveMessage(botResponse)
-                        }, 1000)
-                    }
-                })
+                webSocketClient?.sendMessage(message)
             }
 
             binding.etMessage.text?.clear()
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onWebSocketResult(message: String) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            try {
+                val result = Gson().fromJson(message, OuterResponse::class.java)
+
+                val botResponse = Conversations(
+                    userId = userId,
+                    resWith = ResponseType.BOT,
+                    message = result.answer.result,
+                    receivedDate = getCurrentTime(),
+                    sources = result.sources
+                )
+                chats.add(botResponse)
+
+                chatBotAdapter.notifyDataSetChanged()
+                binding.rvChats.scrollToPosition(chatBotAdapter.itemCount - 1)
+
+                delay(1000)
+                chatBotViewModel.deleteMessage(ResponseType.TYPING)
+                chatBotViewModel.saveMessage(botResponse)
+            } catch (ex: Exception) {
+                Log.e("CHAT_BOT", ex.message.toString())
+                Snackbar.make(binding.root, "Something went wrong", Snackbar.LENGTH_SHORT).show()
+                chatBotViewModel.deleteMessage(ResponseType.TYPING)
+            }
+        }
+    }
+
+    override fun onWebSocketError(error: String) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            delay(1000)
+            Snackbar.make(binding.root, error, Snackbar.LENGTH_SHORT).show()
+            webSocketClient?.ping()
         }
     }
 

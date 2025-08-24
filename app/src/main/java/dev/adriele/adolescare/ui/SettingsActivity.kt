@@ -28,6 +28,7 @@ class SettingsActivity : BaseActivity(), Utility.IUtility {
     private lateinit var loadingDialog: MyLoadingDialog
 
     private lateinit var userViewModel: UserViewModel
+    private var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +40,8 @@ class SettingsActivity : BaseActivity(), Utility.IUtility {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        userId = intent.getStringExtra("userId") ?: ""
 
         initViewModel()
         setUpTopBar()
@@ -76,6 +79,7 @@ class SettingsActivity : BaseActivity(), Utility.IUtility {
         binding.btnTheme.setOnClickListener(clickListener)
         binding.btnTerm.setOnClickListener(clickListener)
         binding.btnReset.setOnClickListener(clickListener)
+        binding.btnArchive.setOnClickListener(clickListener)
     }
 
     private fun setUpTopBar() {
@@ -124,6 +128,13 @@ class SettingsActivity : BaseActivity(), Utility.IUtility {
                         loadingDialog.show(getString(R.string.updating_password_please_wait))
                         userViewModel.updatePasswordByUsername(username, SecurityUtils.hashPasswordBcrypt(newPassword))
                     }
+                }
+                binding.btnArchive -> {
+                    val intent = Intent(this, ArchiveActivity::class.java).apply {
+                        putExtra("userId", userId)
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    }
+                    startActivity(intent)
                 }
             }
         }

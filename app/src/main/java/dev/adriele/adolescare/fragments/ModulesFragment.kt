@@ -117,17 +117,17 @@ class ModulesFragment : Fragment(), IModules.PDF {
         }
 
         lifecycleScope.launch {
-            moduleViewModel.getModuleByIdLive(module.id).observe(viewLifecycleOwner) { module ->
-                if(module != null) {
-                    val intent = Intent(requireContext(), PdfViewerActivity::class.java).apply {
-                        putExtra("module_category", module.category)
-                        putExtra("module_url", module.contentUrl)
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    }
+            val modules = moduleViewModel.getModuleById(module.id)
 
-                    loadingDialog.dismiss()
-                    startActivity(intent)
+            if(modules != null) {
+                val intent = Intent(requireContext(), PdfViewerActivity::class.java).apply {
+                    putExtra("module_category", modules.category)
+                    putExtra("module_url", modules.contentUrl)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
+
+                loadingDialog.dismiss()
+                startActivity(intent)
             }
         }
     }

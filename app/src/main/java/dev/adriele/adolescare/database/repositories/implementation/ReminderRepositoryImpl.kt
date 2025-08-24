@@ -11,6 +11,10 @@ class ReminderRepositoryImpl(
         dao.insert(reminder = reminder)
     }
 
+    override suspend fun deleteReminder(userId: String, id: Int) {
+        dao.deleteUserReminders(userId = userId, id = id)
+    }
+
     override suspend fun getReminderByTitleAndDate(
         userId: String,
         title: String,
@@ -19,6 +23,18 @@ class ReminderRepositoryImpl(
         return dao.getReminderByTitleAndDate(
             userId = userId,
             title = title,
+            date = date
+        )
+    }
+
+    override suspend fun getReminderByMessageAndDate(
+        userId: String,
+        message: String,
+        date: String
+    ): Reminder? {
+        return dao.getReminderByMessageAndDate(
+            userId = userId,
+            message = message,
             date = date
         )
     }

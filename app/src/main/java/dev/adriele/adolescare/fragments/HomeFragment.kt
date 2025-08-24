@@ -3,6 +3,7 @@ package dev.adriele.adolescare.fragments
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,9 +11,11 @@ import android.view.ViewGroup
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialFadeThrough
+import com.google.gson.Gson
 import dev.adriele.adolescal.model.OvulationInfo
 import dev.adriele.adolescare.ui.LogPeriodActivity
 import dev.adriele.adolescare.ui.PdfViewerActivity
@@ -20,6 +23,8 @@ import dev.adriele.adolescare.ui.VideoPlayerActivity
 import dev.adriele.adolescare.adapter.RecentReadWatchAdapter
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.api.response.TipResponse
+import dev.adriele.adolescare.api.websocket.WebSocketClient
+import dev.adriele.adolescare.api.websocket.contracts.IWebSocket
 import dev.adriele.adolescare.contracts.IChatBot
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.RecentReadAndWatch
@@ -42,11 +47,14 @@ import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.RecentReadWatchViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.ReminderViewModelFactory
 import dev.adriele.language.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 private const val USER_ID = "userID"
 private const val USER_NAME = "userName"
 
-class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
+class HomeFragment : Fragment(), IRecentReadAndWatch, IWebSocket, IChatBot.Tips {
     // TODO: Rename and change types of parameters
     private var userId: String? = null
     private var userName: String? = null
@@ -61,8 +69,10 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
     private lateinit var menstrualHistoryViewModelFactory: MenstrualHistoryViewModelFactory
     private lateinit var recentReadWatchViewModel: RecentReadWatchViewModel
     private lateinit var reminderViewModel: ReminderViewModel
-
+    private lateinit var archiveAdapter: RecentReadWatchAdapter
     private lateinit var moduleViewModel: ModuleViewModel
+
+    private var webSocketClient: WebSocketClient? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +103,8 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
             insets
         }
 
+        webSocketClient = WebSocketClient("todays-tips", this)
+
         initializeViewModel()
         afterInit()
 
@@ -102,6 +114,10 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
     override fun onResume() {
         super.onResume()
         menstrualHistoryViewModel.loadLatestHistory(userId!!, requireContext())
+        lifecycleScope.launch {
+            delay(2000)
+            webSocketClient?.sendMessage("todays-tips".trim())
+        }
     }
 
     private fun initializeViewModel() {
@@ -136,10 +152,14 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
         binding.llTips.visibility = View.GONE
         binding.shimmerLayout.startShimmer()
 
-        chatBotViewModel.getTodayTips(this)
+        webSocketClient?.connect()
 
         val dateNow = Utility.getCurrentDate()
         binding.tvDateNow.text = dateNow
+
+        binding.rvRecent.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        archiveAdapter = RecentReadWatchAdapter(mutableListOf(), moduleViewModel, this)
+        binding.rvRecent.adapter = archiveAdapter
 
         menstrualHistoryViewModel.ovulationInfo.observe(viewLifecycleOwner) { ovulationInfo ->
             _binding?.let {
@@ -164,10 +184,7 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
                 binding.rvRecent.visibility = View.VISIBLE
                 binding.llNoRecent.visibility = View.GONE
 
-                binding.rvRecent.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-                binding.rvRecent.adapter = RecentReadWatchAdapter(recentList, moduleViewModel, viewLifecycleOwner,
-                    this)
-                binding.rvRecent.adapter?.notifyDataSetChanged()
+                archiveAdapter.updateList(recentList)
             } else {
                 stopShimmer()
                 showNoRecent()
@@ -203,6 +220,7 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        webSocketClient?.close()
         _binding = null
     }
 
@@ -228,6 +246,25 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
         }
     }
 
+    override fun onWebSocketResult(message: String) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            binding.shimmerLayout.stopShimmer()
+            binding.shimmerLayout.visibility = View.GONE
+            binding.llTips.visibility = View.VISIBLE
+
+            val result = Gson().fromJson(message, TipResponse::class.java)
+            binding.tvDate.text = result.date
+            binding.tvTitle.text = result.title.ifEmpty { "Tips" }
+            binding.tvTips.text = result.tip
+        }
+    }
+
+    override fun onWebSocketError(error: String) {
+        Log.e("WEB_SOCKET", "Error: $error")
+        chatBotViewModel.getTodayTips(this)
+        webSocketClient?.ping()
+    }
+
     override fun onResult(result: TipResponse) {
         binding.shimmerLayout.stopShimmer()
         binding.shimmerLayout.visibility = View.GONE
@@ -241,9 +278,9 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IChatBot.Tips {
     override fun onError(message: String) {
         binding.shimmerLayout.stopShimmer()
         binding.shimmerLayout.visibility = View.GONE
-        binding.llTips.visibility = View.VISIBLE
+        binding.llTips.visibility = View.GONE
 
-        Snackbar.make(binding.root, "Failed to get todays tips: $message", Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 
     companion object {

@@ -15,12 +15,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialFadeThrough
-import com.google.android.material.transition.MaterialSharedAxis
+import com.google.gson.Gson
 import dev.adriele.adolescal.model.OvulationInfo
 import dev.adriele.adolescare.api.request.InsightsRequest
 import dev.adriele.adolescare.api.response.InsightsResponse
+import dev.adriele.adolescare.api.websocket.WebSocketClient
+import dev.adriele.adolescare.api.websocket.contracts.IWebSocket
 import dev.adriele.adolescare.contracts.IChatBot
 import dev.adriele.adolescare.ui.LogPeriodActivity
 import dev.adriele.adolescare.database.AppDatabaseProvider
@@ -39,6 +42,9 @@ import dev.adriele.adolescare.viewmodel.factory.ChatBotViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.CycleLogViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.MenstrualHistoryViewModelFactory
 import dev.adriele.calendarview.receivers.DateChangeReceiver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -46,7 +52,7 @@ import java.util.Locale
 private const val USER_ID = "userID"
 private const val USER_NAME = "userName"
 
-class MenstrualTrackerFragment : Fragment(), IChatBot.Insight {
+class MenstrualTrackerFragment : Fragment(), IChatBot.Insight, IWebSocket {
     private var userId: String? = null
     private var userName: String? = null
 
@@ -67,6 +73,8 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight {
     private var physicalActivity: MutableList<String> = mutableListOf()
 
     private lateinit var dateChangeReceiver: DateChangeReceiver
+    private var webSocketClient: WebSocketClient? = null
+    private var insightRequest: InsightsRequest? = null
     private var isExpanded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +92,8 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight {
     ): View? {
         // Inflate the layout for this fragment
         _binding = FragmentMenstrualTrackerBinding.inflate(layoutInflater, container, false)
+
+        webSocketClient = WebSocketClient("insight", this)
 
         initialize()
         initializeViewModel()
@@ -140,6 +150,8 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight {
     private fun initialize() {
         binding.tvGreeting.text = "Good Day, $userName!"
         binding.tvToday.text = Utility.getCurrentDateOnly()
+
+        webSocketClient?.connect()
     }
 
     override fun onResume() {
@@ -162,90 +174,91 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight {
 
         val listOfCategories = SymptomCategory.entries
 
-        cycleLogViewModel.getLogByDate(userId ?: "", dateFormatted ?: Utility.getCurrentCycleDate())
-            .observe(this) { existingLog ->
-                sexDrives.clear()
-                moods.clear()
-                symptoms.clear()
-                vaginalDischarge.clear()
-                digestionStool.clear()
-                pregnancyTest.clear()
-                physicalActivity.clear()
+        lifecycleScope.launch {
+            sexDrives.clear()
+            moods.clear()
+            symptoms.clear()
+            vaginalDischarge.clear()
+            digestionStool.clear()
+            pregnancyTest.clear()
+            physicalActivity.clear()
 
-                val selectedMap = mutableMapOf<String, List<String>>()
+            val existingLog = cycleLogViewModel.getLogByDate(userId = userId ?: "", date = dateFormatted ?: Utility.getCurrentCycleDate())
 
-                listOfCategories.forEach { categoryEnum ->
-                    val (hasData, options) = when (categoryEnum) {
-                        SymptomCategory.SEX_DRIVE -> existingLog?.sexActivity?.let { true to it }
-                            ?: (false to emptyList())
+            val selectedMap = mutableMapOf<String, List<String>>()
 
-                        SymptomCategory.MOOD -> existingLog?.mood?.let { true to it }
-                            ?: (false to emptyList())
+            listOfCategories.forEach { categoryEnum ->
+                val (hasData, options) = when (categoryEnum) {
+                    SymptomCategory.SEX_DRIVE -> existingLog?.sexActivity?.let { true to it }
+                        ?: (false to emptyList())
 
-                        SymptomCategory.SYMPTOMS -> existingLog?.symptoms?.let { true to it }
-                            ?: (false to emptyList())
+                    SymptomCategory.MOOD -> existingLog?.mood?.let { true to it }
+                        ?: (false to emptyList())
 
-                        SymptomCategory.VAGINAL_DISCHARGE -> existingLog?.vaginalDischarge?.let { true to it }
-                            ?: (false to emptyList())
+                    SymptomCategory.SYMPTOMS -> existingLog?.symptoms?.let { true to it }
+                        ?: (false to emptyList())
 
-                        SymptomCategory.DIGESTION_AND_STOOL -> existingLog?.digestionAndStool?.let { true to it }
-                            ?: (false to emptyList())
+                    SymptomCategory.VAGINAL_DISCHARGE -> existingLog?.vaginalDischarge?.let { true to it }
+                        ?: (false to emptyList())
 
-                        SymptomCategory.PREGNANCY_TEST -> existingLog?.pregnancyTestResult?.let { true to it }
-                            ?: (false to emptyList())
+                    SymptomCategory.DIGESTION_AND_STOOL -> existingLog?.digestionAndStool?.let { true to it }
+                        ?: (false to emptyList())
 
-                        SymptomCategory.PHYSICAL_ACTIVITY -> existingLog?.physicalActivity?.let { true to it }
-                            ?: (false to emptyList())
-                    }
+                    SymptomCategory.PREGNANCY_TEST -> existingLog?.pregnancyTestResult?.let { true to it }
+                        ?: (false to emptyList())
 
-                    if (hasData) {
-                        selectedMap[categoryEnum.name] = options
-                    }
-
-                    val labelToEnumListMap = mapOf(
-                        SymptomCategory.SEX_DRIVE to sexDrives,
-                        SymptomCategory.MOOD to moods,
-                        SymptomCategory.SYMPTOMS to symptoms,
-                        SymptomCategory.VAGINAL_DISCHARGE to vaginalDischarge,
-                        SymptomCategory.DIGESTION_AND_STOOL to digestionStool,
-                        SymptomCategory.PREGNANCY_TEST to pregnancyTest,
-                        SymptomCategory.PHYSICAL_ACTIVITY to physicalActivity
-                    )
-
-                    val isEnumNames = options.all { opt ->
-                        categoryEnum.options.any { it.name == opt }
-                    }
-
-                    val valuesToAdd = if (isEnumNames) {
-                        options
-                    } else {
-                        mapLabelsToEnumNames(
-                            options,
-                            categoryEnum.options
-                        ) { getString(it.resId) }
-                    }
-
-                    Log.d("VALUES_TO_ADD", "Category: $categoryEnum, Converted: $valuesToAdd")
-
-                    labelToEnumListMap[categoryEnum]?.addAll(valuesToAdd)
+                    SymptomCategory.PHYSICAL_ACTIVITY -> existingLog?.physicalActivity?.let { true to it }
+                        ?: (false to emptyList())
                 }
 
-                val showLL =
-                    sexDrives.isNotEmpty() || moods.isNotEmpty() || symptoms.isNotEmpty() ||
-                            vaginalDischarge.isNotEmpty() || digestionStool.isNotEmpty() ||
-                            pregnancyTest.isNotEmpty() || physicalActivity.isNotEmpty()
+                if (hasData) {
+                    selectedMap[categoryEnum.name] = options
+                }
 
-                getInsights(
-                    sexDrives = sexDrives,
-                    moods = moods,
-                    symptoms = symptoms,
-                    vaginalDischarge = vaginalDischarge,
-                    digestionAndStool = digestionStool,
-                    pregnancyTest = pregnancyTest,
-                    physicalActivity = physicalActivity,
-                    isNeedInsight = showLL
+                val labelToEnumListMap = mapOf(
+                    SymptomCategory.SEX_DRIVE to sexDrives,
+                    SymptomCategory.MOOD to moods,
+                    SymptomCategory.SYMPTOMS to symptoms,
+                    SymptomCategory.VAGINAL_DISCHARGE to vaginalDischarge,
+                    SymptomCategory.DIGESTION_AND_STOOL to digestionStool,
+                    SymptomCategory.PREGNANCY_TEST to pregnancyTest,
+                    SymptomCategory.PHYSICAL_ACTIVITY to physicalActivity
                 )
+
+                val isEnumNames = options.all { opt ->
+                    categoryEnum.options.any { it.name == opt }
+                }
+
+                val valuesToAdd = if (isEnumNames) {
+                    options
+                } else {
+                    mapLabelsToEnumNames(
+                        options,
+                        categoryEnum.options
+                    ) { getString(it.resId) }
+                }
+
+                Log.d("VALUES_TO_ADD", "Category: $categoryEnum, Converted: $valuesToAdd")
+
+                labelToEnumListMap[categoryEnum]?.addAll(valuesToAdd)
             }
+
+            val showLL =
+                sexDrives.isNotEmpty() || moods.isNotEmpty() || symptoms.isNotEmpty() ||
+                        vaginalDischarge.isNotEmpty() || digestionStool.isNotEmpty() ||
+                        pregnancyTest.isNotEmpty() || physicalActivity.isNotEmpty()
+
+            getInsights(
+                sexDrives = sexDrives,
+                moods = moods,
+                symptoms = symptoms,
+                vaginalDischarge = vaginalDischarge,
+                digestionAndStool = digestionStool,
+                pregnancyTest = pregnancyTest,
+                physicalActivity = physicalActivity,
+                isNeedInsight = showLL
+            )
+        }
     }
 
     private fun mapLabelsToEnumNames(
@@ -273,18 +286,25 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight {
             binding.cardInsight.visibility = View.GONE
             binding.shimmerInsight.visibility = View.VISIBLE
             binding.shimmerInsight.startShimmer()
-            chatBotViewModel.getInsights(
-                insightsRequest = InsightsRequest(
-                    sexDrives = sexDrives,
-                    moods = moods,
-                    symptoms = symptoms,
-                    vaginalDischarge = vaginalDischarge,
-                    digestionAndStool = digestionAndStool,
-                    pregnancyTest = pregnancyTest,
-                    physicalActivity = physicalActivity
-                ),
-                this@MenstrualTrackerFragment
+
+            insightRequest = InsightsRequest(
+                sexDrives = sexDrives,
+                moods = moods,
+                symptoms = symptoms,
+                vaginalDischarge = vaginalDischarge,
+                digestionAndStool = digestionAndStool,
+                pregnancyTest = pregnancyTest,
+                physicalActivity = physicalActivity
             )
+
+            lifecycleScope.launch {
+                delay(2000)
+                webSocketClient?.sendMessage(
+                    Gson().toJson(
+                        insightRequest
+                    )
+                )
+            }
         } else {
             binding.shimmerInsight.visibility = View.GONE
             binding.cardInsight.visibility = View.GONE
@@ -348,12 +368,14 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight {
     }
 
     override fun onError(message: String) {
-        binding.shimmerInsight.stopShimmer()
-        binding.shimmerInsight.visibility = View.GONE
-        binding.cardInsight.visibility = View.GONE
-        binding.tvLblInsight.visibility = View.GONE
-        Snackbar.make(binding.root, "Failed to load insights: $message", Snackbar.LENGTH_SHORT)
-            .show()
+        binding.let { binding ->
+            binding.shimmerInsight.stopShimmer()
+            binding.shimmerInsight.visibility = View.GONE
+            binding.cardInsight.visibility = View.GONE
+            binding.tvLblInsight.visibility = View.GONE
+            Snackbar.make(binding.root, "Failed to load insights: $message", Snackbar.LENGTH_SHORT)
+                .show()
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -422,6 +444,81 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight {
 
             isExpanded = !isExpanded
         }
+    }
+
+    override fun onWebSocketResult(message: String) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            try {
+                val gson = Gson()
+                val result = gson.fromJson(message, InsightsResponse::class.java)
+
+                val possibleConditions = result.insights.summary.possibleConditions
+                val recommendations = result.insights.summary.recommendations
+                val warnings = result.insights.summary.warnings
+                val notes = result.insights.summary.notes
+                val builder = SpannableStringBuilder()
+
+                fun appendSection(title: String, items: List<String>) {
+                    if (items.isNotEmpty()) {
+                        val start = builder.length
+                        builder.append("$title:\n")
+                        builder.setSpan(
+                            StyleSpan(Typeface.BOLD),
+                            start,
+                            builder.length,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        items.forEach { builder.append("• $it\n") }
+                        builder.append("\n")
+                    }
+                }
+
+                fun appendSection(title: String, text: String) {
+                    if (text.isNotBlank()) {
+                        val start = builder.length
+                        builder.append("$title:\n")
+                        builder.setSpan(
+                            StyleSpan(Typeface.BOLD),
+                            start,
+                            builder.length,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        builder.append(text)
+                    }
+                }
+
+                appendSection("Possible Conditions", possibleConditions)
+                appendSection("Recommendations", recommendations)
+                appendSection("Warnings", warnings)
+                appendSection("Notes", notes)
+
+                binding.tvInsight.text = builder
+            } catch (e: Exception) {
+                // fallback if message is just a plain string
+                binding.tvInsight.text = message
+            }
+
+            setupInsightToggle()
+
+            binding.shimmerInsight.stopShimmer()
+            binding.cardInsight.visibility = View.VISIBLE
+            binding.shimmerInsight.visibility = View.GONE
+        }
+    }
+
+    override fun onWebSocketError(error: String) {
+        chatBotViewModel.getInsights(
+            insightsRequest = insightRequest,
+            this@MenstrualTrackerFragment
+        )
+
+        webSocketClient?.ping()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
+        webSocketClient?.close()
     }
 
     companion object {

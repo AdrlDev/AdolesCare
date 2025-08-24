@@ -126,7 +126,9 @@ class VideosFragment : Fragment(), IModules.VIDEO {
             }
         }
 
-        moduleViewModel.getModuleByIdLive(videoList[position].id).observe(viewLifecycleOwner) { module ->
+        lifecycleScope.launch {
+            val module = moduleViewModel.getModuleById(videoList[position].id)
+
             if (module != null) {
                 loadingDialog.dismiss()
                 val intent = Intent(requireContext(), VideoPlayerActivity::class.java)

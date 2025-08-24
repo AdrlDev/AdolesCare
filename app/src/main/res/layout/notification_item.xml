@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:orientation="horizontal"
+<LinearLayout xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:padding="@dimen/margin_medium"
     android:layout_width="match_parent"
@@ -20,6 +21,7 @@
             android:textSize="@dimen/font_medium"
             android:fontFamily="@font/roboto_medium"
             android:id="@+id/tv_title"
+            android:textColor="@color/textColor"
             />
 
         <TextView
@@ -29,6 +31,7 @@
             android:textSize="@dimen/font_small"
             android:fontFamily="@font/roboto"
             android:id="@+id/tv_message"
+            android:textColor="@color/textColor"
             />
 
     </LinearLayout>
@@ -42,19 +45,23 @@
         >
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_archive"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             style="?attr/materialIconButtonStyle"
             app:icon="@drawable/round_archive_24"
-            />
+            app:iconTint="@color/textColor"
+            tools:ignore="NestedWeights" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_delete"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             style="?attr/materialIconButtonStyle"
             app:icon="@drawable/round_delete_24"
+            app:iconTint="@color/textColor"
             />
 
     </LinearLayout>

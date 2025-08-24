@@ -107,13 +107,12 @@ class PdfViewerActivity : BaseActivity(), OnUserInteractionListener {
         val moduleViewModelFactory = ModuleViewModelFactory(moduleRepository)
         moduleViewModel = ViewModelProvider(this, moduleViewModelFactory)[ModuleViewModel::class]
 
-        if (moduleId != null) {
-            moduleViewModel.getModuleByIdLive(moduleId!!).observe(this) { module ->
-                if (module != null) {
-                    moduleCategoryFromId = module.category
-                    moduleUrlFromId = module.contentUrl
-                    initializeViewPager(moduleUrlFromId!!, moduleCategoryFromId!!) // ✅ defer here if using moduleId
-                }
+        lifecycleScope.launch {
+            val module = moduleViewModel.getModuleById(moduleId ?: "")
+            if (module != null) {
+                moduleCategoryFromId = module.category
+                moduleUrlFromId = module.contentUrl
+                initializeViewPager(moduleUrlFromId ?: "", moduleCategoryFromId ?: "") // ✅ defer here if using moduleId
             }
         }
     }
@@ -159,7 +158,7 @@ class PdfViewerActivity : BaseActivity(), OnUserInteractionListener {
                 if (tabLayout.isGone) {
                     tabLayout.alpha = 0f
                     tabLayout.visibility = View.VISIBLE
-                    tabLayout.animate().alpha(1f).setDuration(300).start()
+                    tabLayout.animate().alpha(1f).setDuration(5000).start()
                 }
             }
             false

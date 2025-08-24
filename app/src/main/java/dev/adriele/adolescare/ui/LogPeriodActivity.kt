@@ -27,15 +27,20 @@ import dev.adriele.adolescare.R
 import dev.adriele.adolescare.adapter.SymptomsActivitiesAdapter
 import dev.adriele.adolescare.api.request.InsightsRequest
 import dev.adriele.adolescare.api.response.InsightsResponse
+import dev.adriele.adolescare.api.websocket.WebSocketClient
+import dev.adriele.adolescare.api.websocket.contracts.IWebSocket
 import dev.adriele.adolescare.contracts.IChatBot
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.CycleLogEntity
 import dev.adriele.adolescare.database.entities.MenstrualCycle
 import dev.adriele.adolescare.database.entities.MenstrualHistoryEntity
+import dev.adriele.adolescare.database.entities.Reminder
 import dev.adriele.adolescare.database.repositories.implementation.ChatBotRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.CycleLogRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
+import dev.adriele.adolescare.database.repositories.implementation.ReminderRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityLogPeriodBinding
+import dev.adriele.adolescare.helpers.NotificationUtils
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.helpers.Utility.animateTextViewHeight
 import dev.adriele.adolescare.helpers.enums.SymptomCategory
@@ -44,10 +49,13 @@ import dev.adriele.adolescare.model.SymptomsActivitiesQ
 import dev.adriele.adolescare.viewmodel.ChatBotViewModel
 import dev.adriele.adolescare.viewmodel.CycleLogViewModel
 import dev.adriele.adolescare.viewmodel.MenstrualHistoryViewModel
+import dev.adriele.adolescare.viewmodel.ReminderViewModel
 import dev.adriele.adolescare.viewmodel.factory.ChatBotViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.CycleLogViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.MenstrualHistoryViewModelFactory
+import dev.adriele.adolescare.viewmodel.factory.ReminderViewModelFactory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -55,12 +63,13 @@ import java.util.Calendar
 import java.util.Locale
 
 
-class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCallback {
+class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCallback, IWebSocket {
     private lateinit var binding: ActivityLogPeriodBinding
 
     private lateinit var menstrualHistoryViewModel: MenstrualHistoryViewModel
     private lateinit var cycleLogViewModel: CycleLogViewModel
     private lateinit var chatBotViewModel: ChatBotViewModel
+    private lateinit var reminderViewModel: ReminderViewModel
 
     private var sexDrives: MutableList<String> = mutableListOf()
     private var moods: MutableList<String> = mutableListOf()
@@ -79,6 +88,8 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
     private var isShowingAll = false
 
     private var symptomsActivitiesQ: MutableList<SymptomsActivitiesQ> = mutableListOf()
+    private var webSocketClient: WebSocketClient? = null
+    private var insightRequest: InsightsRequest? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
@@ -98,6 +109,8 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
         }
 
         userId = intent.getStringExtra("userId") ?: ""
+
+        webSocketClient = WebSocketClient("insight", this)
 
         initializeViewModel()
         init()
@@ -125,9 +138,16 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
         val chatRepo = ChatBotRepositoryImpl(chatBotDao)
         val chatBotViewModelFactory = ChatBotViewModelFactory(chatRepo, userId ?: "")
         chatBotViewModel = ViewModelProvider(this, chatBotViewModelFactory)[ChatBotViewModel::class]
+
+        val reminderDao = AppDatabaseProvider.getDatabase(this).reminderDao()
+        val reminderRepo = ReminderRepositoryImpl(reminderDao)
+        val reminderFactory = ReminderViewModelFactory(reminderRepo)
+        reminderViewModel = ViewModelProvider(this, reminderFactory)[ReminderViewModel::class]
     }
 
     private fun init() {
+        webSocketClient?.connect()
+
         menstrualHistoryViewModel.mensHistory.observe(this) { history ->
             if (history != null) {
                 val lmp = history.lastPeriodStart ?: Utility.getTwoWeeksAgo()
@@ -274,23 +294,49 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
             binding.cardInsight.visibility = View.GONE
             binding.shimmerInsight.visibility = View.VISIBLE
             binding.shimmerInsight.startShimmer()
-            chatBotViewModel.getInsights(
-                insightsRequest = InsightsRequest(
-                    sexDrives = sexDrives,
-                    moods = moods,
-                    symptoms = symptoms,
-                    vaginalDischarge = vaginalDischarge,
-                    digestionAndStool = digestionAndStool,
-                    pregnancyTest = pregnancyTest,
-                    physicalActivity = physicalActivity
-                ),
-                this@LogPeriodActivity
+
+            val sexDrive = backToOrigLabel(sexDrives)
+            val mood = backToOrigLabel(moods)
+            val symptom = backToOrigLabel(symptoms)
+            val vaginalDischarges = backToOrigLabel(vaginalDischarge)
+            val digestionAndStools = backToOrigLabel(digestionAndStool)
+            val pregnancyTests = backToOrigLabel(pregnancyTest)
+            val physicalActivities = backToOrigLabel(physicalActivity)
+
+            insightRequest = InsightsRequest(
+                sexDrives = sexDrive,
+                moods = mood,
+                symptoms = symptom,
+                vaginalDischarge = vaginalDischarges,
+                digestionAndStool = digestionAndStools,
+                pregnancyTest = pregnancyTests,
+                physicalActivity = physicalActivities
             )
+
+            lifecycleScope.launch {
+                delay(2000)
+                webSocketClient?.sendMessage(
+                    Gson().toJson(
+                        insightRequest
+                    )
+                )
+            }
         } else {
             binding.shimmerInsight.visibility = View.GONE
             binding.cardInsight.visibility = View.GONE
             binding.tvLblInsight.visibility = View.GONE
         }
+    }
+
+    private fun backToOrigLabel(list: MutableList<String>): MutableList<String> {
+        return list.mapNotNull { optionName ->
+            try {
+                val option = SymptomOption.valueOf(optionName)
+                getString(option.resId)
+            } catch (_: Exception) {
+                null
+            }
+        }.toMutableList()
     }
 
     private fun saveCycleDays(entity: CycleLogEntity) {
@@ -472,120 +518,123 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
         showMenstrualHistoryShimmer()
         // Observe menstrual history
         menstrualHistoryViewModel.getMensHistory(userId ?: "")
-
         symptomsActivitiesQ.clear()
 
         val listOfCategories = SymptomCategory.entries
 
-        cycleLogViewModel.getLogByDate(userId ?: "", dateFormatted ?: Utility.getCurrentCycleDate())
-            .observe(this) { existingLog ->
-                sexDrives.clear()
-                moods.clear()
-                symptoms.clear()
-                vaginalDischarge.clear()
-                digestionStool.clear()
-                pregnancyTest.clear()
-                physicalActivity.clear()
+        lifecycleScope.launch {
+            sexDrives.clear()
+            moods.clear()
+            symptoms.clear()
+            vaginalDischarge.clear()
+            digestionStool.clear()
+            pregnancyTest.clear()
+            physicalActivity.clear()
 
-                if (existingLog == null) {
-                    val cycleLog = CycleLogEntity(
-                        userId = userId ?: "",
-                        cycleDay = cycleDay ?: 0,
-                        date = dateFormatted ?: Utility.getCurrentCycleDate(),
-                        notes = binding.tvRemarks.text.toString()
-                    )
-                    saveCycleDays(cycleLog)
-                } else {
-                    val selectedMap = mutableMapOf<String, List<String>>()
+            val existingLog = cycleLogViewModel.getLogByDate(
+                userId = userId ?: "",
+                date = dateFormatted ?: Utility.getCurrentCycleDate()
+            )
 
-                    listOfCategories.forEach { categoryEnum ->
-                        val (hasData, options) = when (categoryEnum) {
-                            SymptomCategory.SEX_DRIVE -> existingLog.sexActivity?.let { true to it }
-                                ?: (false to emptyList())
+            if (existingLog == null) {
+                val cycleLog = CycleLogEntity(
+                    userId = userId ?: "",
+                    cycleDay = cycleDay ?: 0,
+                    date = dateFormatted ?: Utility.getCurrentCycleDate(),
+                    notes = binding.tvRemarks.text.toString()
+                )
+                saveCycleDays(cycleLog)
+            } else {
+                val selectedMap = mutableMapOf<String, List<String>>()
 
-                            SymptomCategory.MOOD -> existingLog.mood?.let { true to it }
-                                ?: (false to emptyList())
+                listOfCategories.forEach { categoryEnum ->
+                    val (hasData, options) = when (categoryEnum) {
+                        SymptomCategory.SEX_DRIVE -> existingLog.sexActivity?.let { true to it }
+                            ?: (false to emptyList())
 
-                            SymptomCategory.SYMPTOMS -> existingLog.symptoms?.let { true to it }
-                                ?: (false to emptyList())
+                        SymptomCategory.MOOD -> existingLog.mood?.let { true to it }
+                            ?: (false to emptyList())
 
-                            SymptomCategory.VAGINAL_DISCHARGE -> existingLog.vaginalDischarge?.let { true to it }
-                                ?: (false to emptyList())
+                        SymptomCategory.SYMPTOMS -> existingLog.symptoms?.let { true to it }
+                            ?: (false to emptyList())
 
-                            SymptomCategory.DIGESTION_AND_STOOL -> existingLog.digestionAndStool?.let { true to it }
-                                ?: (false to emptyList())
+                        SymptomCategory.VAGINAL_DISCHARGE -> existingLog.vaginalDischarge?.let { true to it }
+                            ?: (false to emptyList())
 
-                            SymptomCategory.PREGNANCY_TEST -> existingLog.pregnancyTestResult?.let { true to it }
-                                ?: (false to emptyList())
+                        SymptomCategory.DIGESTION_AND_STOOL -> existingLog.digestionAndStool?.let { true to it }
+                            ?: (false to emptyList())
 
-                            SymptomCategory.PHYSICAL_ACTIVITY -> existingLog.physicalActivity?.let { true to it }
-                                ?: (false to emptyList())
-                        }
+                        SymptomCategory.PREGNANCY_TEST -> existingLog.pregnancyTestResult?.let { true to it }
+                            ?: (false to emptyList())
 
-                        if (hasData) {
-                            selectedMap[categoryEnum.name] = options
-                        }
-
-                        Log.e("SELECTED_OPTIONS", Gson().toJson(options))
-
-                        handleCategory(hasData, categoryEnum, options)
-
-                        val labelToEnumListMap = mapOf(
-                            SymptomCategory.SEX_DRIVE to sexDrives,
-                            SymptomCategory.MOOD to moods,
-                            SymptomCategory.SYMPTOMS to symptoms,
-                            SymptomCategory.VAGINAL_DISCHARGE to vaginalDischarge,
-                            SymptomCategory.DIGESTION_AND_STOOL to digestionStool,
-                            SymptomCategory.PREGNANCY_TEST to pregnancyTest,
-                            SymptomCategory.PHYSICAL_ACTIVITY to physicalActivity
-                        )
-
-                        val isEnumNames = options.all { opt ->
-                            categoryEnum.options.any { it.name == opt }
-                        }
-
-                        val valuesToAdd = if (isEnumNames) {
-                            options
-                        } else {
-                            mapLabelsToEnumNames(
-                                options,
-                                categoryEnum.options
-                            ) { getString(it.resId) }
-                        }
-
-                        Log.d("VALUES_TO_ADD", "Category: $categoryEnum, Converted: $valuesToAdd")
-
-                        labelToEnumListMap[categoryEnum]?.addAll(valuesToAdd)
+                        SymptomCategory.PHYSICAL_ACTIVITY -> existingLog.physicalActivity?.let { true to it }
+                            ?: (false to emptyList())
                     }
 
-                    Log.d(
-                        "SYMPTOMS_RECYCLER",
-                        "Calling setupSymptomsRecyclerView with ${symptomsActivitiesQ.size} items"
+                    if (hasData) {
+                        selectedMap[categoryEnum.name] = options
+                    }
+
+                    Log.e("SELECTED_OPTIONS", Gson().toJson(options))
+
+                    handleCategory(hasData, categoryEnum, options)
+
+                    val labelToEnumListMap = mapOf(
+                        SymptomCategory.SEX_DRIVE to sexDrives,
+                        SymptomCategory.MOOD to moods,
+                        SymptomCategory.SYMPTOMS to symptoms,
+                        SymptomCategory.VAGINAL_DISCHARGE to vaginalDischarge,
+                        SymptomCategory.DIGESTION_AND_STOOL to digestionStool,
+                        SymptomCategory.PREGNANCY_TEST to pregnancyTest,
+                        SymptomCategory.PHYSICAL_ACTIVITY to physicalActivity
                     )
-                    setupSymptomsRecyclerView(selectedMap)
 
-                    val showLL =
-                        sexDrives.isNotEmpty() || moods.isNotEmpty() || symptoms.isNotEmpty() ||
-                                vaginalDischarge.isNotEmpty() || digestionStool.isNotEmpty() ||
-                                pregnancyTest.isNotEmpty() || physicalActivity.isNotEmpty()
+                    val isEnumNames = options.all { opt ->
+                        categoryEnum.options.any { it.name == opt }
+                    }
 
-                    Log.d("IS_SHOW", showLL.toString())
+                    val valuesToAdd = if (isEnumNames) {
+                        options
+                    } else {
+                        mapLabelsToEnumNames(
+                            options,
+                            categoryEnum.options
+                        ) { getString(it.resId) }
+                    }
 
-                    binding.rvSelectedSymptoms.visibility = if (showLL) View.VISIBLE else View.GONE
+                    Log.d("VALUES_TO_ADD", "Category: $categoryEnum, Converted: $valuesToAdd")
 
-                    getInsights(
-                        sexDrives = sexDrives,
-                        moods = moods,
-                        symptoms = symptoms,
-                        vaginalDischarge = vaginalDischarge,
-                        digestionAndStool = digestionStool,
-                        pregnancyTest = pregnancyTest,
-                        physicalActivity = physicalActivity,
-                        isNeedInsight = showLL
-                    )
+                    labelToEnumListMap[categoryEnum]?.addAll(valuesToAdd)
                 }
-                hideShimmer()
+
+                Log.d(
+                    "SYMPTOMS_RECYCLER",
+                    "Calling setupSymptomsRecyclerView with ${symptomsActivitiesQ.size} items"
+                )
+                setupSymptomsRecyclerView(selectedMap)
+
+                val showLL =
+                    sexDrives.isNotEmpty() || moods.isNotEmpty() || symptoms.isNotEmpty() ||
+                            vaginalDischarge.isNotEmpty() || digestionStool.isNotEmpty() ||
+                            pregnancyTest.isNotEmpty() || physicalActivity.isNotEmpty()
+
+                Log.d("IS_SHOW", showLL.toString())
+
+                binding.rvSelectedSymptoms.visibility = if (showLL) View.VISIBLE else View.GONE
+
+                getInsights(
+                    sexDrives = sexDrives,
+                    moods = moods,
+                    symptoms = symptoms,
+                    vaginalDischarge = vaginalDischarge,
+                    digestionAndStool = digestionStool,
+                    pregnancyTest = pregnancyTest,
+                    physicalActivity = physicalActivity,
+                    isNeedInsight = showLL
+                )
             }
+            hideShimmer()
+        }
     }
 
     private fun handleCategory(
@@ -613,6 +662,61 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
     }
 
     private fun setupSymptomsRecyclerView(preselected: Map<String, List<String>>) {
+
+        lifecycleScope.launch {
+            val today = Utility.getCurrentDate()
+
+            preselected.forEach { (categoryKey, selectedOptions) ->
+                val category = try {
+                    SymptomCategory.valueOf(categoryKey)
+                } catch (_: Exception) {
+                    return@forEach
+                }
+
+                val categoryLabel = getString(category.labelRes)
+                val title = "$categoryLabel log activity" // e.g. MOOD log activity
+
+                // Check if reminder for this category already exists today
+                val existing =
+                    reminderViewModel.getReminderByTitleAndDate(userId ?: "", title, today)
+                if (existing != null) return@forEach
+
+                // Convert option names to localized labels
+                val optionLabels = backToOrigLabel(selectedOptions.toMutableList())
+
+                if (optionLabels.isEmpty()) return@forEach
+
+                val message = "You logged $categoryLabel: ${optionLabels.joinToString(", ")}"
+
+                val reminder = Reminder(
+                    userId = userId ?: "",
+                    title = title,
+                    message = message,
+                    dateTime = today,
+                    type = "Reminders"
+                )
+
+                lifecycleScope.launch {
+                    val isReminderExist = reminderViewModel.getReminderByMessageAndDate(
+                        userId = userId ?: "",
+                        message = message,
+                        date = today
+                    )
+
+                    if (isReminderExist == null) {
+                        reminderViewModel.insertReminder(reminder)
+
+                        NotificationUtils.showNotification(
+                            context = applicationContext,
+                            title = title,
+                            message = message,
+                            userId = userId ?: ""
+                        )
+                    }
+                }
+            }
+        }
+
         // Decide which items to show
         val visibleItems = if (isShowingAll) {
             symptomsActivitiesQ
@@ -636,7 +740,10 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
             val startHeight = binding.rvSelectedSymptoms.height
 
             binding.rvSelectedSymptoms.measure(
-                View.MeasureSpec.makeMeasureSpec(binding.rvSelectedSymptoms.width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(
+                    binding.rvSelectedSymptoms.width,
+                    View.MeasureSpec.EXACTLY
+                ),
                 View.MeasureSpec.UNSPECIFIED
             )
             val targetHeight = binding.rvSelectedSymptoms.measuredHeight
@@ -681,6 +788,23 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
                 )
 
                 menstrualHistoryViewModel.updateMenstrualHistory(updated)
+
+                val reminder = Reminder(
+                    userId = userId ?: "",
+                    title = "Menstrual History",
+                    message = "Your last menstrual period updated to $formattedDate.",
+                    dateTime = Utility.getCurrentDate(),
+                    type = "Reminders"
+                )
+
+                reminderViewModel.insertReminder(reminder)
+
+                NotificationUtils.showNotification(
+                    context = this@LogPeriodActivity,
+                    title = "Menstrual History",
+                    message = "Your last menstrual period updated to $formattedDate.",
+                    userId = userId ?: ""
+                )
             } else {
                 // If no existing record, you may want to insert instead
                 val newEntry = MenstrualHistoryEntity(
@@ -696,7 +820,7 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
         }
 
         menstrualHistoryViewModel.updateStatus.observe(this) { (isUpdated, message) ->
-            if(isUpdated) {
+            if (isUpdated) {
                 showMenstrualHistoryShimmer()
                 menstrualHistoryViewModel.getMensHistory(userId ?: "")
                 Snackbar.make(binding.main, message, Snackbar.LENGTH_SHORT).show()
@@ -709,5 +833,74 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
         binding.shimmerLlCalendar.startShimmer()
         binding.shimmerLlCalendar.visibility = View.VISIBLE
         binding.calendarCard.visibility = View.GONE
+    }
+
+    override fun onWebSocketResult(message: String) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            try {
+                val gson = Gson()
+                val result = gson.fromJson(message, InsightsResponse::class.java)
+
+                val possibleConditions = result.insights.summary.possibleConditions
+                val recommendations = result.insights.summary.recommendations
+                val warnings = result.insights.summary.warnings
+                val notes = result.insights.summary.notes
+                val builder = SpannableStringBuilder()
+
+                fun appendSection(title: String, items: List<String>) {
+                    if (items.isNotEmpty()) {
+                        val start = builder.length
+                        builder.append("$title:\n")
+                        builder.setSpan(
+                            StyleSpan(Typeface.BOLD),
+                            start,
+                            builder.length,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        items.forEach { builder.append("• $it\n") }
+                        builder.append("\n")
+                    }
+                }
+
+                fun appendSection(title: String, text: String) {
+                    if (text.isNotBlank()) {
+                        val start = builder.length
+                        builder.append("$title:\n")
+                        builder.setSpan(
+                            StyleSpan(Typeface.BOLD),
+                            start,
+                            builder.length,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        builder.append(text)
+                    }
+                }
+
+                appendSection("Possible Conditions", possibleConditions)
+                appendSection("Recommendations", recommendations)
+                appendSection("Warnings", warnings)
+                appendSection("Notes", notes)
+
+                binding.tvInsight.text = builder
+            } catch (e: Exception) {
+                // fallback if message is just a plain string
+                binding.tvInsight.text = message
+            }
+
+            setupInsightToggle()
+
+            binding.shimmerInsight.stopShimmer()
+            binding.cardInsight.visibility = View.VISIBLE
+            binding.shimmerInsight.visibility = View.GONE
+        }
+    }
+
+    override fun onWebSocketError(error: String) {
+        chatBotViewModel.getInsights(
+            insightsRequest = insightRequest,
+            this@LogPeriodActivity
+        )
+
+        webSocketClient?.ping()
     }
 }

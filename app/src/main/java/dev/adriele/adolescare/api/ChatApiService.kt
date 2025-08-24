@@ -18,5 +18,5 @@ interface ChatApiService {
     suspend fun getTodayTip(): Response<TipResponse>
 
     @POST("/insights")
-    suspend fun getInsights(@Body request: InsightsRequest): Response<InsightsResponse>
+    suspend fun getInsights(@Body request: InsightsRequest?): Response<InsightsResponse>
 }

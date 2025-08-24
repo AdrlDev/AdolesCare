@@ -15,7 +15,9 @@ import androidx.work.workDataOf
 import dev.adriele.adolescare.database.entities.Reminder
 import dev.adriele.adolescare.database.repositories.ReminderRepository
 import dev.adriele.adolescare.helpers.worker.DelayedPeriodWorker
+import dev.adriele.adolescare.helpers.worker.PredictedDatesWorker
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 class ReminderViewModel(private val repository: ReminderRepository) : ViewModel() {
     private var _reminder: MutableLiveData<List<Reminder>> = MutableLiveData()
@@ -26,7 +28,18 @@ class ReminderViewModel(private val repository: ReminderRepository) : ViewModel(
             try {
                 repository.insertReminder(reminder)
             } catch (e: Exception) {
-                Log.e("UserViewModel", "Error inserting notification", e)
+                Log.e("UserViewModel", "Error inserting reminder", e)
+            }
+        }
+    }
+
+    fun deleteReminder(userId: String, id: Int) {
+        viewModelScope.launch {
+            try {
+                repository.deleteReminder(userId, id)
+                getAllReminder(userId)
+            } catch (e: Exception) {
+                Log.e("UserViewModel", "Error deleting reminder", e)
             }
         }
     }
@@ -45,6 +58,10 @@ class ReminderViewModel(private val repository: ReminderRepository) : ViewModel(
 
     suspend fun getReminderByTitleAndDate(userId: String, title: String, date: String): Reminder? {
         return repository.getReminderByTitleAndDate(userId, title, date)
+    }
+
+    suspend fun getReminderByMessageAndDate(userId: String, message: String, date: String): Reminder? {
+        return repository.getReminderByTitleAndDate(userId, message, date)
     }
 
     fun scheduleDailyDelayedPeriodWorker(context: Context, userId: String) {
@@ -68,5 +85,28 @@ class ReminderViewModel(private val repository: ReminderRepository) : ViewModel(
                 request
             )
     }
+
+    fun scheduleDailyPredictedDatesWorker(context: Context, userId: String) {
+        val input = workDataOf("userId" to userId)
+
+        val request = PeriodicWorkRequestBuilder<PredictedDatesWorker>(1, TimeUnit.DAYS)
+            .setInputData(input)
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                    .setRequiresBatteryNotLow(true)
+                    .build()
+            )
+            .addTag("PredictedDatesWorker")
+            .build()
+
+        WorkManager.getInstance(context)
+            .enqueueUniquePeriodicWork(
+                "CheckPredictedDates",
+                ExistingPeriodicWorkPolicy.KEEP,
+                request
+            )
+    }
+
 
 }

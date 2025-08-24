@@ -17,19 +17,22 @@ import dev.adriele.adolescare.BaseActivity
 import dev.adriele.adolescare.adapter.SymptomsActivitiesAdapter
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.repositories.implementation.CycleLogRepositoryImpl
+import dev.adriele.adolescare.database.repositories.implementation.ReminderRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityAddSymptomsBinding
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.helpers.enums.SymptomCategory
 import dev.adriele.adolescare.model.SymptomsActivitiesQ
 import dev.adriele.adolescare.viewmodel.CycleLogViewModel
+import dev.adriele.adolescare.viewmodel.ReminderViewModel
 import dev.adriele.adolescare.viewmodel.factory.CycleLogViewModelFactory
+import dev.adriele.adolescare.viewmodel.factory.ReminderViewModelFactory
 import dev.adriele.language.R
 import kotlinx.coroutines.launch
 
 class AddSymptomsActivity : BaseActivity() {
     private lateinit var binding: ActivityAddSymptomsBinding
     private lateinit var cycleLogViewModel: CycleLogViewModel
-
+    private lateinit var reminderViewModel: ReminderViewModel
     private var userId: String? = null
     private var dateCycle: String? = null
     private var cycleDay: Int = 0
@@ -157,6 +160,11 @@ class AddSymptomsActivity : BaseActivity() {
         val cycleRepository = CycleLogRepositoryImpl(cycleLogDao, cycleDao)
         val cycleViewModelFactory = CycleLogViewModelFactory(cycleRepository)
         cycleLogViewModel = ViewModelProvider(this, cycleViewModelFactory)[CycleLogViewModel::class]
+
+        val reminderDao = AppDatabaseProvider.getDatabase(this).reminderDao()
+        val reminderRepo = ReminderRepositoryImpl(reminderDao)
+        val reminderFactory = ReminderViewModelFactory(reminderRepo)
+        reminderViewModel = ViewModelProvider(this, reminderFactory)[ReminderViewModel::class]
     }
 
     @SuppressLint("SetTextI18n")
@@ -210,9 +218,10 @@ class AddSymptomsActivity : BaseActivity() {
     }
 
     private fun loadAndPrefillCycleData() {
-        userId?.let { uid ->
-            dateCycle?.let { cycleDate ->
-                cycleLogViewModel.getLogByDate(uid, cycleDate).observe(this@AddSymptomsActivity) { logCycle ->
+        lifecycleScope.launch {
+            userId?.let { uid ->
+                dateCycle?.let { cycleDate ->
+                    val logCycle = cycleLogViewModel.getLogByDate(uid, cycleDate)
                     logCycle?.let {
                         cycleDay = it.cycleDay
                         val selectedMap = mutableMapOf<String, List<String>>()

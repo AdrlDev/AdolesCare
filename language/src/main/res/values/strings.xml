@@ -236,6 +236,9 @@
     <string name="select_last_period_date">Select your last period date</string>
     <string name="select_birthday">Select your birthday</string>
 
+    <string name="archive_reminder">Archive Reminder</string>
+    <string name="archive_recent_read_and_watch">Archive Recent Read And Watch</string>
+
     <string name="login_failed_user_not_found">Login failed, user not found.</string>
     <string name="login_failed_incorrect_password">Login failed, incorrect password.</string>
     <string name="password_updated_successfully">Password updated successfully</string>
