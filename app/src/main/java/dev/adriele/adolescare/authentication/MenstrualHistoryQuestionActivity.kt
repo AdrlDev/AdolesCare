@@ -14,10 +14,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.transition.platform.MaterialFadeThrough
 import com.google.android.material.transition.platform.MaterialSharedAxis
 import dev.adriele.adolescare.BaseActivity
-import dev.adriele.adolescare.R
 import dev.adriele.adolescare.ui.DashboardActivity
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.authentication.adapter.PagerAdapter
@@ -115,7 +113,7 @@ class MenstrualHistoryQuestionActivity : BaseActivity(), FragmentDataListener {
 
         pagerAdapter.updateFragments(fragments)
 
-        updateStepperUI(1, false)
+        updateStepperUI(1)
 
         vp.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
@@ -324,18 +322,28 @@ class MenstrualHistoryQuestionActivity : BaseActivity(), FragmentDataListener {
     }
 
     private fun setFragments(pages: List<Fragment>, isFinish: Boolean) {
+        if(isFinish) {
+            val bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
+            startActivity(Intent(this, DashboardActivity::class.java)
+                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .putExtra("userId", userId),
+                bundle
+            )
+            return
+        }
+
         pagerAdapter.updateFragments(pages)
         vp.currentItem = 0
 
-        val stepCount = if (isFinish) 1 else pagerAdapter.itemCount
-        updateStepperUI(stepCount, isFinish)
+        val stepCount = pagerAdapter.itemCount
+        updateStepperUI(stepCount)
         btnNext.text = if (stepCount == 1) "Finish" else "Next"
 
         Utility.setupStepper(stepCount, resources, this, stepper)
     }
 
-    private fun updateStepperUI(stepCount: Int, isFinish: Boolean) {
-        val shouldShow = stepCount > 1 || isFinish
+    private fun updateStepperUI(stepCount: Int) {
+        val shouldShow = stepCount > 1
         stepper.visibility = if (shouldShow) View.VISIBLE else View.GONE
         binding.tvStep.visibility = if (shouldShow) View.VISIBLE else View.GONE
         btnNext.visibility = if (shouldShow) View.VISIBLE else View.GONE

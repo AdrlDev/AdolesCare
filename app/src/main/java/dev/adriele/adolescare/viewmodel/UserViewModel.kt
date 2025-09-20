@@ -56,6 +56,10 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         }
     }
 
+    suspend fun getUserNameById(userId: String): User? {
+        return repository.getUserByUID(userId)
+    }
+
     fun updatePasswordByUsername(username: String, newPassword: String) {
         viewModelScope.launch {
             try {

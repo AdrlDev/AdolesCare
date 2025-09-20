@@ -7,8 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitInstance {
-    private const val RAILWAY_BASE_URL = "https://adrldev.up.railway.app" // Or your LAN IP
-    private const val RENDER_BASE_USER = "https://adolescare-api.onrender.com"
+    private const val RENDER_BASE_USER = "http://72.60.193.190/adolescare/"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

@@ -183,7 +183,7 @@ class ChatBotFragment : Fragment(), IWebSocket {
             binding.rvChats.scrollToPosition(chatBotAdapter.itemCount - 1)
 
             lifecycleScope.launch {
-                delay(2000)
+                delay(500)
 
                 // Add typing indicator
                 val typing = Conversations(userId = userId, resWith = ResponseType.TYPING)
@@ -230,8 +230,8 @@ class ChatBotFragment : Fragment(), IWebSocket {
 
     override fun onWebSocketError(error: String) {
         lifecycleScope.launch(Dispatchers.Main) {
-            delay(1000)
-            Snackbar.make(binding.root, error, Snackbar.LENGTH_SHORT).show()
+            delay(100)
+            Log.e("CHAT_BOT", error)
             webSocketClient?.ping()
         }
     }

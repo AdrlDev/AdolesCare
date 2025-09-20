@@ -11,6 +11,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
@@ -68,6 +69,11 @@ import com.google.gson.reflect.TypeToken
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.text.PDFTextStripper
+import com.tom_roush.pdfbox.text.PDFTextStripperByArea
+import com.tom_roush.pdfbox.text.TextPosition
+import dev.adriele.adolescare.model.PdfWord
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -651,6 +657,17 @@ object Utility {
         return modules
     }
 
+    /** Extension to convert PDFView page to bitmap */
+    fun com.github.barteksc.pdfviewer.PDFView.toBitmap(pageIndex: Int): Bitmap {
+        val width = this.width
+        val height = this.height
+        val bitmap = createBitmap(width, height)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.WHITE)
+        this.draw(canvas)
+        return bitmap
+    }
+
     fun loadLearningVideos(context: Context): List<LearningModule> {
         val modules = mutableListOf<LearningModule>()
         val assetManager = context.assets
@@ -761,8 +778,14 @@ object Utility {
         pageIndex: Int,
         query: String
     ): Bitmap = withContext(Dispatchers.IO) {
-        val renderer = PdfRenderer(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY))
-        val page = renderer.openPage(pageIndex)
+        val renderer = PdfRenderer(
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+        )
+
+        // 🔑 Ensure 0-based and valid index
+        val safeIndex = (pageIndex - 1).coerceIn(0, renderer.pageCount - 1)
+
+        val page = renderer.openPage(safeIndex)
 
         val bitmap = createBitmap(page.width, page.height)
         page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
@@ -792,6 +815,40 @@ object Utility {
         }
 
         bitmap
+    }
+
+    fun extractWordsFromPage(file: File, pageIndex: Int): List<PdfWord> {
+        val document = PDDocument.load(file)
+        val stripper = object : PDFTextStripperByArea() {}
+        val words = mutableListOf<PdfWord>()
+
+        val page = document.getPage(pageIndex)
+        val mediaBox = page.mediaBox
+
+        // Extract words using text positions
+        val textStripper = object : PDFTextStripper() {
+            override fun writeString(text: String?, textPositions: MutableList<TextPosition>?) {
+                textPositions?.forEach {
+                    val x = it.xDirAdj
+                    val y = mediaBox.height - it.yDirAdj
+                    val width = it.widthDirAdj
+                    val height = it.heightDir
+                    words.add(
+                        PdfWord(
+                            it.unicode,
+                            RectF(x, y, x + width, y + height)
+                        )
+                    )
+                }
+            }
+        }
+
+        textStripper.startPage = pageIndex + 1
+        textStripper.endPage = pageIndex + 1
+        textStripper.getText(document) // triggers writeString
+
+        document.close()
+        return words
     }
 
     fun getPdfPageCount(context: Context, assetPath: String): Int {

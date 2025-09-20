@@ -27,7 +27,7 @@ class WebSocketClient(
             .build()
 
         val request = Request.Builder()
-            .url("wss://websocket-springboot-kotlin.onrender.com/${endpoint.trim()}")
+            .url("ws://72.60.193.190/ws/${endpoint.trim()}")
             .build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {

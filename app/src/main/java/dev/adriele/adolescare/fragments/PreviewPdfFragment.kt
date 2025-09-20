@@ -1,62 +1,67 @@
 package dev.adriele.adolescare.fragments
 
+import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
-import android.net.Uri
+import android.graphics.*
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.net.toUri
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.util.FitPolicy
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialFadeThrough
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.Text
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import dev.adriele.adolescare.databinding.FragmentPreviewPdfBinding
 import dev.adriele.adolescare.dialogs.MyLoadingDialog
-import dev.adriele.adolescare.helpers.Utility
-import dev.adriele.adolescare.helpers.Utility.generateHighlightedBitmap
 import dev.adriele.adolescare.helpers.contracts.OnUserInteractionListener
 import dev.adriele.adolescare.viewmodel.PdfSearchViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import dev.adriele.adolescare.helpers.Utility.toBitmap
 
 private const val PDF_URI = "pdfUri"
 
 class PreviewPdfFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var pdfUri: String? = null
 
+    private var pdfUri: String? = null
     private var _binding: FragmentPreviewPdfBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var loadingDialog: MyLoadingDialog
     private lateinit var searchViewModel: PdfSearchViewModel
-    private var currentHighlightedPage = -1
     private var interactionListener: OnUserInteractionListener? = null
+
+    private val pageTextMap = mutableMapOf<Int, List<Text.TextBlock>>()
+    private var currentPage = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            pdfUri = it.getString(PDF_URI)
-        }
+        arguments?.let { pdfUri = it.getString(PDF_URI) }
         enterTransition = MaterialFadeThrough()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        _binding = FragmentPreviewPdfBinding.inflate(layoutInflater, container, false)
-
+    ): View {
+        _binding = FragmentPreviewPdfBinding.inflate(inflater, container, false)
         loadingDialog = MyLoadingDialog(requireContext())
 
         initializeViewModel()
         initializePdf()
-
         return binding.root
     }
 
@@ -66,21 +71,19 @@ class PreviewPdfFragment : Fragment() {
         searchViewModel.searchMatches.observe(viewLifecycleOwner) { pages ->
             if (pages.isNotEmpty()) {
                 val pageIndex = pages.first()
-
-                val file = Utility.getFileFromUri(requireContext(), pdfUri!!.toUri())
+                val query = searchViewModel.searchQuery.value ?: ""
 
                 lifecycleScope.launch {
-                    val highlightedBitmap = generateHighlightedBitmap(
-                        file = file,
-                        pageIndex = pageIndex,
-                        query = searchViewModel.searchQuery.value ?: ""
-                    )
+                    val (bitmap, blocks) = getPageTextBitmap(pageIndex)
+                    pageTextMap[pageIndex] = blocks
+
+                    val highlighted = highlightQuery(bitmap, blocks, query)
 
                     withContext(Dispatchers.Main) {
-                        binding.highlightOverlay.setImageBitmap(highlightedBitmap)
+                        binding.highlightOverlay.setImageBitmap(highlighted)
                         binding.highlightOverlay.visibility = View.VISIBLE
                         binding.pdfViewer.jumpTo(pageIndex, true)
-                        currentHighlightedPage = pageIndex
+                        currentPage = pageIndex
                     }
                 }
             }
@@ -95,71 +98,105 @@ class PreviewPdfFragment : Fragment() {
     }
 
     private fun initializePdf() {
-        if (pdfUri != null) {
+        pdfUri?.let { uri ->
             loadingDialog.show("Loading PDF...")
-            initializePdf(pdfUri?.toUri()!!)
-        }
-    }
-
-    private fun initializePdf(uri: Uri) {
-        try {
-            binding.pdfViewer.fromUri(uri) // Place this in assets folder
+            binding.pdfViewer.fromUri(uri.toUri())
                 .enableSwipe(true)
                 .swipeHorizontal(false)
                 .enableDoubletap(true)
                 .defaultPage(0)
                 .enableAntialiasing(true)
-                .enableAnnotationRendering(false)
                 .pageFitPolicy(FitPolicy.WIDTH)
-                .fitEachPage(false) // fit each page to the view, else smaller pages are scaled relative to largest page.
-                .pageSnap(false) // snap pages to screen boundaries
-                .pageFling(false) // make a fling change only a single page like ViewPager
-                .nightMode(isNightMode()) // toggle night mode
-                .onLoad {
-                    // PDF successfully loaded, hide loading
-                    loadingDialog.dismiss()
-                }
-                .onPageChange { page, pageCount ->
-                    if (page != currentHighlightedPage) {
-                        binding.highlightOverlay.visibility = View.GONE
-                    }
+                .onLoad { loadingDialog.dismiss() }
+                .onPageChange { page, _ ->
+                    currentPage = page
+                    binding.highlightOverlay.visibility = View.GONE
                 }
                 .onTap {
                     interactionListener?.onUserInteraction()
                     true
                 }
-                .onError {
-                    loadingDialog.dismiss()
-                    Snackbar.make(binding.root, "Failed to load PDF", Snackbar.LENGTH_LONG).show()
-                }
                 .load()
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 
-    private fun isNightMode(): Boolean {
-        val currentNightMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
-        return currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private suspend fun getPageTextBitmap(pageIndex: Int): Pair<Bitmap, List<Text.TextBlock>> {
+        return withContext(Dispatchers.IO) {
+            val bitmap = binding.pdfViewer.toBitmap(pageIndex)
+
+            val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+            val inputImage = InputImage.fromBitmap(bitmap, 0)
+
+            val visionText = suspendCancellableCoroutine<Text> { cont ->
+                recognizer.process(inputImage)
+                    .addOnSuccessListener { cont.resume(it, null) }
+                    .addOnFailureListener { cont.resumeWith(Result.failure(it)) }
+            }
+
+            bitmap to visionText.textBlocks
+        }
     }
 
+    private fun highlightQuery(bitmap: Bitmap, textBlocks: List<Text.TextBlock>, query: String): Bitmap {
+        val canvas = Canvas(bitmap)
+        val paint = Paint().apply {
+            style = Paint.Style.FILL
+            color = Color.YELLOW
+            alpha = 120
+        }
+
+        textBlocks.forEach { block ->
+            if (block.text.contains(query, ignoreCase = true)) {
+                block.boundingBox?.let { canvas.drawRect(it, paint) }
+            }
+        }
+        return bitmap
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Now binding is ready
+        binding.highlightOverlay.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val x = event.x.toInt()
+                val y = event.y.toInt()
+                val blocks = pageTextMap[currentPage] ?: return@setOnTouchListener false
+
+                blocks.forEach { block ->
+                    block.boundingBox?.let { box ->
+                        if (box.contains(x, y)) {
+                            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = ClipData.newPlainText("PDF Text", block.text)
+                            clipboard.setPrimaryClip(clip)
+                            Snackbar.make(binding.root, "Copied: ${block.text}", Snackbar.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            true
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is OnUserInteractionListener) {
-            interactionListener = context
-        }
+        if (context is OnUserInteractionListener) interactionListener = context
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        interactionListener = null
     }
 
     companion object {
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(pdfUri: String, onUserInteractionListener: OnUserInteractionListener) =
+        fun newInstance(pdfUri: String, listener: OnUserInteractionListener) =
             PreviewPdfFragment().apply {
-                arguments = Bundle().apply {
-                    putString(PDF_URI, pdfUri)
-                }
-
-                this.interactionListener = onUserInteractionListener
+                arguments = Bundle().apply { putString(PDF_URI, pdfUri) }
+                interactionListener = listener
             }
     }
 }

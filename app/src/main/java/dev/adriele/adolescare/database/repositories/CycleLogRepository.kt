@@ -1,5 +1,6 @@
 package dev.adriele.adolescare.database.repositories
 
+import androidx.lifecycle.LiveData
 import dev.adriele.adolescare.database.entities.CycleLogEntity
 import dev.adriele.adolescare.database.entities.MenstrualCycle
 
@@ -11,6 +12,9 @@ interface CycleLogRepository {
     suspend fun getLogByDate(userId: String, date: String): CycleLogEntity?
 
     suspend fun getMenstrualCycle(userId: String, date: String, lmp: String): MenstrualCycle?
+
+    suspend fun getMenstrualCycle(userId: String, lmp: String): MenstrualCycle?
+    suspend fun updateCycle(lmp: String, days: Int, weeks: Int, userId: String)
 
     suspend fun updateListsByUserIdAndDate(
         userId: String,
@@ -24,5 +28,7 @@ interface CycleLogRepository {
         digestionAndStool: List<String>?,
         physicalActivity: List<String>?
     )
+
+    fun getAllCycles(userId: String): LiveData<List<MenstrualCycle>>
 
 }

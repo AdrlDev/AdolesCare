@@ -78,8 +78,10 @@ class SignUpActivity : BaseActivity(), TermsPrivacyClickListener, Utility.LoginH
         userViewModel.insertStatus.observe(this) { (success, uid) ->
             if (success) {
                 loadingDialog.dismiss()
-                val bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
-                startActivity(Intent(this, CompleteSetupActivity::class.java).putExtra("userId", uid), bundle)
+                startActivity(Intent(this, CompleteSetupActivity::class.java)
+                    .apply {
+                        putExtra("userId", uid)
+                    })
                 finish()
             } else {
                 loadingDialog.dismiss()

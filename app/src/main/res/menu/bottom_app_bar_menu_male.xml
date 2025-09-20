@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_home"
+        android:title="@string/title_home"
+        android:icon="@drawable/round_home_24"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_module"
+        android:title="@string/title_module"
+        android:icon="@drawable/round_auto_stories_24"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_video"
+        android:title="@string/title_video"
+        android:icon="@drawable/round_videocam_24"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_chat_bot"
+        android:title="@string/title_chat_bot"
+        android:icon="@drawable/round_support_agent_24"
+        app:showAsAction="ifRoom" />
+</menu>

@@ -58,6 +58,7 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IWebSocket, IChatBot.Tips 
     // TODO: Rename and change types of parameters
     private var userId: String? = null
     private var userName: String? = null
+    private var isMale: Boolean = false
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -79,6 +80,7 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IWebSocket, IChatBot.Tips 
         arguments?.let {
             userId = it.getString(USER_ID)
             userName = it.getString(USER_NAME)
+            isMale = it.getBoolean("isMale")
         }
 
         exitTransition = MaterialFadeThrough()
@@ -108,14 +110,17 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IWebSocket, IChatBot.Tips 
         initializeViewModel()
         afterInit()
 
+        binding.llDailyLogs.visibility = if(isMale) View.GONE else View.VISIBLE
+
         return binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        menstrualHistoryViewModel.loadLatestHistory(userId!!, requireContext())
+
+        menstrualHistoryViewModel.loadLatestHistory(userId ?: "", requireContext())
         lifecycleScope.launch {
-            delay(2000)
+            delay(500)
             webSocketClient?.sendMessage("todays-tips".trim())
         }
     }
@@ -123,7 +128,7 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IWebSocket, IChatBot.Tips 
     private fun initializeViewModel() {
         val conversationDao = AppDatabaseProvider.getDatabase(requireActivity()).conversationDao()
         val chatbotRepo = ChatBotRepositoryImpl(conversationDao)
-        chatBotViewModelFactory = ChatBotViewModelFactory(chatbotRepo, userId!!)
+        chatBotViewModelFactory = ChatBotViewModelFactory(chatbotRepo, userId ?: "")
         chatBotViewModel = ViewModelProvider(this, chatBotViewModelFactory)[ChatBotViewModel::class]
 
         val menstrualHistoryDao = AppDatabaseProvider.getDatabase(requireActivity()).menstrualHistoryDao()
@@ -260,8 +265,7 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IWebSocket, IChatBot.Tips 
     }
 
     override fun onWebSocketError(error: String) {
-        Log.e("WEB_SOCKET", "Error: $error")
-        chatBotViewModel.getTodayTips(this)
+        Log.e("INSIGHT", error)
         webSocketClient?.ping()
     }
 
@@ -286,11 +290,12 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IWebSocket, IChatBot.Tips 
     companion object {
         // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(userId: String, userName: String) =
+        fun newInstance(userId: String, userName: String, isMale: Boolean) =
             HomeFragment().apply {
                 arguments = Bundle().apply {
                     putString(USER_ID, userId)
                     putString(USER_NAME, userName)
+                    putBoolean("isMale", isMale)
                 }
             }
     }

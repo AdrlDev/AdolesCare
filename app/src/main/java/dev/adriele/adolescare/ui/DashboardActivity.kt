@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.transition.TransitionManager
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -29,8 +30,11 @@ import dev.adriele.adolescare.BaseActivity
 import dev.adriele.adolescare.R
 import dev.adriele.adolescare.authentication.LoginActivity
 import dev.adriele.adolescare.database.AppDatabaseProvider
+import dev.adriele.adolescare.database.dao.UserDao
 import dev.adriele.adolescare.database.entities.LearningModule
+import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.ModuleRepositoryImpl
+import dev.adriele.adolescare.database.repositories.implementation.UserRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityDashboardBinding
 import dev.adriele.adolescare.dialogs.MyLoadingDialog
 import dev.adriele.adolescare.fragments.ChatBotFragment
@@ -39,8 +43,12 @@ import dev.adriele.adolescare.fragments.MenstrualTrackerFragment
 import dev.adriele.adolescare.fragments.ModulesFragment
 import dev.adriele.adolescare.fragments.VideosFragment
 import dev.adriele.adolescare.helpers.Utility
+import dev.adriele.adolescare.viewmodel.MenstrualHistoryViewModel
 import dev.adriele.adolescare.viewmodel.ModuleViewModel
+import dev.adriele.adolescare.viewmodel.UserViewModel
+import dev.adriele.adolescare.viewmodel.factory.MenstrualHistoryViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.ModuleViewModelFactory
+import dev.adriele.adolescare.viewmodel.factory.UserViewModelFactory
 import dev.adriele.language.LanguageManager
 import kotlinx.coroutines.launch
 
@@ -53,11 +61,17 @@ class DashboardActivity : BaseActivity() {
     private lateinit var btnMenu: ImageView
 
     private lateinit var moduleViewModel: ModuleViewModel
+    private lateinit var userRepositoryImpl: UserRepositoryImpl
+    private lateinit var userDao: UserDao
+    private lateinit var userViewModel: UserViewModel
+    private lateinit var menstrualHistoryViewModel: MenstrualHistoryViewModel
+    private lateinit var menstrualHistoryViewModelFactory: MenstrualHistoryViewModelFactory
 
     private var userId: String? = null
     private var userName: String? = null
     private var isHTUDone: Boolean = false
     private var step = 0
+    private var isMale: Boolean = false
 
     private lateinit var loading: MyLoadingDialog
 
@@ -112,8 +126,23 @@ class DashboardActivity : BaseActivity() {
             }
         }
 
-        initViews(savedInstanceState)
+        initViews()
         initializeViewModel()
+
+        userViewModel.getUserByUID(userId ?: "")
+
+        userViewModel.user.observe(this) { user ->
+            userName = if(userName == null) user?.username else userName
+        }
+
+        lifecycleScope.launch {
+            val user = userViewModel.getUserNameById(userId ?: "")
+            val mensHistory = menstrualHistoryViewModel.getMensHistoryNow(userId ?: "")
+
+            isMale = user?.sex == "Male" && mensHistory == null
+            setupBottomNav(isMale)
+        }
+
         afterInit()
 
         if(Utility.PreferenceManager.isHtuDoNotShow(this)) {
@@ -290,6 +319,18 @@ class DashboardActivity : BaseActivity() {
         val moduleRepository = ModuleRepositoryImpl(moduleDao)
         val moduleViewModelFactory = ModuleViewModelFactory(moduleRepository)
         moduleViewModel = ViewModelProvider(this, moduleViewModelFactory)[ModuleViewModel::class]
+
+        userDao = AppDatabaseProvider.getDatabase(this).userDao()
+        userRepositoryImpl = UserRepositoryImpl(userDao)
+
+        // Create the ViewModel using the factory
+        val factory = UserViewModelFactory(userRepositoryImpl)
+        userViewModel = ViewModelProvider(this, factory)[UserViewModel::class.java]
+
+        val menstrualHistoryDao = AppDatabaseProvider.getDatabase(this).menstrualHistoryDao()
+        val menstrualHistoryRepo = MenstrualHistoryRepositoryImpl(menstrualHistoryDao)
+        menstrualHistoryViewModelFactory = MenstrualHistoryViewModelFactory(menstrualHistoryRepo)
+        menstrualHistoryViewModel = ViewModelProvider(this, menstrualHistoryViewModelFactory)[MenstrualHistoryViewModel::class]
     }
 
     @SuppressLint("SetTextI18n")
@@ -324,7 +365,7 @@ class DashboardActivity : BaseActivity() {
         // Bottom nav item click
         bottomNavView.setOnItemSelectedListener {
             when (it.itemId) {
-                R.id.action_home -> loadFragment(HomeFragment.Companion.newInstance(userId ?: "", userName ?: ""))
+                R.id.action_home -> loadFragment(HomeFragment.Companion.newInstance(userId ?: "", userName ?: "", isMale))
                 R.id.action_module -> loadFragment(ModulesFragment.Companion.newInstance(userId ?: ""))
                 R.id.action_calendar -> loadFragment(MenstrualTrackerFragment.Companion.newInstance(userId ?: "", userName ?: ""))
                 R.id.action_video -> loadFragment(VideosFragment.Companion.newInstance(userId ?: ""))
@@ -374,19 +415,13 @@ class DashboardActivity : BaseActivity() {
             .show()
     }
 
-    private fun initViews(savedInstanceState: Bundle?) {
+    private fun initViews() {
         drawerLayout = binding.main
         navView = binding.navigationView
         bottomNavView = binding.bottomNav
         btnMenu = binding.menuIcon
 
         loading = MyLoadingDialog(this)
-
-        // Set default screen
-        if (savedInstanceState == null) {
-            bottomNavView.selectedItemId = R.id.action_home
-            loadFragment(HomeFragment.Companion.newInstance(userId ?: "", userName ?: ""))
-        }
     }
 
     private fun loadFragment(fragment: Fragment) {
@@ -413,5 +448,22 @@ class DashboardActivity : BaseActivity() {
                 moduleViewModel.insertModules(filteredModules)
             }
         }
+    }
+
+    private fun setupBottomNav(isMale: Boolean) {
+        // Clear any old menu first
+        bottomNavView.menu.clear()
+
+        Log.e("isMale", isMale.toString())
+
+        // Inflate based on condition
+        if (isMale) {
+            bottomNavView.inflateMenu(R.menu.bottom_app_bar_menu_male)
+        } else {
+            bottomNavView.inflateMenu(R.menu.bottom_app_bar_menu_female)
+        }
+
+        bottomNavView.selectedItemId = R.id.action_home
+        loadFragment(HomeFragment.Companion.newInstance(userId ?: "", userName ?: "", isMale))
     }
 }

@@ -1,5 +1,6 @@
 package dev.adriele.adolescare.database.repositories.implementation
 
+import androidx.lifecycle.LiveData
 import dev.adriele.adolescare.database.dao.CycleDao
 import dev.adriele.adolescare.database.dao.CycleLogDao
 import dev.adriele.adolescare.database.entities.CycleLogEntity
@@ -33,6 +34,22 @@ class CycleLogRepositoryImpl(
         return cycleDao.getLatestCycle(userId = userId, createdAt = date, lmp = lmp)
     }
 
+    override suspend fun getMenstrualCycle(
+        userId: String,
+        lmp: String
+    ): MenstrualCycle? {
+        return cycleDao.getLatestCycle(userId = userId, lmp = lmp)
+    }
+
+    override suspend fun updateCycle(
+        lmp: String,
+        days: Int,
+        weeks: Int,
+        userId: String
+    ) {
+        cycleDao.updateCycle(lmp, days, weeks, userId)
+    }
+
     override suspend fun updateListsByUserIdAndDate(
         userId: String,
         date: String,
@@ -57,5 +74,9 @@ class CycleLogRepositoryImpl(
             digestionAndStool = digestionAndStool,
             physicalActivity = physicalActivity
         )
+    }
+
+    override fun getAllCycles(userId: String): LiveData<List<MenstrualCycle>> {
+        return cycleDao.getAllCycles(userId)
     }
 }

@@ -43,7 +43,6 @@ import dev.adriele.adolescare.viewmodel.factory.CycleLogViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.MenstrualHistoryViewModelFactory
 import dev.adriele.calendarview.receivers.DateChangeReceiver
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -112,7 +111,7 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight, IWebSocket {
             }
         }
 
-        menstrualHistoryViewModel.loadLatestHistory(userId!!, requireContext())
+        menstrualHistoryViewModel.loadLatestHistory(userId ?: "", requireContext())
 
         binding.btnLogPeriod.setOnClickListener {
             startActivity(Intent(requireContext(), LogPeriodActivity::class.java)
@@ -142,7 +141,7 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight, IWebSocket {
 
         val chatBotDao = AppDatabaseProvider.getDatabase(requireContext()).conversationDao()
         val chatRepo = ChatBotRepositoryImpl(chatBotDao)
-        val chatBotViewModelFactory = ChatBotViewModelFactory(chatRepo, userId!!)
+        val chatBotViewModelFactory = ChatBotViewModelFactory(chatRepo, userId ?: "")
         chatBotViewModel = ViewModelProvider(requireActivity(), chatBotViewModelFactory)[ChatBotViewModel::class]
     }
 
@@ -298,7 +297,6 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight, IWebSocket {
             )
 
             lifecycleScope.launch {
-                delay(2000)
                 webSocketClient?.sendMessage(
                     Gson().toJson(
                         insightRequest
@@ -493,7 +491,7 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight, IWebSocket {
                 appendSection("Notes", notes)
 
                 binding.tvInsight.text = builder
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // fallback if message is just a plain string
                 binding.tvInsight.text = message
             }
@@ -507,10 +505,7 @@ class MenstrualTrackerFragment : Fragment(), IChatBot.Insight, IWebSocket {
     }
 
     override fun onWebSocketError(error: String) {
-        chatBotViewModel.getInsights(
-            insightsRequest = insightRequest,
-            this@MenstrualTrackerFragment
-        )
+        Log.e("LOG_PERIOD", error)
 
         webSocketClient?.ping()
     }

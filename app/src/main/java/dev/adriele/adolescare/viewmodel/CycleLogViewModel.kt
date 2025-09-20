@@ -1,6 +1,7 @@
 package dev.adriele.adolescare.viewmodel
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.adriele.adolescare.database.entities.CycleLogEntity
@@ -30,12 +31,26 @@ class CycleLogViewModel(private val repository: CycleLogRepository) : ViewModel(
         }
     }
 
+    fun getAllCycles(userId: String): LiveData<List<MenstrualCycle>> {
+        return repository.getAllCycles(userId)
+    }
+
     suspend fun getLogByDate(userId: String, date: String): CycleLogEntity? {
         return repository.getLogByDate(userId, date)
     }
 
     suspend fun getMenstrualCycle(userId: String, date: String, lmp: String): MenstrualCycle? {
         return repository.getMenstrualCycle(userId = userId, date = date, lmp = lmp)
+    }
+
+    suspend fun getMenstrualCycle(userId: String, lmp: String): MenstrualCycle? {
+        return repository.getMenstrualCycle(userId = userId, lmp = lmp)
+    }
+
+    fun updateCycle(lmp: String, days: Int, weeks: Int, userId: String) {
+        viewModelScope.launch {
+            repository.updateCycle(lmp, days, weeks, userId)
+        }
     }
 
     suspend fun getLogByDateNow(userId: String, date: String): CycleLogEntity? {

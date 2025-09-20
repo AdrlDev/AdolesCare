@@ -119,18 +119,27 @@ class PdfViewerActivity : BaseActivity(), OnUserInteractionListener {
 
     override fun onUserInteraction() {
         super.onUserInteraction()
+        showTabLayout()
+        resetHideTimer()
+    }
+
+    private val hideRunnable = Runnable {
+        binding.tabLl.animate().alpha(0f).setDuration(300).withEndAction {
+            binding.tabLl.visibility = View.GONE
+        }.start()
+    }
+
+    private fun showTabLayout() {
         if (binding.tabLl.isGone) {
             binding.tabLl.alpha = 0f
             binding.tabLl.visibility = View.VISIBLE
             binding.tabLl.animate().alpha(1f).setDuration(300).start()
         }
+    }
 
-        // Auto hide after 3 seconds
-        binding.tabLl.postDelayed({
-            binding.tabLl.animate().alpha(0f).setDuration(300).withEndAction {
-                binding.tabLl.visibility = View.GONE
-            }.start()
-        }, 3000)
+    private fun resetHideTimer() {
+        binding.tabLl.removeCallbacks(hideRunnable)
+        binding.tabLl.postDelayed(hideRunnable, 3000) // 👈 3s of inactivity
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -153,13 +162,25 @@ class PdfViewerActivity : BaseActivity(), OnUserInteractionListener {
 
         tabLayout.visibility = View.GONE // 👈 Hide initially
 
+        // 🚫 Disable swipe gesture
+        vp.isUserInputEnabled = false
+
+        // Listen to scroll events
+        vp.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageScrolled(
+                position: Int,
+                positionOffset: Float,
+                positionOffsetPixels: Int
+            ) {
+                showTabLayout()
+                resetHideTimer()
+            }
+        })
+
         vp.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
-                if (tabLayout.isGone) {
-                    tabLayout.alpha = 0f
-                    tabLayout.visibility = View.VISIBLE
-                    tabLayout.animate().alpha(1f).setDuration(5000).start()
-                }
+                showTabLayout()
+                resetHideTimer()
             }
             false
         }

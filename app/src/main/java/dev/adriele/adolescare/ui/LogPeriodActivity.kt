@@ -148,6 +148,68 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
     private fun init() {
         webSocketClient?.connect()
 
+        cycleLogViewModel.getAllCycles(userId ?: "").observe(this@LogPeriodActivity) { cycles ->
+            val calendarDays = mutableListOf<CalendarDay>() // collect all cycles here
+
+            for (cycle in cycles) {
+                val lmp = cycle.lastPeriodStart
+                val periodDays = cycle.periodDurationDays
+
+                val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
+                val calendar = Calendar.getInstance().apply {
+                    time = sdf.parse(lmp)!!
+                }
+
+                repeat(periodDays) {
+                    val date = calendar.clone() as Calendar
+
+                    val periodDay = CalendarDay(date).apply {
+                        imageDrawable = ContextCompat.getDrawable(
+                            this@LogPeriodActivity,
+                            R.drawable.menstruation_combined
+                        )
+                        labelColor = R.color.buttonColor
+                    }
+                    calendarDays.add(periodDay)
+                    calendar.add(Calendar.DATE, 1)
+                }
+            }
+
+            // Highlight today
+            val today = Calendar.getInstance()
+            val todayDay = CalendarDay(today).apply {
+                backgroundDrawable = ContextCompat.getDrawable(
+                    this@LogPeriodActivity,
+                    dev.adriele.calendarview.R.drawable.bg_today_circle
+                )
+                labelColor = R.color.requiredColorHelper
+            }
+
+            if (calendarDays.none {
+                    it.calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                            it.calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+                }) {
+                calendarDays.add(todayDay)
+            }
+
+            if (calendarDays.isEmpty()) {
+                calendarDays.add(CalendarDay(today))
+            }
+
+            binding.shimmerLlCalendar.stopShimmer()
+            binding.shimmerLlCalendar.visibility = View.GONE
+            binding.calendarCard.visibility = View.VISIBLE
+
+            val targetDate = selectedDate ?: calendarDays.last().calendar
+            binding.calendarView.setDate(targetDate)
+            binding.calendarView.postDelayed({
+                binding.calendarView.setDate(targetDate)
+            }, 1000)
+            binding.calendarView.post {
+                binding.calendarView.setCalendarDays(calendarDays)
+            }
+        }
+
         menstrualHistoryViewModel.mensHistory.observe(this) { history ->
             if (history != null) {
                 val lmp = history.lastPeriodStart ?: Utility.getTwoWeeksAgo()
@@ -157,7 +219,6 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
                 lifecycleScope.launch(Dispatchers.IO) {
                     val menstrualCycle = cycleLogViewModel.getMenstrualCycle(
                         userId = userId ?: "",
-                        date = Utility.getCurrentDate(),
                         lmp = lmp
                     )
 
@@ -171,66 +232,16 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
                                 createdAt = Utility.getCurrentDate()
                             )
                         )
-                    }
-
-                    val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
-                    val calendar = Calendar.getInstance().apply {
-                        time = sdf.parse(lmp)!!
-                    }
-
-                    val calendarDays = mutableListOf<CalendarDay>()
-
-                    repeat(periodDays) {
-                        val date = calendar.clone() as Calendar
-
-                        val periodDay = CalendarDay(date).apply {
-                            imageDrawable = ContextCompat.getDrawable(
-                                this@LogPeriodActivity,
-                                R.drawable.menstruation_combined
-                            )
-                            labelColor = R.color.buttonColor
-                        }
-                        calendarDays.add(periodDay)
-                        calendar.add(Calendar.DATE, 1)
-                    }
-
-                    val today = Calendar.getInstance()
-                    val todayDay = CalendarDay(today).apply {
-                        backgroundDrawable = ContextCompat.getDrawable(
-                            this@LogPeriodActivity,
-                            dev.adriele.calendarview.R.drawable.bg_today_circle
+                    } else {
+                        cycleLogViewModel.updateCycle(
+                            lmp = lmp,
+                            days = periodDays,
+                            weeks = cycleInterval,
+                            userId = userId ?: ""
                         )
-                        labelColor = R.color.requiredColorHelper
-                    }
-
-                    // Prevent duplicates
-                    if (calendarDays.none {
-                            it.calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                                    it.calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
-                        }) {
-                        calendarDays.add(todayDay)
-                    }
-
-                    if (calendarDays.isEmpty()) {
-                        val today = Calendar.getInstance()
-                        calendarDays.add(CalendarDay(today))
                     }
 
                     withContext(Dispatchers.Main) {
-                        binding.shimmerLlCalendar.stopShimmer()
-                        binding.shimmerLlCalendar.visibility = View.GONE
-                        binding.calendarCard.visibility = View.VISIBLE
-                        // Always check if view is attached
-
-                        val targetDate = selectedDate ?: calendarDays.first().calendar
-                        binding.calendarView.setDate(targetDate) // try once immediately
-                        binding.calendarView.postDelayed({
-                            binding.calendarView.setDate(targetDate) // then force after layout
-                        }, 1000)
-                        binding.calendarView.post {
-                            binding.calendarView.setCalendarDays(calendarDays)
-                        }
-
                         calculateLMP(history)
                     }
                 }
@@ -314,7 +325,7 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
             )
 
             lifecycleScope.launch {
-                delay(2000)
+                delay(100)
                 webSocketClient?.sendMessage(
                     Gson().toJson(
                         insightRequest
@@ -322,6 +333,7 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
                 )
             }
         } else {
+            binding.shimmerInsight.stopShimmer()
             binding.shimmerInsight.visibility = View.GONE
             binding.cardInsight.visibility = View.GONE
             binding.tvLblInsight.visibility = View.GONE
@@ -506,6 +518,10 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
     override fun onResume() {
         super.onResume()
 
+        startGettingInsight()
+    }
+
+    private fun startGettingInsight() {
         if (isFinishing || isDestroyed) return
 
         val selectedDateMillis = intent.getLongExtra("selectedDate", -1L)
@@ -882,7 +898,7 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
                 appendSection("Notes", notes)
 
                 binding.tvInsight.text = builder
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // fallback if message is just a plain string
                 binding.tvInsight.text = message
             }
@@ -896,11 +912,13 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
     }
 
     override fun onWebSocketError(error: String) {
-        chatBotViewModel.getInsights(
-            insightsRequest = insightRequest,
-            this@LogPeriodActivity
-        )
+        Log.e("LOG_PERIOD", error)
 
         webSocketClient?.ping()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        webSocketClient?.close()
     }
 }

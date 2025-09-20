@@ -2,10 +2,15 @@ package dev.adriele.adolescare.authentication
 
 import android.app.ActivityOptions
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
+import android.view.ViewTreeObserver
+import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
@@ -42,6 +47,40 @@ class LoginActivity : BaseActivity(), Utility.SignUpHereClickListener {
 
     private lateinit var loadingDialog: MyLoadingDialog
 
+    private lateinit var rootView: View
+    private lateinit var logo: ImageView
+
+    val globalLayoutListener = object : ViewTreeObserver.OnGlobalLayoutListener {
+        private var isKeyboardVisible = false
+
+        override fun onGlobalLayout() {
+            val rect = Rect()
+            rootView.getWindowVisibleDisplayFrame(rect)
+            val screenHeight = rootView.rootView.height
+            val keypadHeight = screenHeight - rect.bottom
+
+            val keyboardNowVisible = keypadHeight > screenHeight * 0.25
+
+            if (keyboardNowVisible && !isKeyboardVisible) {
+                // Keyboard just became visible
+                logo.animate()
+                    .translationY(-logo.height.toFloat())
+                    .alpha(0f)
+                    .setDuration(300)
+                    .start()
+                isKeyboardVisible = true
+            } else if (!keyboardNowVisible && isKeyboardVisible) {
+                // Keyboard just became hidden
+                logo.animate()
+                    .translationY(0f)
+                    .alpha(1f)
+                    .setDuration(300)
+                    .start()
+                isKeyboardVisible = false
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
         window.enterTransition = sharedAxis
@@ -56,6 +95,11 @@ class LoginActivity : BaseActivity(), Utility.SignUpHereClickListener {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        rootView = binding.root
+        logo = binding.logo
+        // Attach listener
+        rootView.viewTreeObserver.addOnGlobalLayoutListener(globalLayoutListener)
 
         init()
         initializeViewModel()
@@ -182,5 +226,10 @@ class LoginActivity : BaseActivity(), Utility.SignUpHereClickListener {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
         startActivity(intent, bundle)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        rootView.viewTreeObserver.removeOnGlobalLayoutListener(globalLayoutListener)
     }
 }
