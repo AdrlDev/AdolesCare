@@ -323,12 +323,7 @@ class MenstrualHistoryQuestionActivity : BaseActivity(), FragmentDataListener {
 
     private fun setFragments(pages: List<Fragment>, isFinish: Boolean) {
         if(isFinish) {
-            val bundle = ActivityOptions.makeSceneTransitionAnimation(this).toBundle()
-            startActivity(Intent(this, DashboardActivity::class.java)
-                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                .putExtra("userId", userId),
-                bundle
-            )
+            saveData()
             return
         }
 

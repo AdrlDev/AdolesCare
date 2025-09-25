@@ -162,6 +162,8 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IWebSocket, IChatBot.Tips 
         val dateNow = Utility.getCurrentDate()
         binding.tvDateNow.text = dateNow
 
+        menstrualHistoryViewModel.loadLatestHistory(userId ?: "", requireContext())
+
         binding.rvRecent.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         archiveAdapter = RecentReadWatchAdapter(mutableListOf(), moduleViewModel, this)
         binding.rvRecent.adapter = archiveAdapter
@@ -171,7 +173,7 @@ class HomeFragment : Fragment(), IRecentReadAndWatch, IWebSocket, IChatBot.Tips 
                 if (ovulationInfo != null) {
                     displayOvulationInfo(ovulationInfo, it)
                 } else {
-                    it.tvRemarks.text = "❗ ${R.string.unable_to_calculate_ovulation}"
+                    it.tvRemarks.text = "❗ ${getString(R.string.unable_to_calculate_ovulation)}"
                 }
             }
         }

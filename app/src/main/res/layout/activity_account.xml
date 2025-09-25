@@ -10,26 +10,20 @@
     android:layout_height="match_parent"
     tools:context=".ui.AccountActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:background="@color/background"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="?attr/actionBarSize"
+        android:titleTextColor="@color/textColor"
+        android:elevation="0dp"
+        app:navigationIcon="@drawable/round_arrow_back_ios_new_24"
+        app:subtitle="Update your account information"
+        app:titleTextAppearance="@style/ToolbarExpandedTitle"
+        app:subtitleTextAppearance="@style/ToolbarCollapsedTitle"
+        app:title="@string/menu_my_account"
+        app:menu="@menu/account_menu"/>
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/topAppBar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:titleTextColor="@color/textColor"
-            android:elevation="0dp"
-            app:navigationIcon="@drawable/round_arrow_back_ios_new_24"
-            app:subtitle="Update your account information"
-            app:titleTextAppearance="@style/ToolbarExpandedTitle"
-            app:subtitleTextAppearance="@style/ToolbarCollapsedTitle"
-            app:title="@string/menu_my_account" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize"
@@ -40,12 +34,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:padding="@dimen/margin_large">
+            android:gravity="center_horizontal">
 
             <com.google.android.material.circularreveal.cardview.CircularRevealCardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_large"
                 app:cardCornerRadius="62dp"
                 android:layout_marginVertical="@dimen/margin_small"
                 >
@@ -76,195 +70,261 @@
                 android:layout_marginHorizontal="52dp"
                 />
 
-            <LinearLayout
+            <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:padding="@dimen/margin_large"
+                android:layout_height="match_parent"
+                android:scrollbars="none"
+                android:background="@drawable/bg_top_only_round"
                 >
-
-                <TextView
-                    android:layout_gravity="start"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Other Information"
-                    android:fontFamily="@font/roboto_medium"
-                    android:textSize="@dimen/font_medium"
-                    />
-
-                <TextView
-                    android:layout_gravity="start"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/username"
-                    android:fontFamily="@font/roboto_medium"
-                    android:textSize="@dimen/font_small"
-                    android:layout_marginTop="@dimen/margin_small"
-                    />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_marginVertical="@dimen/margin_small"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/ll_f_name"
-                    android:hint="@string/username"
-                    android:textColorHint="@color/textColor"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    >
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/roboto"
-                        android:textColor="@color/textColor"
-                        android:id="@+id/et_username"
-                        android:textSize="@dimen/font_small"
-                        />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.divider.MaterialDivider
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="@dimen/margin_medium"
-                    />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginVertical="@dimen/margin_small"
+                    android:gravity="center_horizontal"
+                    android:padding="@dimen/margin_large"
                     >
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="62dp"
+                        android:layout_height="3dp"
+                        android:layout_marginVertical="@dimen/margin_medium"
+                        />
+
+                    <TextView
+                        android:layout_marginTop="@dimen/margin_small"
+                        android:layout_gravity="start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Other Information"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="@dimen/font_medium"
+                        android:textColor="@color/background"
+                        />
 
                     <TextView
                         android:layout_gravity="start"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Sex"
+                        android:text="@string/username"
                         android:fontFamily="@font/roboto_medium"
                         android:textSize="@dimen/font_small"
+                        android:layout_marginTop="@dimen/margin_small"
+                        android:textColor="@color/background"
                         />
 
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/cg_sex"
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_marginVertical="@dimen/margin_small"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:singleSelection="true"
+                        android:id="@+id/ll_f_name"
+                        android:hint="@string/username"
+                        android:textColorHint="@color/background"
+                        app:boxStrokeColor="@color/background"
+                        app:counterOverflowTextColor="@color/background"
+                        app:counterTextColor="@color/background"
+                        app:cursorColor="@color/background"
+                        app:hintTextColor="@color/background"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         >
 
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip_male"
-                            app:chipCornerRadius="@dimen/margin_large"
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/roboto"
+                            android:textColor="@color/background"
+                            android:id="@+id/et_username"
+                            android:textSize="@dimen/font_small"
+                            android:enabled="false"
+                            />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/margin_medium"
+                        />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginVertical="@dimen/margin_small"
+                        >
+
+                        <TextView
+                            android:layout_gravity="start"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Male"
-                            android:checkable="true"
-                            app:checkedIconEnabled="true"
+                            android:text="Sex"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textSize="@dimen/font_small"
+                            android:textColor="@color/background"
+                            />
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/cg_sex"
+                            android:layout_marginVertical="@dimen/margin_small"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:singleSelection="true"
+                            >
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_female"
+                                app:chipCornerRadius="@dimen/margin_large"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Female"
+                                android:checkable="true"
+                                app:checkedIconEnabled="true"
+                                android:fontFamily="@font/roboto"
+                                android:textSize="@dimen/font_small"
+                                />
+
+                        </com.google.android.material.chip.ChipGroup>
+
+                    </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/margin_medium"
+                        />
+
+                    <TextView
+                        android:layout_gravity="start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/birthday"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="@dimen/font_small"
+                        android:textColor="@color/background"
+                        />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_marginVertical="@dimen/margin_small"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/birthday"
+                        android:id="@+id/ll_b_day"
+                        android:textColorHint="@color/background"
+                        app:boxStrokeColor="@color/background"
+                        app:counterOverflowTextColor="@color/background"
+                        app:counterTextColor="@color/background"
+                        app:cursorColor="@color/background"
+                        app:hintTextColor="@color/background"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        >
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:fontFamily="@font/roboto"
+                            android:textColor="@color/background"
+                            android:focusable="false"
+                            android:cursorVisible="false"
+                            android:inputType="none"
+                            android:clickable="true"
+                            android:longClickable="false"
+                            android:textSize="@dimen/font_small"
+                            android:enabled="false"
+                            android:drawableTint="@color/background"
+                            android:drawableEnd="@drawable/round_calendar_month_24"
+                            android:id="@+id/et_birthday"
+                            tools:ignore="KeyboardInaccessibleWidget" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/margin_medium"
+                        />
+
+                    <TextView
+                        android:layout_gravity="start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/age"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textSize="@dimen/font_small"
+                        android:textColor="@color/background"
+                        />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="@dimen/margin_small"
+                        android:hint="@string/age"
+                        android:textColorHint="@color/background"
+                        app:boxStrokeColor="@color/background"
+                        app:counterOverflowTextColor="@color/background"
+                        app:counterTextColor="@color/background"
+                        app:cursorColor="@color/background"
+                        app:hintTextColor="@color/background"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        >
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/roboto"
+                            android:textColor="@color/background"
+                            android:enabled="false"
+                            android:id="@+id/et_age"
                             android:textSize="@dimen/font_small"
                             />
 
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip_female"
-                            app:chipCornerRadius="@dimen/margin_large"
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <LinearLayout
+                        android:visibility="visible"
+                        android:id="@+id/ll_btn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginVertical="@dimen/margin_large"
+                        >
+
+                        <com.google.android.material.button.MaterialButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Female"
-                            android:checkable="true"
-                            app:checkedIconEnabled="true"
-                            android:fontFamily="@font/roboto"
+                            android:text="Update"
+                            android:fontFamily="@font/roboto_medium"
                             android:textSize="@dimen/font_small"
+                            android:paddingVertical="16dp"
+                            android:paddingHorizontal="40dp"
+                            android:backgroundTint="@color/buttonColor"
+                            android:textColor="@color/buttonTextColor"
+                            android:id="@+id/btn_update"
+                            android:layout_marginHorizontal="@dimen/margin_small"
                             />
 
-                    </com.google.android.material.chip.ChipGroup>
+                        <com.google.android.material.button.MaterialButton
+                            android:layout_marginHorizontal="@dimen/margin_small"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/cancel"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textSize="@dimen/font_small"
+                            android:paddingVertical="16dp"
+                            android:paddingHorizontal="40dp"
+                            android:backgroundTint="@color/requiredColorHelper"
+                            android:textColor="@color/background"
+                            android:id="@+id/btn_cancel"
+                            />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-                <com.google.android.material.divider.MaterialDivider
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="@dimen/margin_medium"
-                    />
-
-                <TextView
-                    android:layout_gravity="start"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/birthday"
-                    android:fontFamily="@font/roboto_medium"
-                    android:textSize="@dimen/font_small"
-                    />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_marginVertical="@dimen/margin_small"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/birthday"
-                    android:id="@+id/ll_b_day"
-                    android:textColorHint="@color/textColor"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    >
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/roboto"
-                        android:textColor="@color/textColor"
-                        android:focusable="false"
-                        android:cursorVisible="false"
-                        android:inputType="none"
-                        android:clickable="true"
-                        android:longClickable="false"
-                        android:textSize="@dimen/font_small"
-                        android:drawableTint="@color/buttonColor"
-                        android:drawableEnd="@drawable/round_calendar_month_24"
-                        android:id="@+id/et_birthday"
-                        tools:ignore="KeyboardInaccessibleWidget" />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.divider.MaterialDivider
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="@dimen/margin_medium"
-                    />
-
-                <TextView
-                    android:layout_gravity="start"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/age"
-                    android:fontFamily="@font/roboto_medium"
-                    android:textSize="@dimen/font_small"
-                    />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="@dimen/margin_small"
-                    android:hint="@string/age"
-                    android:textColorHint="@color/textColor"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    >
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/roboto"
-                        android:textColor="@color/textColor"
-                        android:enabled="false"
-                        android:id="@+id/et_age"
-                        android:textSize="@dimen/font_small"
-                        />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-            </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
 
         </LinearLayout>
 
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

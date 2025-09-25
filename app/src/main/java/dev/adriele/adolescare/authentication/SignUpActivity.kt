@@ -8,6 +8,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialSharedAxis
 import dev.adriele.adolescare.BaseActivity
@@ -36,6 +37,7 @@ class SignUpActivity : BaseActivity(), TermsPrivacyClickListener, Utility.LoginH
     private lateinit var userViewModel: UserViewModel
 
     private lateinit var loadingDialog: MyLoadingDialog
+    private var isAcceptedTermOfUse: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
@@ -69,8 +71,6 @@ class SignUpActivity : BaseActivity(), TermsPrivacyClickListener, Utility.LoginH
         // Create the ViewModel using the factory
         val factory = UserViewModelFactory(userRepositoryImpl)
         userViewModel = ViewModelProvider(this, factory)[UserViewModel::class.java]
-
-        binding.btnSignup.isEnabled = false
     }
 
     private fun afterInit() {
@@ -135,6 +135,20 @@ class SignUpActivity : BaseActivity(), TermsPrivacyClickListener, Utility.LoginH
                 return@setOnClickListener
             }
 
+            if(!isAcceptedTermOfUse) {
+                loadingDialog.dismiss()
+                MaterialAlertDialogBuilder(this) // 'this' if inside Activity, use 'requireContext()' if Fragment
+                    .setTitle("Terms of Use Required")
+                    .setMessage("You need to accept the Terms of Use and Privacy Policy before continuing.")
+                    .setPositiveButton("OK") { dialog, _ ->
+                        onPrivacyPolicyClicked()
+                        dialog.dismiss()
+                    }
+                    .setCancelable(false)
+                    .show()
+                return@setOnClickListener
+            }
+
             lifecycleScope.launch {
                 val isTaken = userViewModel.isUsernameTaken(username.toString())
                 if (isTaken) {
@@ -193,6 +207,6 @@ class SignUpActivity : BaseActivity(), TermsPrivacyClickListener, Utility.LoginH
     }
 
     override fun onAccept(accepted: Boolean) {
-        binding.btnSignup.isEnabled = accepted
+        isAcceptedTermOfUse = accepted
     }
 }

@@ -260,6 +260,7 @@
     <string name="menu_settings">Mga Setting</string>
     <string name="menu_notifications">Mga Abiso</string>
     <string name="menu_about_us">Tungkol sa Amin</string>
+    <string name="overview">Pangkalahatang-ideya</string>
 
     <string name="terms_privacy_policy_text">
         Ang Teenage Pregnancy Awareness App ay idinisenyo upang magbigay ng edukasyonal na impormasyon tungkol sa pagbubuntis ng mga kabataan at kalusugang reproduktibo. Sa paggamit ng App, sumasang-ayon ka:\n\n
@@ -271,6 +272,25 @@
     <string name="change_password">Palitan ang Password</string>
     <string name="confirm">Kumpirmahin</string>
     <string name="fill_all_fields">Pakiusap, punan ang lahat ng mga patlang.</string>
+
+    <string name="overview_txt">
+        Ang Adolescare ay isang aplikasyon na naglalayong magbigay ng kaalaman at
+        magtaas ng kamalayan tungkol sa pagbubuntis ng mga kabataan, lalo na sa mga
+        tin-edyer at mga young adult. Dinisenyo ang platform upang turuan ang mga
+        estudyante at mas malawak na populasyon ng kabataan tungkol sa mga sanhi,
+        bunga, at mga paraan ng pag-iwas na may kaugnayan sa maagang pagbubuntis.
+
+        \n\n\nAng pagbubuntis sa murang edad ay maaaring magdulot ng malalaking
+        hamon sa emosyonal, kalusugan, at panlipunang aspeto. Tinutulungan ng
+        Adolescare ang mga gumagamit na makakuha ng mapagkakatiwalaang impormasyon,
+        mga mapagkukunan, at suporta upang makagawa ng tamang desisyon. Bukod pa
+        rito, hinihikayat ng sistema ang responsableng pag-uugali at
+        pinapalakas ang mga kabataan upang maunawaan at mapangalagaan ang kanilang
+        kalusugang reproduktibo.
+    </string>
+
+    <string name="developers">Mga Nag-develop</string>
+    <string name="credits">Pasasalamat</string>
 
     <string-array name="categories">
         <item>@string/sex_drive</item>

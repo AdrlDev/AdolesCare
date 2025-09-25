@@ -25,4 +25,7 @@ interface UserDao {
 
     @Query("UPDATE users SET sex = :sex, barangay = :barangay WHERE userId = :uid")
     suspend fun updateSexAndBarangay(sex: String, barangay: String, uid: String)
+
+    @Query("UPDATE users SET username = :username, birthday = :birthday, age = :age WHERE userId = :uid")
+    suspend fun updateUser(username: String, birthday: String, age: Int, uid: String)
 }

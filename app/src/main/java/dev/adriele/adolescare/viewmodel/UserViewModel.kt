@@ -22,6 +22,16 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
     private val _user = MutableLiveData<User?>()
     val user: LiveData<User?> = _user
 
+    private val _userName = MutableLiveData<String>()
+    val userName: LiveData<String> = _userName
+
+    private val _updateState = MutableLiveData<Boolean>()
+    val updateState: LiveData<Boolean> = _updateState
+
+    fun setUserName(userName: String) {
+        _userName.value = userName
+    }
+
     fun insertUser(user: User) {
         viewModelScope.launch {
             try {
@@ -86,5 +96,16 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
     suspend fun isUsernameTaken(username: String): Boolean {
         return repository.isUsernameTaken(username)
+    }
+
+    fun updateUser(username: String, birthday: String, age: Int, uid: String) {
+        viewModelScope.launch {
+            try {
+                repository.updateUser(username, birthday, age, uid)
+                _updateState.value = true
+            } catch (_: Exception) {
+                _updateState.value = false
+            }
+        }
     }
 }

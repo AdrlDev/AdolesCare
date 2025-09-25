@@ -36,4 +36,13 @@ class UserRepositoryImpl(private val userDao: UserDao) : UserRepository {
         return userDao.getUserByUsername(username) != null
     }
 
+    override suspend fun updateUser(
+        username: String,
+        birthday: String,
+        age: Int,
+        uid: String
+    ) {
+        userDao.updateUser(username, birthday, age, uid)
+    }
+
 }

@@ -122,6 +122,7 @@
     <string name="menu_settings">Settings</string>
     <string name="menu_notifications">Notifications</string>
     <string name="menu_about_us">About Us</string>
+    <string name="overview">Overview</string>
 
     //chatbot
     <string name="ask">Ask…</string>
@@ -260,6 +261,23 @@
     <string name="accept">Accept</string>
 
     <string name="agree_terms">I agree to the Terms of Use and Privacy Policy</string>
+
+    <string name="overview_txt">
+        Adolescare is an application that aims to provide knowledge and raise awareness about
+        adolescent pregnancy, especially among teenagers and young adults.
+        The platform is designed to educate students and the broader youth
+        population about the causes, consequences, and preventive
+        measures related to early pregnancy.
+        \n\n\nAdolescent pregnancy can lead to significant emotional,
+        health, and social challenges. Adolescare helps users access
+        reliable information, resources, and support to make informed
+        decisions. In addition, the system encourages responsible behavior
+        and empowers young individuals to understand and manage their
+        reproductive health.
+    </string>
+
+    <string name="developers">Developers</string>
+    <string name="credits">Credits</string>
 
     <string name="terms_privacy_policy_text">
         The Teenage Pregnancy Awareness App is designed to provide educational information on teenage pregnancy and reproductive health. By using the App, you agree:\n\n

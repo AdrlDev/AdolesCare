@@ -25,7 +25,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.transition.platform.MaterialFade
-import com.google.android.material.transition.platform.MaterialSharedAxis
 import dev.adriele.adolescare.BaseActivity
 import dev.adriele.adolescare.R
 import dev.adriele.adolescare.authentication.LoginActivity
@@ -78,10 +77,6 @@ class DashboardActivity : BaseActivity() {
     private lateinit var settingsLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val sharedAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
-        window.enterTransition = sharedAxis
-        window.exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, false)
-
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityDashboardBinding.inflate(layoutInflater)
@@ -129,18 +124,13 @@ class DashboardActivity : BaseActivity() {
         initViews()
         initializeViewModel()
 
-        userViewModel.getUserByUID(userId ?: "")
-
-        userViewModel.user.observe(this) { user ->
-            userName = if(userName == null) user?.username else userName
-        }
-
         lifecycleScope.launch {
             val user = userViewModel.getUserNameById(userId ?: "")
             val mensHistory = menstrualHistoryViewModel.getMensHistoryNow(userId ?: "")
 
             isMale = user?.sex == "Male" && mensHistory == null
-            setupBottomNav(isMale)
+            setupBottomNav(isMale, user?.username ?: "Unknown")
+            userViewModel.setUserName(user?.username ?: "Unknown")
         }
 
         afterInit()
@@ -345,7 +335,11 @@ class DashboardActivity : BaseActivity() {
         val headerView = navView.getHeaderView(0)
         val usernameTextView = headerView.findViewById<TextView>(R.id.tv_username)
         val tvSubMessage = headerView.findViewById<TextView>(R.id.tv_sub_message)
-        usernameTextView.text = "Hi, $userName."
+
+        userViewModel.userName.observe(this) { username ->
+            userName = if(userName.isNullOrEmpty()) username else userName
+            usernameTextView.text = "Hi, $userName."
+        }
         tvSubMessage.text = getString(dev.adriele.language.R.string.welcome_message) + " ${getString(
             dev.adriele.language.R.string.app_name)}"
 
@@ -355,7 +349,7 @@ class DashboardActivity : BaseActivity() {
                 R.id.nav_account -> gotoAccount()
                 R.id.nav_setting -> gotoSettings()
                 R.id.nav_notification -> gotoNotification()
-                R.id.nav_about -> {}
+                R.id.nav_about -> gotoAbout()
                 R.id.nav_logout -> logout()
             }
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -384,6 +378,13 @@ class DashboardActivity : BaseActivity() {
 
     private fun gotoNotification() {
         val intent = Intent(this, NotificationActivity::class.java).apply {
+            putExtra("userId", userId)
+        }
+        startActivity(intent)
+    }
+
+    private fun gotoAbout() {
+        val intent = Intent(this, AboutUsActivity::class.java).apply {
             putExtra("userId", userId)
         }
         startActivity(intent)
@@ -450,7 +451,7 @@ class DashboardActivity : BaseActivity() {
         }
     }
 
-    private fun setupBottomNav(isMale: Boolean) {
+    private fun setupBottomNav(isMale: Boolean, userName: String) {
         // Clear any old menu first
         bottomNavView.menu.clear()
 
@@ -464,6 +465,6 @@ class DashboardActivity : BaseActivity() {
         }
 
         bottomNavView.selectedItemId = R.id.action_home
-        loadFragment(HomeFragment.Companion.newInstance(userId ?: "", userName ?: "", isMale))
+        loadFragment(HomeFragment.Companion.newInstance(userId ?: "", userName, isMale))
     }
 }

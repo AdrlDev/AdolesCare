@@ -19,4 +19,19 @@
         <item>December</item>
     </string-array>
     <!-- TODO: Remove or change this placeholder text -->
+    <string name="criselda_d_babas">Criselda D. Babas</string>
+    <string name="research_leader_programmer">Research Leader/Programmer</string>
+    <string name="eda_jenn_o_gonzales">Eda Jenn O. Gonzales</string>
+    <string name="animator_editor">Animator/Editor</string>
+    <string name="betuel_c_alerta">Betuel C. Alerta</string>
+    <string name="researcher">Researcher</string>
+    <string name="rebecca_a_bagalihog">Rebecca A. Bagalihog</string>
+    <string name="eden_a_gabutera">Eden A. Gabutera</string>
+    <string name="nurse_iii">Nurse III</string>
+    <string name="jenilyn_figueroa_lomocso_md">Jenilyn Figueroa-Lomocso, MD</string>
+    <string name="municipal_health_officer">Municipal Health Officer</string>
+    <string name="genesis_a_ysibido_rn_rm_man">Genesis A. Ysibido, RN, RM, MAN</string>
+    <string name="faculty_midwifery_department_san_jose_campus_san_jose_occidental_mindoro">Faculty – Midwifery Department San Jose Campus, San Jose,Occidental Mindoro</string>
+    <string name="leiza_linda_l_pelayo_maite">Leiza Linda L. Pelayo, MAITE</string>
+    <string name="system_adviser_faculty_it_department_san_jose_campus_san_jose_occidental_mindoro">System Adviser\nFaculty - IT Department San Jose Campus,\nSan Jose, Occidental Mindoro</string>
 </resources>

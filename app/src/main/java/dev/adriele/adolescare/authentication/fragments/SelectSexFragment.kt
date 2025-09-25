@@ -47,11 +47,17 @@ class SelectSexFragment : Fragment() {
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, genderList)
         binding.autoSelectSex.setAdapter(adapter)
 
-        // 🔹 Listener for item selection
-        binding.autoSelectSex.setOnItemClickListener { parent, _, position, _ ->
-            val selectedGender = parent.getItemAtPosition(position).toString()
-            handleSelection(selectedGender)
-        }
+        // 🔹 Force "Female" selection
+        val female = getString(dev.adriele.language.R.string.female)
+        binding.autoSelectSex.setText(female, false)
+
+        // 🔹 Disable dropdown so user can’t change it
+        binding.autoSelectSex.isEnabled = false
+        binding.autoSelectSex.isClickable = false
+        binding.autoSelectSex.keyListener = null
+
+        // 🔹 Pass data automatically
+        handleSelection(female)
     }
 
     private fun handleSelection(selectedSex: String) {

@@ -79,6 +79,7 @@ dependencies {
 
     implementation(libs.facebook.shimmer)
 
+    implementation(libs.circleimageview)
     implementation(libs.glide)
     ksp(libs.glide.compiler)
 

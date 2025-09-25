@@ -13,4 +13,5 @@ interface UserRepository {
     suspend fun updateSexAndBarangay(sex: String, barangay: String, uid: String)
 
     suspend fun isUsernameTaken(username: String): Boolean
+    suspend fun updateUser(username: String, birthday: String, age: Int, uid: String)
 }

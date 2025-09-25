@@ -1,31 +1,32 @@
 [versions]
-agp = "8.12.2"
-kotlin = "2.2.10"
+agp = "8.13.0"
+kotlin = "2.2.20"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 appcompat = "1.7.1"
 material = "1.13.0"
-activity = "1.10.1"
+activity = "1.11.0"
 constraintlayout = "2.2.1"
-room = "2.7.2" # ✅ Add this
+room = "2.8.0" # ✅ Add this
 ksp = "2.2.10-2.0.2" # Match your Kotlin version
-lifecycle = "2.9.3"
+lifecycle = "2.9.4"
 retrofit = "3.0.0"
 okhttp = "5.1.0"
 shimmer = "0.5.0"
-navigationFragmentKtx = "2.9.3"
-navigationUiKtx = "2.9.3"
+navigationFragmentKtx = "2.9.4"
+navigationUiKtx = "2.9.4"
 materialCalendarView = "1.9.2"
-glide = "5.0.4"
+glide = "5.0.5"
 exoplayer = "1.8.0"
 pdfboxAndroid = "2.0.27.0"
 photoview = "1.0.3"
 pdfView = "3.2.0-beta.3"
 mlkit-text-recognition = "16.0.1"
-workmanager = "2.10.3"
+workmanager = "2.10.4"
 ws = "1.6.0"
+circle-image-view = "3.1.0"
 
 
 [libraries]
@@ -57,6 +58,7 @@ exoplayer-dash = { group = "androidx.media3", name = "media3-exoplayer-dash", ve
 exoplayer-common = { group = "androidx.media3", name = "media3-common", version.ref = "exoplayer" }
 exoplayer-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "exoplayer" }
 
+circleimageview = { group = "de.hdodenhof", name = "circleimageview", version.ref = "circle-image-view" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 

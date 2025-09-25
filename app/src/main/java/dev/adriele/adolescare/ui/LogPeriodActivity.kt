@@ -247,6 +247,8 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
                 }
             }
         }
+
+        startGettingInsight()
     }
 
     @SuppressLint("SetTextI18n")
