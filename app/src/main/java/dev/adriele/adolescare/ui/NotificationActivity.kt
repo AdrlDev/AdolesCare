@@ -24,6 +24,9 @@ import dev.adriele.adolescare.viewmodel.ArchiveViewModel
 import dev.adriele.adolescare.viewmodel.ReminderViewModel
 import dev.adriele.adolescare.viewmodel.factory.ArchiveViewModelFactory
 import dev.adriele.adolescare.viewmodel.factory.ReminderViewModelFactory
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class NotificationActivity : AppCompatActivity(), IReminder {
     private lateinit var binding: ActivityNotificationBinding
@@ -92,7 +95,30 @@ class NotificationActivity : AppCompatActivity(), IReminder {
         binding.rvNotification.addItemDecoration(dividerItemDecoration)
 
         viewModel.reminder.observe(this) { reminders ->
-            val adapter = ReminderAdapter(reminders, false, this)
+            // Auto-archive reminders older than 24 hours
+            val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
+            val now = Date()
+
+            // Show only reminders that are not archived (less than 24 hrs)
+            val recentReminders = reminders.filter {
+                try {
+                    val reminderDate = sdf.parse(it.createdAt)
+                    reminderDate != null && now.time - reminderDate.time < (24 * 60 * 60 * 1000)
+                } catch (_: Exception) {
+                    true
+                }
+            }
+
+            // Sort by date descending (latest first)
+            val sortedReminders = recentReminders.sortedByDescending {
+                try {
+                    sdf.parse(it.createdAt)?.time ?: 0L
+                } catch (_: Exception) {
+                    0L
+                }
+            }
+
+            val adapter = ReminderAdapter(sortedReminders, false, this)
             binding.rvNotification.adapter = adapter
         }
 

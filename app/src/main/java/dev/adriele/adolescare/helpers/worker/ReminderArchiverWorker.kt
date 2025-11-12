@@ -7,7 +7,7 @@ import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.ArchiveRecentReadAndWatch
 import dev.adriele.adolescare.database.entities.ArchiveReminder
 import java.text.SimpleDateFormat
-import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 class ReminderArchiverWorker(
@@ -21,43 +21,44 @@ class ReminderArchiverWorker(
 
     override suspend fun doWork(): Result {
         return try {
-            // Get yesterday's date in "yyyy-MM-dd"
-            val calendar = Calendar.getInstance()
-            calendar.add(Calendar.DAY_OF_YEAR, -1)
-            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val yesterday = sdf.format(calendar.time)
+            val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
+            val now = Date()
+            val cutoffTime = now.time - 24 * 60 * 60 * 1000 // 24 hours ago
 
-            val cutoff = getYesterdayTimestamp()
-
-            // Fetch reminders to archive
-            val remindersToArchive = reminderDao.getRemindersBeforeDate(yesterday)
-
-            for (reminder in remindersToArchive) {
-                val archive = ArchiveReminder(
-                    id = reminder.id,
-                    userId = reminder.userId,
-                    title = reminder.title,
-                    message = reminder.message,
-                    dateTime = reminder.dateTime,
-                    type = reminder.type
-                )
-                archiveDao.insertArchiveReminder(archive)
-                reminderDao.deleteUserReminders(reminder.userId, reminder.id)
+            // 🕒 Archive Reminders older than 24 hours
+            val allReminders = reminderDao.getReminders() // <- you should have a suspend function for this
+            allReminders.forEach { reminder ->
+                try {
+                    val reminderDate = sdf.parse(reminder.dateTime)
+                    if (reminderDate != null && reminderDate.time <= cutoffTime) {
+                        val archive = ArchiveReminder(
+                            id = reminder.id,
+                            userId = reminder.userId,
+                            title = reminder.title,
+                            message = reminder.message,
+                            dateTime = reminder.dateTime,
+                            type = reminder.type
+                        )
+                        archiveDao.insertArchiveReminder(archive)
+                        reminderDao.deleteUserReminders(reminder.userId, reminder.id)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
 
-            // Archive RecentReadAndWatch
-            val readsToArchive = recentReadAndWatchDao.getRecentReadAndWatchBeforeDate(cutoff)
-            for (read in readsToArchive) {
-                val archiveReadNWatch = ArchiveRecentReadAndWatch(
-                    id = read.id,
-                    moduleId = read.moduleId,
-                    timestamp = read.timestamp
-                )
-
-                archiveDao.insertArchiveReadAndWatch(
-                    archiveReadNWatch
-                )
-                recentReadAndWatchDao.deleteRecentReadAndWatch(read.id)
+            // 📚 Archive RecentReadAndWatch older than 24 hours
+            val readsToArchive = recentReadAndWatchDao.getAllRecentReadAndWatch()
+            readsToArchive.forEach { read ->
+                if (read.timestamp <= cutoffTime) {
+                    val archiveReadNWatch = ArchiveRecentReadAndWatch(
+                        id = read.id,
+                        moduleId = read.moduleId,
+                        timestamp = read.timestamp
+                    )
+                    archiveDao.insertArchiveReadAndWatch(archiveReadNWatch)
+                    recentReadAndWatchDao.deleteRecentReadAndWatch(read.id)
+                }
             }
 
             Result.success()
@@ -65,15 +66,5 @@ class ReminderArchiverWorker(
             e.printStackTrace()
             Result.failure()
         }
-    }
-
-    private fun getYesterdayTimestamp(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        calendar.add(Calendar.DAY_OF_YEAR, -1)
-        return calendar.timeInMillis
     }
 }

@@ -16,6 +16,8 @@ import android.graphics.Typeface
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.ParcelFileDescriptor
 import android.text.SpannableString
 import android.text.Spanned
@@ -468,6 +470,11 @@ object Utility {
         return sdf.format(Date())
     }
 
+    fun getCurrentDateTime(): String {
+        val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.getDefault())
+        return sdf.format(Date())
+    }
+
     fun getCurrentCycleDate(): String {
         val sdf = SimpleDateFormat("MMM d", Locale.ENGLISH)
         return sdf.format(Date())
@@ -478,9 +485,23 @@ object Utility {
         return sdf.format(Date())
     }
 
-    fun getCurrentDateTime(): String {
-        val sdf = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.ENGLISH)
-        return sdf.format(Date())
+    fun formatDate(dateString: String): String {
+        return try {
+            // Case 1: Already in yyyy-MM-dd → just return
+            if (dateString.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) {
+                return dateString
+            }
+
+            // Case 2: Convert from MMM dd, yyyy → yyyy-MM-dd
+            val inputFormat = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
+            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
+
+            val date = inputFormat.parse(dateString)
+            outputFormat.format(date!!)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            dateString // fallback, just return original
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -579,40 +600,6 @@ object Utility {
         }
     }
 
-    fun loadLearningModules(context: Context): List<LearningModule> {
-        val modules = mutableListOf<LearningModule>()
-        val assetManager = context.assets
-        val basePath = "modules/pdf"
-
-        val folders = assetManager.list(basePath) ?: return emptyList()
-
-        for (folder in folders) {
-            val files = assetManager.list("$basePath/$folder")?.filter { it.endsWith(".pdf") } ?: continue
-
-            for ((index, file) in files.withIndex()) {
-                val title = file.removeSuffix(".pdf").replace('_', ' ').replaceFirstChar { it.uppercaseChar() }
-                val enumCategory = PDFModulesCategory.entries.find {
-                    it.name.equals(folder.uppercase().replace("-", "_"), ignoreCase = true)
-                }?.category ?: folder.replace('_', ' ')
-
-                val orderBy = if (title.equals(enumCategory, ignoreCase = true)) 0 else index + 1
-
-                modules.add(
-                    LearningModule(
-                        id = "${folder}_$index",
-                        title = title,
-                        category = enumCategory,
-                        contentType = ModuleContentType.PDF,
-                        contentUrl = "$basePath/$folder/$file",
-                        orderBy = orderBy
-                    )
-                )
-            }
-        }
-
-        return modules
-    }
-
     fun loadLearningModulesNew(context: Context): List<LearningModule> {
         val modules = mutableListOf<LearningModule>()
         val assetManager = context.assets
@@ -658,7 +645,7 @@ object Utility {
     }
 
     /** Extension to convert PDFView page to bitmap */
-    fun com.github.barteksc.pdfviewer.PDFView.toBitmap(pageIndex: Int): Bitmap {
+    fun com.github.barteksc.pdfviewer.PDFView.toBitmap(): Bitmap {
         val width = this.width
         val height = this.height
         val bitmap = createBitmap(width, height)
@@ -679,11 +666,13 @@ object Utility {
             val title = file.removeSuffix(".mp4")
             val formattedTitle = title.replace('_', ' ').replaceFirstChar { it.uppercaseChar() }
             val creditLink = videoCredits[title]
+            val author = videoAuthor[title]
 
             modules.add(
                 LearningModule(
                     id = "video_$index",
                     title = formattedTitle,
+                    author = author ?: "",
                     category = "Learning Videos",
                     contentType = ModuleContentType.VIDEO,
                     contentUrl = "$basePath/$file",
@@ -710,6 +699,22 @@ object Utility {
         "teenager_palang_ako_pwede_bang_gumamit_ng_contraception" to "https://youtu.be/njlFlmZ7PSs?si=3MZAhk8vMae0iC-y",
         "ano_po_ang_side_effects_ng_injectables_o_depo" to "https://youtu.be/X9Zg3aGCVSc?si=8fdOp6FWj4LNismn",
         "masakit_ba_magpalagay_ng_implant" to "https://youtu.be/ouzDUzYgk5g?si=0QurLUHSbXb-ZYIy"
+    )
+
+    private val videoAuthor = mapOf(
+        "how_do_contraceptives_work" to "MissedPill by RH Care Info",
+        "contraceptives_101" to "MissedPill by RH Care Info",
+        "how_to_decide_which_birth_control_is_right_for_you" to "Demystifying Medicine McMaster",
+        "tips_for_safer_sex_and_pregnancy_prevention" to "MissedPill by RH Care Info",
+        "what_is_emergency_contraception_the_morning_after_pill" to "MissedPill by RH Care Info",
+        "first_time_ganito_po_ang_tamang_paginom_ng_pills" to "TED-Ed",
+        "paano_ang_tamang_paraan_ng_paggamit_ng_condom" to "New Jersey Family Planning League",
+        "ito_ang_natural_at_epektibong_contraceptive_method" to "MissedPill by RH Care Info",
+        "bakit_pinipili_ng_ibang_kababaihan_ang_iud" to "MissedPill by RH Care Info",
+        "depo_injectable_o_dmpa_ano_nga_ba_ito" to "MissedPill by RH Care Info",
+        "teenager_palang_ako_pwede_bang_gumamit_ng_contraception" to "MissedPill by RH Care Info",
+        "ano_po_ang_side_effects_ng_injectables_o_depo" to "AMAZE Org",
+        "masakit_ba_magpalagay_ng_implant" to "AMAZE Org"
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -911,5 +916,25 @@ object Utility {
 
         dialog.show()
     }
+
+    fun animateTyping(textView: TextView, fullText: String, onAnimationEnd: (() -> Unit)? = null) {
+        textView.text = ""
+        val handler = Handler(Looper.getMainLooper())
+        var index = 0
+
+        val runnable = object : Runnable {
+            override fun run() {
+                if (index < fullText.length) {
+                    textView.append(fullText[index].toString())
+                    index++
+                    handler.postDelayed(this, 40) // typing speed
+                } else {
+                    onAnimationEnd?.invoke() // ✅ trigger when done
+                }
+            }
+        }
+        handler.post(runnable)
+    }
+
 
 }

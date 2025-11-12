@@ -8,6 +8,7 @@ import dev.adriele.adolescare.helpers.enums.ModuleContentType
 data class LearningModule(
     @PrimaryKey val id: String,
     val title: String,
+    val author: String = "",
     val category: String,
     val contentType: ModuleContentType, // ARTICLE or VIDEO
     val contentUrl: String,

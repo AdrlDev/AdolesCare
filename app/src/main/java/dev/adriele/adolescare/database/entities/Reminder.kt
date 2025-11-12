@@ -2,6 +2,7 @@ package dev.adriele.adolescare.database.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import dev.adriele.adolescare.helpers.Utility
 
 @Entity(tableName = "reminders")
 data class Reminder(
@@ -10,5 +11,6 @@ data class Reminder(
     val title: String,
     val message: String,
     val dateTime: String,
-    val type: String
+    val type: String,
+    val createdAt: String = Utility.getCurrentDateTime()
 )

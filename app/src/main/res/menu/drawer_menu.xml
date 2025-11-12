@@ -39,6 +39,13 @@
                 app:showAsAction="ifRoom"
                 />
             <item
+                android:id="@+id/nav_history"
+                android:title="@string/menu_history"
+                android:icon="@drawable/round_history_24"
+                android:checkable="true"
+                app:showAsAction="ifRoom"
+                />
+            <item
                 android:id="@+id/nav_about"
                 android:title="@string/menu_about_us"
                 android:icon="@drawable/round_contact_page_24"

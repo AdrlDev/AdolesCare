@@ -18,11 +18,11 @@ import dev.adriele.adolescare.database.entities.Conversations
 import dev.adriele.adolescare.ui.PdfViewerActivity
 
 class ChatBotAdapter: RecyclerView.Adapter<ChatBotAdapter.ViewHolder>() {
-    private var arrayList: List<Conversations>? = null
+    private var arrayList: MutableList<Conversations> = mutableListOf()
 
-    @SuppressLint("NotifyDataSetChanged")
     fun setMessage(message: List<Conversations>) {
-        this.arrayList = message
+        this.arrayList.clear()
+        this.arrayList.addAll(message)
         notifyDataSetChanged()
     }
 
@@ -35,22 +35,21 @@ class ChatBotAdapter: RecyclerView.Adapter<ChatBotAdapter.ViewHolder>() {
             else -> inflater.inflate(R.layout.chatbot_response, parent, false)
         }
         return ViewHolder(root, viewType)
-
     }
 
     override fun getItemCount(): Int {
-        arrayList?.size?.let { size ->
+        arrayList.size?.let { size ->
             return size
         }
         return 0
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(arrayList?.get(position) ?: Conversations())
+        holder.bind(arrayList[position])
     }
 
     override fun getItemViewType(position: Int): Int {
-        return when (arrayList?.get(position)?.resWith) {
+        return when (arrayList.get(position)?.resWith) {
             ResponseType.USER -> MessageType.RIGHT.type
             ResponseType.BOT -> MessageType.LEFT.type
             ResponseType.TYPING -> MessageType.TYPING.type
@@ -73,66 +72,25 @@ class ChatBotAdapter: RecyclerView.Adapter<ChatBotAdapter.ViewHolder>() {
             val tvChat: TextView = binding.findViewById(R.id.tv_chat)
             val tvDate: TextView = binding.findViewById(R.id.tv_date)
 
-            tvChat.text = response.message
+            if (response.resWith == ResponseType.BOT) {
+                val pos = bindingAdapterPosition
+                val isLast = pos != RecyclerView.NO_POSITION && pos == arrayList.size - 1
+
+                if (isLast) {
+                    Utility.animateTyping(tvChat, response.message ?: "") {
+                        showSources(response, binding) // 👈 show sources only after done typing
+                    }
+                } else {
+                    tvChat.text = response.message
+                    showSources(response, binding)
+                }
+            } else {
+                tvChat.text = response.message
+            }
             tvDate.text = when (response.resWith) {
                 ResponseType.USER -> response.sentDate
                 ResponseType.BOT -> response.receivedDate
                 else -> "No date"
-            }
-
-            // Show sources only for bot messages
-            if (viewType == MessageType.LEFT.type) {
-                val llSources: ViewGroup = binding.findViewById(R.id.ll_sources)
-                llSources.removeAllViews()
-
-                if (!response.sources.isNullOrEmpty()) {
-                    llSources.visibility = View.VISIBLE
-
-                    val shownTitles = mutableSetOf<String>()
-
-                    response.sources.forEach { source ->
-                        val title = source.title
-                        val finalTitle = if (title?.isEmpty() == true) {
-                            source.producer
-                        } else {
-                            title ?: "Unknown Source"
-                        }
-
-                        if (shownTitles.contains(finalTitle)) return@forEach // Skip if already shown
-                        shownTitles.add(finalTitle) // Track this finalTitle
-
-                        val fullText = "📎 Source: $finalTitle"
-                        val startIndex = fullText.indexOf(finalTitle)
-                        val endIndex = startIndex + finalTitle.length
-
-                        val spannable = SpannableString(fullText).apply {
-                            setSpan(
-                                UnderlineSpan(),
-                                startIndex,
-                                endIndex,
-                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                            )
-                        }
-
-                        val tvSource = TextView(binding.context).apply {
-                            text = spannable
-                            setTextColor(binding.resources.getColor(R.color.textColorLink, null))
-                            textSize = 14f
-                            setPadding(0, 4, 0, 4)
-                            setOnClickListener {
-                                val intent = Intent(context, PdfViewerActivity::class.java).apply {
-                                    val modifiedSource = source.source
-                                    putExtra("module_url", modifiedSource)
-                                    putExtra("module_category", extractReadableModuleTitle(modifiedSource).lowercase())
-                                }
-                                context.startActivity(intent)
-                            }
-                        }
-                        llSources.addView(tvSource)
-                    }
-                } else {
-                    llSources.visibility = View.GONE
-                }
             }
         }
     }
@@ -141,5 +99,46 @@ class ChatBotAdapter: RecyclerView.Adapter<ChatBotAdapter.ViewHolder>() {
         val parts = sourcePath.split("/")
         val folderName = parts.getOrNull(2) ?: return "Unknown Module"
         return folderName.replace("_", " ").replaceFirstChar { it.uppercaseChar() }
+    }
+
+    private fun showSources(response: Conversations, binding: View) {
+        val llSources: ViewGroup = binding.findViewById(R.id.ll_sources)
+        llSources.removeAllViews()
+
+        if (!response.sources.isNullOrEmpty()) {
+            llSources.visibility = View.VISIBLE
+            val shownTitles = mutableSetOf<String>()
+
+            response.sources.forEach { source ->
+                val title = if (source.title.isNullOrEmpty()) source.producer else source.title
+                if (!shownTitles.add(title)) return@forEach
+
+                val fullText = "📎 Source: $title"
+                val startIndex = fullText.indexOf(title)
+                val endIndex = startIndex + title.length
+
+                val spannable = SpannableString(fullText).apply {
+                    setSpan(UnderlineSpan(), startIndex, endIndex, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+
+                val tvSource = TextView(binding.context).apply {
+                    text = spannable
+                    setTextColor(binding.resources.getColor(R.color.textColorLink, null))
+                    textSize = 14f
+                    setPadding(0, 4, 0, 4)
+                    setOnClickListener {
+                        val intent = Intent(context, PdfViewerActivity::class.java).apply {
+                            val modifiedSource = source.source
+                            putExtra("module_url", modifiedSource)
+                            putExtra("module_category", extractReadableModuleTitle(modifiedSource).lowercase())
+                        }
+                        context.startActivity(intent)
+                    }
+                }
+                llSources.addView(tvSource)
+            }
+        } else {
+            llSources.visibility = View.GONE
+        }
     }
 }

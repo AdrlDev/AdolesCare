@@ -123,7 +123,7 @@ class PreviewPdfFragment : Fragment() {
     @OptIn(ExperimentalCoroutinesApi::class)
     private suspend fun getPageTextBitmap(pageIndex: Int): Pair<Bitmap, List<Text.TextBlock>> {
         return withContext(Dispatchers.IO) {
-            val bitmap = binding.pdfViewer.toBitmap(pageIndex)
+            val bitmap = binding.pdfViewer.toBitmap()
 
             val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
             val inputImage = InputImage.fromBitmap(bitmap, 0)

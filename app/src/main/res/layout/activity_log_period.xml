@@ -56,7 +56,7 @@
 
     </RelativeLayout>
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="none"
@@ -66,10 +66,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="32dp"
             >
 
             <RelativeLayout
+                android:paddingHorizontal="32dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 >
@@ -103,9 +103,8 @@
                     app:cardBackgroundColor="@color/background"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="8dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginHorizontal="8dp"
+                    android:layout_marginVertical="@dimen/margin_large"
+                    android:layout_marginHorizontal="@dimen/margin_small"
                     style="?attr/materialCardViewFilledStyle"
                     >
 
@@ -146,226 +145,241 @@
                 style="?attr/materialButtonStyle"
                 />
 
-            <com.facebook.shimmer.ShimmerFrameLayout
-                android:id="@+id/shimmerLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:shimmer_direction="top_to_bottom"
-                app:shimmer_repeat_mode="restart"
-                app:shimmer_shape="linear"
-                app:shimmer_auto_start="true"
-                app:shimmer_duration="1500"
-                >
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_marginVertical="8dp"
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/shimmer_placeholder"
-                        />
-
-                    <TextView
-                        android:layout_width="200dp"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/shimmer_placeholder"
-                        />
-
-                </LinearLayout>
-
-            </com.facebook.shimmer.ShimmerFrameLayout>
-
             <LinearLayout
-                android:visibility="gone"
-                android:id="@+id/ll_cycle_day"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:background="@drawable/bg_top_only_round"
+                android:padding="@dimen/margin_medium"
                 >
 
-                <TextView
-                    android:layout_marginVertical="8dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Date cycle"
-                    android:textSize="@dimen/font_medium"
-                    android:fontFamily="@font/roboto_medium"
-                    android:textColor="@color/textColor"
-                    android:id="@+id/tv_date_cycle"
-                    />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Remarks"
-                    android:textSize="@dimen/font_small"
-                    android:fontFamily="@font/roboto"
-                    android:textColor="@color/textColor"
-                    android:id="@+id/tv_remarks"
-                    />
-
-            </LinearLayout>
-
-            <TextView
-                android:layout_marginVertical="12dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/symptoms"
-                android:textSize="@dimen/font_medium"
-                android:fontFamily="@font/roboto_bold"
-                android:textColor="@color/textColor"
-                />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/background"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="5dp"
-                android:layout_marginHorizontal="5dp"
-                android:layout_marginVertical="8dp">
-
-                <RelativeLayout
-                    android:padding="22dp"
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/shimmerLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:shimmer_direction="top_to_bottom"
+                    app:shimmer_repeat_mode="restart"
+                    app:shimmer_shape="linear"
+                    app:shimmer_auto_start="true"
+                    app:shimmer_duration="1500"
                     >
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/add_weight_etc"
-                        android:fontFamily="@font/roboto"
-                        android:textColor="@color/textColor"
-                        android:id="@+id/tv_hint"
-                        android:gravity="center_vertical"
-                        android:layout_alignTop="@id/btn_add"
-                        android:layout_alignBottom="@id/btn_add"
-                        android:layout_toStartOf="@id/btn_add"
-                        android:layout_alignParentStart="true"
-                        android:paddingEnd="8dp"
-                        android:paddingStart="0dp"
-                        android:textSize="@dimen/font_small"
-                        />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        style="?attr/materialIconButtonFilledStyle"
-                        app:icon="@drawable/round_add_20"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentTop="true"
-                        android:id="@+id/btn_add"
-                        android:backgroundTint="@color/buttonColor"
-                        app:iconTint="@color/buttonTextColor"
-                        android:contentDescription="@string/app_name"
-                        />
-
-                    <androidx.recyclerview.widget.RecyclerView
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:id="@+id/rv_selected_symptoms"
-                        android:layout_below="@id/btn_add"
-                        android:layout_marginVertical="12dp"
-                        />
+                        android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/tv_load_more"
-                        android:fontFamily="@font/roboto_medium"
-                        android:textSize="@dimen/font_small"
-                        android:layout_alignParentBottom="true"
-                        android:layout_alignEnd="@id/rv_selected_symptoms"
-                        android:layout_below="@id/rv_selected_symptoms"
-                        />
+                        <TextView
+                            android:layout_marginVertical="8dp"
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/shimmer_placeholder"
+                            />
 
-                </RelativeLayout>
+                        <TextView
+                            android:layout_width="200dp"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/shimmer_placeholder"
+                            />
 
-            </com.google.android.material.card.MaterialCardView>
+                    </LinearLayout>
 
-            <TextView
-                android:id="@+id/tv_lbl_insight"
-                android:layout_marginVertical="12dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/insight"
-                android:textSize="@dimen/font_medium"
-                android:fontFamily="@font/roboto_bold"
-                android:textColor="@color/textColor"
-                />
-
-            <com.facebook.shimmer.ShimmerFrameLayout
-                android:id="@+id/shimmer_insight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:shimmer_direction="top_to_bottom"
-                app:shimmer_repeat_mode="restart"
-                app:shimmer_shape="linear"
-                app:shimmer_auto_start="true"
-                app:shimmer_duration="1500"
-                android:layout_marginHorizontal="5dp"
-                android:layout_marginVertical="8dp"
-                >
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:background="@drawable/shimmer_placeholder"
-                    />
-
-            </com.facebook.shimmer.ShimmerFrameLayout>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/buttonColor"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="5dp"
-                android:visibility="gone"
-                android:id="@+id/card_insight"
-                android:layout_marginHorizontal="5dp"
-                android:layout_marginVertical="8dp">
+                </com.facebook.shimmer.ShimmerFrameLayout>
 
                 <LinearLayout
-                    android:orientation="vertical"
-                    android:padding="22dp"
+                    android:visibility="gone"
+                    android:id="@+id/ll_cycle_day"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     >
 
                     <TextView
-                        android:id="@+id/tv_insight"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/insight"
-                        android:fontFamily="@font/roboto"
-                        android:textColor="@color/buttonTextColor"
-                        android:gravity="start"
-                        android:maxLines="10"
-                        android:ellipsize="end" />
-
-                    <TextView
-                        android:id="@+id/tv_read_more"
+                        android:textAllCaps="true"
+                        android:layout_gravity="center"
+                        android:layout_marginVertical="8dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Read more..."
-                        android:textStyle="bold"
-                        android:layout_marginTop="8dp"
-                        android:layout_gravity="end"
-                        android:textColor="@color/textColorLink"
-                        android:paddingTop="8dp" />
+                        android:text="Date cycle"
+                        android:textSize="@dimen/font_medium"
+                        android:fontFamily="@font/roboto_medium"
+                        android:textColor="@color/background"
+                        android:id="@+id/tv_date_cycle"
+                        />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Remarks"
+                        android:textSize="@dimen/font_small"
+                        android:fontFamily="@font/roboto"
+                        android:textColor="@color/background"
+                        android:id="@+id/tv_remarks"
+                        />
 
                 </LinearLayout>
 
-            </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:layout_marginTop="@dimen/margin_large"
+                    android:layout_marginBottom="12dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/symptoms"
+                    android:textSize="@dimen/font_medium"
+                    android:fontFamily="@font/roboto_bold"
+                    android:textColor="@color/background"
+                    />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/background"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="5dp"
+                    style="@style/Widget.Material3.CardView.Elevated"
+                    android:layout_marginHorizontal="@dimen/margin_small"
+                    android:layout_marginVertical="@dimen/margin_medium">
+
+                    <RelativeLayout
+                        android:padding="22dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        >
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/add_weight_etc"
+                            android:fontFamily="@font/roboto"
+                            android:textColor="@color/textColor"
+                            android:id="@+id/tv_hint"
+                            android:gravity="center_vertical"
+                            android:layout_alignTop="@id/btn_add"
+                            android:layout_alignBottom="@id/btn_add"
+                            android:layout_toStartOf="@id/btn_add"
+                            android:layout_alignParentStart="true"
+                            android:paddingEnd="8dp"
+                            android:paddingStart="0dp"
+                            android:textSize="@dimen/font_small"
+                            />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            style="?attr/materialIconButtonFilledStyle"
+                            app:icon="@drawable/round_add_20"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentTop="true"
+                            android:id="@+id/btn_add"
+                            android:backgroundTint="@color/buttonColor"
+                            app:iconTint="@color/buttonTextColor"
+                            android:contentDescription="@string/app_name"
+                            />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/rv_selected_symptoms"
+                            android:layout_below="@id/btn_add"
+                            android:layout_marginVertical="12dp"
+                            />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/tv_load_more"
+                            android:fontFamily="@font/roboto_medium"
+                            android:textSize="@dimen/font_small"
+                            android:layout_alignParentBottom="true"
+                            android:layout_alignEnd="@id/rv_selected_symptoms"
+                            android:layout_below="@id/rv_selected_symptoms"
+                            />
+
+                    </RelativeLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <TextView
+                    android:id="@+id/tv_lbl_insight"
+                    android:layout_marginVertical="12dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/insight"
+                    android:textSize="@dimen/font_medium"
+                    android:fontFamily="@font/roboto_bold"
+                    android:textColor="@color/background"
+                    />
+
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/shimmer_insight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:shimmer_direction="top_to_bottom"
+                    app:shimmer_repeat_mode="restart"
+                    app:shimmer_shape="linear"
+                    app:shimmer_auto_start="true"
+                    app:shimmer_duration="1500"
+                    android:layout_marginHorizontal="5dp"
+                    android:layout_marginVertical="8dp"
+                    >
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:background="@drawable/shimmer_placeholder"
+                        />
+
+                </com.facebook.shimmer.ShimmerFrameLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/buttonColor"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="5dp"
+                    android:visibility="gone"
+                    android:id="@+id/card_insight"
+                    style="@style/Widget.Material3.CardView.Elevated"
+                    android:layout_marginHorizontal="@dimen/margin_small"
+                    android:layout_marginVertical="@dimen/margin_medium">
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:padding="22dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        >
+
+                        <TextView
+                            android:id="@+id/tv_insight"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/insight"
+                            android:fontFamily="@font/roboto"
+                            android:textColor="@color/buttonTextColor"
+                            android:gravity="start"
+                            android:maxLines="10"
+                            android:ellipsize="end" />
+
+                        <TextView
+                            android:id="@+id/tv_read_more"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Read more..."
+                            android:textStyle="bold"
+                            android:layout_marginTop="8dp"
+                            android:layout_gravity="end"
+                            android:textColor="@color/textColorLink"
+                            android:paddingTop="8dp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
 
         </LinearLayout>
 
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

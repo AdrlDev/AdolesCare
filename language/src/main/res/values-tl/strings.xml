@@ -108,7 +108,7 @@
     <string name="ask">Magtanong…</string>
 
     <string name="splash_message">Sa tamang kaalaman, may ligtas na kinabukasan</string>
-    <string name="edit_period_dates">I-edit ang mga petsa ng regla</string>
+    <string name="edit_period_dates">I-log ang petsa ng regla</string>
     <string name="log_period">I-log ang regla</string>
     <string name="today">Ngayong araw</string>
     <string name="what_are_you_feeling">Ano ang nararamdaman mo ngayon?</string>
@@ -259,6 +259,7 @@
     <string name="menu_other">Iba pa</string>
     <string name="menu_settings">Mga Setting</string>
     <string name="menu_notifications">Mga Abiso</string>
+    <string name="menu_history">Kasaysayan</string>
     <string name="menu_about_us">Tungkol sa Amin</string>
     <string name="overview">Pangkalahatang-ideya</string>
 
@@ -272,6 +273,11 @@
     <string name="change_password">Palitan ang Password</string>
     <string name="confirm">Kumpirmahin</string>
     <string name="fill_all_fields">Pakiusap, punan ang lahat ng mga patlang.</string>
+
+    <string name="log_new_period">Mag-log ng Bagong Period</string>
+    <string name="day">Araw</string>
+    <string name="weeks">Linggo</string>
+    <string name="save">I-save</string>
 
     <string name="overview_txt">
         Ang Adolescare ay isang aplikasyon na naglalayong magbigay ng kaalaman at

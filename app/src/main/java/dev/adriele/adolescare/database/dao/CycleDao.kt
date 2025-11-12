@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import dev.adriele.adolescare.database.entities.MenstrualCycle
 
 @Dao
@@ -18,12 +19,13 @@ interface CycleDao {
     @Query("""
         SELECT * FROM cycles
         WHERE userId = :userId
-          AND DATE(lastPeriodStart) >= DATE(:lmp)
-          AND DATE(lastPeriodStart) <= DATE('now')
-        ORDER BY DATE(lastPeriodStart) DESC
+          AND strftime('%Y-%m', lastPeriodStart) = strftime('%Y-%m', :lmp)
         LIMIT 1
     """)
-    suspend fun getLatestCycle(userId: String, lmp: String): MenstrualCycle?
+    suspend fun getCycleByMonth(userId: String, lmp: String): MenstrualCycle?
+
+    @Update
+    suspend fun updateCycle(cycle: MenstrualCycle)
 
     @Query("UPDATE cycles SET lastPeriodStart = :lmp, periodDurationDays = :days, cycleLengthWeeks = :weeks WHERE userId = :userId")
     suspend fun updateCycle(lmp: String, days: Int, weeks: Int, userId: String)

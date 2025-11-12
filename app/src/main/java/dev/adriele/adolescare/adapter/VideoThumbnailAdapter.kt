@@ -46,6 +46,7 @@ class VideoThumbnailAdapter(
         val imageView = holder.view.findViewById<ImageView>(R.id.imgThumbnail)
         val tvTitle = holder.view.findViewById<TextView>(R.id.tv_title)
         val tvCredits = holder.view.findViewById<TextView>(R.id.tv_credits)
+        val tvAuthors = holder.view.findViewById<TextView>(R.id.tv_author)
 
         // Copy from assets to cache only once
         val cachedFile = Utility.copyAssetToCache(context, videoFile.contentUrl)
@@ -58,6 +59,8 @@ class VideoThumbnailAdapter(
             .into(imageView)
 
         val creditUrl = videoFile.contentCreditsUrl
+
+        tvAuthors.text = videoFile.author
         if (!creditUrl.isNullOrEmpty()) {
             val creditText = "Credits: $creditUrl"
 
@@ -74,6 +77,7 @@ class VideoThumbnailAdapter(
             }
             tvCredits.text = spannable
             tvCredits.visibility = View.VISIBLE
+
         } else {
             tvCredits.visibility = View.GONE
         }

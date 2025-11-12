@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.applandeo.materialcalendarview.CalendarDay
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.platform.MaterialSharedAxis
 import com.google.gson.Gson
@@ -30,6 +31,7 @@ import dev.adriele.adolescare.api.response.InsightsResponse
 import dev.adriele.adolescare.api.websocket.WebSocketClient
 import dev.adriele.adolescare.api.websocket.contracts.IWebSocket
 import dev.adriele.adolescare.contracts.IChatBot
+import dev.adriele.adolescare.contracts.ILogPeriod
 import dev.adriele.adolescare.database.AppDatabaseProvider
 import dev.adriele.adolescare.database.entities.CycleLogEntity
 import dev.adriele.adolescare.database.entities.MenstrualCycle
@@ -40,6 +42,7 @@ import dev.adriele.adolescare.database.repositories.implementation.CycleLogRepos
 import dev.adriele.adolescare.database.repositories.implementation.MenstrualHistoryRepositoryImpl
 import dev.adriele.adolescare.database.repositories.implementation.ReminderRepositoryImpl
 import dev.adriele.adolescare.databinding.ActivityLogPeriodBinding
+import dev.adriele.adolescare.fragments.LogNewPeriodFragment
 import dev.adriele.adolescare.helpers.NotificationUtils
 import dev.adriele.adolescare.helpers.Utility
 import dev.adriele.adolescare.helpers.Utility.animateTextViewHeight
@@ -116,6 +119,26 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
         init()
         handleButtons()
         editLogPeriod()
+        observer()
+    }
+
+    private fun observer() {
+        menstrualHistoryViewModel.updateStatus.observe(this) { (isUpdated, message) ->
+            if (isUpdated) {
+                showMenstrualHistoryShimmer()
+                menstrualHistoryViewModel.getMensHistory(userId ?: "")
+                Snackbar.make(binding.main, message, Snackbar.LENGTH_SHORT).show()
+            }
+        }
+
+        menstrualHistoryViewModel.insertStatus.observe(this) { (success, _) ->
+            if (success) {
+                showMenstrualHistoryShimmer()
+                menstrualHistoryViewModel.getMensHistory(userId ?: "")
+            } else {
+                Snackbar.make(binding.main, "Failed to save menstrual history...", Snackbar.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun initializeViewModel() {
@@ -155,7 +178,7 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
                 val lmp = cycle.lastPeriodStart
                 val periodDays = cycle.periodDurationDays
 
-                val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)
+                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
                 val calendar = Calendar.getInstance().apply {
                     time = sdf.parse(lmp)!!
                 }
@@ -217,28 +240,31 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
                 val cycleInterval = history.cycleIntervalWeeks ?: 3
 
                 lifecycleScope.launch(Dispatchers.IO) {
-                    val menstrualCycle = cycleLogViewModel.getMenstrualCycle(
+                    val cycleThisMonth = cycleLogViewModel.getCycleByMonth(
                         userId = userId ?: "",
-                        lmp = lmp
+                        lmp = Utility.formatDate(lmp)
                     )
 
-                    if (menstrualCycle == null) {
+                    Log.e("CYCLES", Gson().toJson(cycleThisMonth))
+
+                    if (cycleThisMonth == null) {
                         cycleLogViewModel.insertCycle(
                             cycle = MenstrualCycle(
                                 userId = userId ?: "",
-                                lastPeriodStart = lmp,
+                                lastPeriodStart = Utility.formatDate(lmp),
                                 periodDurationDays = periodDays,
                                 cycleLengthWeeks = cycleInterval,
                                 createdAt = Utility.getCurrentDate()
                             )
                         )
                     } else {
-                        cycleLogViewModel.updateCycle(
-                            lmp = lmp,
-                            days = periodDays,
-                            weeks = cycleInterval,
-                            userId = userId ?: ""
+                        // Found a cycle in the same month → update instead of insert
+                        val updated = cycleThisMonth.copy(
+                            lastPeriodStart = Utility.formatDate(lmp),
+                            periodDurationDays = periodDays,
+                            cycleLengthWeeks = cycleInterval
                         )
+                        cycleLogViewModel.updateCycle(updated)
                     }
 
                     withContext(Dispatchers.Main) {
@@ -793,7 +819,43 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
 
     private fun editLogPeriod() {
         binding.btnEditPeriodDate.setOnClickListener {
-            Utility.showDatePicker(this, supportFragmentManager, this)
+            val bottomSheet = LogNewPeriodFragment.newInstance(userId, object : ILogPeriod {
+                override fun onSaveNewLog(menstrualHistory: MenstrualHistoryEntity) {
+                    lifecycleScope.launch {
+                        val existing = menstrualHistoryViewModel.getMensHistoryNow(userId ?: "")
+                        if (existing != null) {
+                            val updated = existing.copy(
+                                lastPeriodStart = menstrualHistory.lastPeriodStart,
+                                periodDurationDays = menstrualHistory.periodDurationDays,
+                                cycleIntervalWeeks = menstrualHistory.cycleIntervalWeeks
+                            )
+
+                            menstrualHistoryViewModel.updateMenstrualHistory(updated)
+
+                            val reminder = Reminder(
+                                userId = userId ?: "",
+                                title = "Menstrual History",
+                                message = "Your last menstrual period updated to ${menstrualHistory.lastPeriodStart}.",
+                                dateTime = Utility.getCurrentDate(),
+                                type = "Reminders"
+                            )
+
+                            reminderViewModel.insertReminder(reminder)
+
+                            NotificationUtils.showNotification(
+                                context = this@LogPeriodActivity,
+                                title = "Menstrual History",
+                                message = "Your last menstrual period updated to ${menstrualHistory.lastPeriodStart}.",
+                                userId = userId ?: ""
+                            )
+                        } else {
+                            // If no existing record, you may want to insert instead
+                            menstrualHistoryViewModel.insertMenstrualHistory(menstrualHistory)
+                        }
+                    }
+                }
+            })
+            bottomSheet.show(supportFragmentManager, "LogNewPeriodFragment")
         }
     }
 
@@ -834,14 +896,6 @@ class LogPeriodActivity : BaseActivity(), IChatBot.Insight, Utility.DatePickedCa
                 )
 
                 menstrualHistoryViewModel.insertMenstrualHistory(newEntry)
-            }
-        }
-
-        menstrualHistoryViewModel.updateStatus.observe(this) { (isUpdated, message) ->
-            if (isUpdated) {
-                showMenstrualHistoryShimmer()
-                menstrualHistoryViewModel.getMensHistory(userId ?: "")
-                Snackbar.make(binding.main, message, Snackbar.LENGTH_SHORT).show()
             }
         }
     }

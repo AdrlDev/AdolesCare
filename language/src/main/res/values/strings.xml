@@ -121,6 +121,7 @@
     <string name="menu_other">Other</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_notifications">Notifications</string>
+    <string name="menu_history">History</string>
     <string name="menu_about_us">About Us</string>
     <string name="overview">Overview</string>
 
@@ -128,7 +129,7 @@
     <string name="ask">Ask…</string>
 
     <string name="splash_message">With the right knowledge, there is a secure future.</string>
-    <string name="edit_period_dates">Edit period dates</string>
+    <string name="edit_period_dates">Log period dates</string>
     <string name="log_period">Log period</string>
     <string name="today">Today</string>
     <string name="what_are_you_feeling">What are you feeling today?</string>
@@ -290,6 +291,10 @@
     <string name="confirm">Confirm</string>
     <string name="fill_all_fields">Please fill out all fields.</string>
 
+    <string name="log_new_period">Log New Period</string>
+    <string name="day">Days</string>
+    <string name="weeks">Weeks</string>
+    <string name="save">Save</string>
 
     <string-array name="categories">
         <item>@string/sex_drive</item>

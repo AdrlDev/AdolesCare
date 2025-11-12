@@ -34,20 +34,15 @@ class CycleLogRepositoryImpl(
         return cycleDao.getLatestCycle(userId = userId, createdAt = date, lmp = lmp)
     }
 
-    override suspend fun getMenstrualCycle(
+    override suspend fun getCycleByMonth(
         userId: String,
         lmp: String
     ): MenstrualCycle? {
-        return cycleDao.getLatestCycle(userId = userId, lmp = lmp)
+        return cycleDao.getCycleByMonth(userId = userId, lmp = lmp)
     }
 
-    override suspend fun updateCycle(
-        lmp: String,
-        days: Int,
-        weeks: Int,
-        userId: String
-    ) {
-        cycleDao.updateCycle(lmp, days, weeks, userId)
+    override suspend fun updateCycle(cycle: MenstrualCycle) {
+        cycleDao.updateCycle(cycle)
     }
 
     override suspend fun updateListsByUserIdAndDate(

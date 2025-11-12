@@ -349,6 +349,7 @@ class DashboardActivity : BaseActivity() {
                 R.id.nav_account -> gotoAccount()
                 R.id.nav_setting -> gotoSettings()
                 R.id.nav_notification -> gotoNotification()
+                R.id.nav_history -> gotoHistory()
                 R.id.nav_about -> gotoAbout()
                 R.id.nav_logout -> logout()
             }
@@ -378,6 +379,13 @@ class DashboardActivity : BaseActivity() {
 
     private fun gotoNotification() {
         val intent = Intent(this, NotificationActivity::class.java).apply {
+            putExtra("userId", userId)
+        }
+        startActivity(intent)
+    }
+
+    private fun gotoHistory() {
+        val intent = Intent(this, HistoryActivity::class.java).apply {
             putExtra("userId", userId)
         }
         startActivity(intent)

@@ -22,7 +22,7 @@
             android:orientation="vertical"
             android:paddingTop="12dp"
             android:paddingBottom="32dp"
-            android:paddingHorizontal="32dp"
+            android:paddingHorizontal="18dp"
             >
 
             <LinearLayout
@@ -188,12 +188,12 @@
                     />
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_margin="14dp"
+                    android:layout_margin="16dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     style="?attr/materialCardViewElevatedStyle"
                     app:cardBackgroundColor="@color/background"
-                    app:cardElevation="8dp"
+                    app:cardElevation="6dp"
                     >
 
                     <LinearLayout

@@ -39,7 +39,7 @@ import dev.adriele.adolescare.database.entities.User
         ArchiveRecentReadAndWatch::class,
         ArchiveReminder::class
     ],
-    version = 8,
+    version = 10,
     exportSchema = false
 )
 

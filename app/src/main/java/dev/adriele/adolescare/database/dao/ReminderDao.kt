@@ -14,8 +14,8 @@ interface ReminderDao {
     @Query("DELETE FROM reminders WHERE userId = :userId AND id = :id")
     suspend fun deleteUserReminders(userId: String, id: Int)
 
-    @Query("SELECT * FROM reminders WHERE dateTime <= :date")
-    suspend fun getRemindersBeforeDate(date: String): List<Reminder>
+    @Query("SELECT * FROM reminders")
+    suspend fun getReminders(): List<Reminder>
 
     @Query("SELECT * FROM reminders WHERE userId = :userId")
     suspend fun getUserReminders(userId: String): List<Reminder>

@@ -31,6 +31,8 @@ object AppDatabaseProvider {
                 .addMigrations(MIGRATION_5_6)
                 .addMigrations(MIGRATION_6_7)
                 .addMigrations(MIGRATION_7_8)
+                .addMigrations(MIGRATION_8_9)
+                .addMigrations(MIGRATION_9_10)
                 .fallbackToDestructiveMigration(false)
                 .build()
 
@@ -110,6 +112,22 @@ object AppDatabaseProvider {
                 type TEXT NOT NULL
             )
             """.trimIndent()
+            )
+        }
+    }
+
+    val MIGRATION_8_9 = object : Migration(8, 9) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE modules ADD COLUMN author TEXT NOT NULL DEFAULT ''"
+            )
+        }
+    }
+
+    val MIGRATION_9_10 = object : Migration(9, 10) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "ALTER TABLE reminders ADD COLUMN createdAt TEXT NOT NULL DEFAULT ''"
             )
         }
     }

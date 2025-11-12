@@ -43,13 +43,13 @@ class CycleLogViewModel(private val repository: CycleLogRepository) : ViewModel(
         return repository.getMenstrualCycle(userId = userId, date = date, lmp = lmp)
     }
 
-    suspend fun getMenstrualCycle(userId: String, lmp: String): MenstrualCycle? {
-        return repository.getMenstrualCycle(userId = userId, lmp = lmp)
+    suspend fun getCycleByMonth(userId: String, lmp: String): MenstrualCycle? {
+        return repository.getCycleByMonth(userId = userId, lmp = lmp)
     }
 
-    fun updateCycle(lmp: String, days: Int, weeks: Int, userId: String) {
+    fun updateCycle(cycle: MenstrualCycle) {
         viewModelScope.launch {
-            repository.updateCycle(lmp, days, weeks, userId)
+            repository.updateCycle(cycle)
         }
     }
 
